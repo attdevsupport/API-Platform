@@ -12,10 +12,11 @@ Imports System.Web.Script.Serialization
 Imports System.Drawing
 Imports System.Net.Security
 Imports System.Security.Cryptography.X509Certificates
+Imports System.Text.RegularExpressions
 
 Partial Public Class _Default
     Inherits System.Web.UI.Page
-    Private shortCode As String, accessTokenFilePath As String, FQDN As String, oauthFlow As String
+    Private shortCode As String, accessTokenFilePath As String, FQDN As String, oauthFlow As String, refundFile As String
     Private api_key As String, secret_key As String, auth_code As String, access_token As String, authorize_redirect_uri As String, scope As String, _
      expiryMilliSeconds As String, refresh_token As String, lastTokenTakenTime As String, refreshTokenExpiryTime As String
     Private successTable As Table, failureTable As Table
@@ -24,21 +25,26 @@ Partial Public Class _Default
     Private category As Int32
     Private channel As String, description As String, merchantTransactionId As String, merchantProductId As String, merchantApplicationId As String
     Private merchantRedirectURI As Uri
-    Private paymentType As String
     Private MerchantSubscriptionIdList As String, SubscriptionRecurringPeriod As String
     Private SubscriptionRecurringNumber As Int32, SubscriptionRecurringPeriodAmount As Int32
     Private IsPurchaseOnNoActiveSubscription As String
     Private transactionTime As DateTime
     Private transactionTimeString As String
     Private payLoadStringFromRequest As String
-    Private vb_signedPayLoad As String, vb_signedSignature As String
+    Private signedPayload As String, signedSignature As String
     Private notaryURL As String
-    '  This function is called when application is getting loaded 
-    Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs)
+    ' Button refundButton;
+    Private refundCountToDisplay As Integer = 0
+    Private refundList As New List(Of KeyValuePair(Of String, String))()
+    Private LatestFive As Boolean = True
+    Protected Sub Page_Load(sender As Object, e As EventArgs)
         transactionSuccessTable.Visible = False
+        tranGetStatusTable.Visible = False
+        refundSuccessTable.Visible = False
         Dim currentServerTime As DateTime = DateTime.UtcNow
         serverTimeLabel.Text = [String].Format("{0:ddd, MMM dd, yyyy HH:mm:ss}", currentServerTime) & " UTC"
-        FQDN = ConfigurationManager.AppSettings("FQDN").ToString()
+        'refundButton = new Button();
+        'refundButton.Click += new EventHandler(refundButtonClick);
         If ConfigurationManager.AppSettings("FQDN") Is Nothing Then
             drawPanelForFailure(newTransactionPanel, "FQDN is not defined in configuration file")
             Return
@@ -59,10 +65,25 @@ Partial Public Class _Default
         Else
             accessTokenFilePath = "~\PayApp1AccessToken.txt"
         End If
+        If ConfigurationManager.AppSettings("refundFile") IsNot Nothing Then
+            refundFile = ConfigurationManager.AppSettings("refundFile")
+        Else
+            refundFile = "~\refundFile.txt"
+        End If
+
+        If ConfigurationManager.AppSettings("refundCountToDisplay") IsNot Nothing Then
+            refundCountToDisplay = Convert.ToInt32(ConfigurationManager.AppSettings("refundCountToDisplay"))
+        Else
+            refundCountToDisplay = 5
+        End If
+
         If ConfigurationManager.AppSettings("scope") Is Nothing Then
             scope = "PAYMENT"
         Else
             scope = ConfigurationManager.AppSettings("scope").ToString()
+        End If
+        If ConfigurationManager.AppSettings("DisableLatestFive") IsNot Nothing Then
+            LatestFive = False
         End If
         If ConfigurationManager.AppSettings("notaryURL") Is Nothing Then
             drawPanelForFailure(newTransactionPanel, "notaryURL is not defined in configuration file")
@@ -75,39 +96,31 @@ Partial Public Class _Default
         merchantRedirectURI = New Uri(ConfigurationManager.AppSettings("MerchantPaymentRedirectUrl"))
         notaryURL = ConfigurationManager.AppSettings("notaryURL")
         If (Request("ret_signed_payload") IsNot Nothing) AndAlso (Request("ret_signature") IsNot Nothing) Then
-            vb_signedPayLoad = Request("ret_signed_payload").ToString()
-            vb_signedSignature = Request("ret_signature").ToString()
-            Session("vb_signedPayLoad") = vb_signedPayLoad.ToString()
-            Session("vb_signedSignature") = vb_signedSignature.ToString()
+            signedPayload = Request("ret_signed_payload").ToString()
+            signedSignature = Request("ret_signature").ToString()
+            Session("signedPayLoad") = signedPayload.ToString()
+            Session("signedSignature") = signedSignature.ToString()
             processNotaryResponse()
-        ElseIf (Request("TransactionAuthCode") IsNot Nothing) AndAlso (Session("vb_merTranId") IsNot Nothing) Then
+        ElseIf (Request("TransactionAuthCode") IsNot Nothing) AndAlso (Session("merTranId") IsNot Nothing) Then
             processCreateTransactionResponse()
-        ElseIf (Request("shown_notary") IsNot Nothing) AndAlso (Session("vb_processNotary") IsNot Nothing) Then
-            Session("vb_processNotary") = Nothing
-            GetTransactionMerchantTransID.Text = "Merchant Transaction ID: " & Session("vb_tempMerTranId").ToString()
-            GetTransactionAuthCode.Text = "Auth Code: " & Session("vb_TranAuthCode").ToString()
+        ElseIf (Request("shown_notary") IsNot Nothing) AndAlso (Session("processNotary") IsNot Nothing) Then
+            Session("processNotary") = Nothing
+            GetTransactionMerchantTransID.Text = "Merchant Transaction ID: " & Session("tempMerTranId").ToString()
+            GetTransactionAuthCode.Text = "Auth Code: " & Session("TranAuthCode").ToString()
         End If
+        refundTable.Controls.Clear()
+        drawRefundSection(False)
         Return
     End Sub
-    'This function reads transaction parameter values from configuration file
     Private Sub readTransactionParametersFromConfigurationFile()
         transactionTime = DateTime.UtcNow
         transactionTimeString = [String].Format("{0:dddMMMddyyyyHHmmss}", transactionTime)
-        '
-        '        if (ConfigurationManager.AppSettings["Amount"] == null)
-        '        {
-        '            drawPanelForFailure(newTransactionPanel, "Amount is not defined in configuration file");
-        '            return;
-        '        }
-        '        amount = ConfigurationManager.AppSettings["Amount"];
-        '        
-
         If Radio_TransactionProductType.SelectedIndex = 0 Then
             amount = "0.99"
         ElseIf Radio_TransactionProductType.SelectedIndex = 1 Then
             amount = "2.99"
         End If
-        Session("vb_tranType") = Radio_TransactionProductType.SelectedIndex.ToString()
+        Session("tranType") = Radio_TransactionProductType.SelectedIndex.ToString()
         If ConfigurationManager.AppSettings("Category") Is Nothing Then
             drawPanelForFailure(newTransactionPanel, "Category is not defined in configuration file")
             Return
@@ -120,82 +133,44 @@ Partial Public Class _Default
         End If
         description = "TrDesc" & transactionTimeString
         merchantTransactionId = "TrId" & transactionTimeString
-        Session("vb_merTranId") = merchantTransactionId.ToString()
+        Session("merTranId") = merchantTransactionId.ToString()
         merchantProductId = "ProdId" & transactionTimeString
         merchantApplicationId = "MerAppId" & transactionTimeString
     End Sub
-    'This function is called after receiving response from notary application
+
 
     Private Sub processNotaryResponse()
-        If Session("vb_tranType") IsNot Nothing Then
-            Radio_TransactionProductType.SelectedIndex = Convert.ToInt32(Session("vb_tranType").ToString())
-            Session("vb_tranType") = Nothing
+        If Session("tranType") IsNot Nothing Then
+            Radio_TransactionProductType.SelectedIndex = Convert.ToInt32(Session("tranType").ToString())
+            Session("tranType") = Nothing
         End If
-        Response.Redirect(FQDN & "/Commerce/Payment/Rest/2/Transactions?clientid=" & api_key.ToString() & "&SignedPaymentDetail=" & vb_signedPayLoad.ToString() & "&Signature=" & vb_signedSignature.ToString())
+        Response.Redirect(FQDN & "/Commerce/Payment/Rest/2/Transactions?clientid=" & api_key.ToString() & "&SignedPaymentDetail=" & signedPayload.ToString() & "&Signature=" & signedSignature.ToString())
 
     End Sub
-    'This function is called if user clicks on view notary button
-    Protected Sub viewNotary_Click(ByVal sender As Object, ByVal e As EventArgs)
-        If (Session("vb_payloadData") IsNot Nothing) AndAlso (Session("vb_signedPayLoad") IsNot Nothing) AndAlso (Session("vb_signedSignature") IsNot Nothing) Then
-            'Response.Redirect("www.google.com");
-            Response.Redirect(notaryURL.ToString() & "?signed_payload=" & Session("vb_payloadData").ToString() & "&goBackURL=" & merchantRedirectURI.ToString() & "&signed_signature=" & Session("vb_signedSignature").ToString() & "&signed_request=" & Session("vb_signedSignature").ToString())
-        End If
-        '
-        '        if (Session["vb_payloadData"] != null)
-        '            addRowToGetTransactionSuccessPanel(newTransactionPanel, "Merchant Transaction ID", "user573transaction1377");
-        '        if (Session["vb_signedPayLoad"] != null)
-        '            addRowToGetTransactionSuccessPanel(newTransactionPanel, "Transaction Auth Cod", "66574834711");
-        '        if (Session["vb_signedSignature"] != null)
-        '            addRowToGetTransactionSuccessPanel(newTransactionPanel, "Transaction ID", "trx83587123897598612897");
-        '
-        '         
-    End Sub
-    'this function is called to add button to success table
-    Private Sub addButtonToSuccessPanel(ByVal panelParam As Panel)
-        Dim button As New Button()
-        AddHandler button.Click, New EventHandler(AddressOf getTransactionButton_Click)
-        button.Text = "View Notary"
-        Dim row As New TableRow()
-        Dim cellOne As New TableCell()
-        cellOne.Text = ""
-        row.Controls.Add(cellOne)
-        Dim cellTwo As New TableCell()
-        cellTwo.Controls.Add(button)
-        row.Controls.Add(cellTwo)
-        successTable.Controls.Add(row)
-        Return
-    End Sub
-    'this function is called after getting transaction response
+
     Public Sub processCreateTransactionResponse()
-        'drawPanelForSuccess(newTransactionPanel);
-        'addRowToSuccessPanel(newTransactionPanel, "Merchant Transaction ID", Session["vb_merTranId"].ToString());
-        'addRowToSuccessPanel(newTransactionPanel, "Transaction Auth Cod", Request["TransactionAuthCode"].ToString());
-        'addRowToSuccessPanel(newTransactionPanel, "", "");
-        'addRowToSuccessPanel(newTransactionPanel, "", "");
-        'addButtonToSuccessPanel(newTransactionPanel);
         lbltrancode.Text = Request("TransactionAuthCode").ToString()
-        lbltranid.Text = Session("vb_merTranId").ToString()
+        lbltranid.Text = Session("merTranId").ToString()
         transactionSuccessTable.Visible = True
-        GetTransactionMerchantTransID.Text = "Merchant Transaction ID: " & Session("vb_merTranId").ToString()
+        GetTransactionMerchantTransID.Text = "Merchant Transaction ID: " & Session("merTranId").ToString()
         GetTransactionAuthCode.Text = "Auth Code: " & Request("TransactionAuthCode").ToString()
         GetTransactionTransID.Text = "Transaction ID: "
-        Session("vb_tempMerTranId") = Session("vb_merTranId").ToString()
-        Session("vb_merTranId") = Nothing
-        Session("vb_TranAuthCode") = Request("TransactionAuthCode").ToString()
+        Session("tempMerTranId") = Session("merTranId").ToString()
+        Session("merTranId") = Nothing
+        Session("TranAuthCode") = Request("TransactionAuthCode").ToString()
         Return
     End Sub
     '"\",\"MerchantApplicationId\":\"" + merchantApplicationId.ToString() +
-    'this function is called if user clicks on new transaction button
-    Protected Sub newTransactionButton_Click(ByVal sender As Object, ByVal e As EventArgs)
+    Protected Sub newTransactionButton_Click(sender As Object, e As EventArgs)
         readTransactionParametersFromConfigurationFile()
         Dim payLoadString As String = "{""Amount"":" & amount.ToString() & ",""Category"":" & category.ToString() & ",""Channel"":""" & channel.ToString() & """,""Description"":""" & description.ToString() & """,""MerchantTransactionId"":""" & merchantTransactionId.ToString() & """,""MerchantProductId"":""" & merchantProductId.ToString() & """,""MerchantPaymentRedirectUrl"":""" & merchantRedirectURI.ToString() & """}"
-        Session("vb_payloadData") = payLoadString.ToString()
+        Session("payloadData") = payLoadString.ToString()
         'string returnURL = "https://wincode-api-att.com/BF_R2_Production_Csharp_Apps/payment/app1/Default.aspx";
         Response.Redirect(notaryURL.ToString() & "?request_to_sign=" & payLoadString.ToString() & "&goBackURL=" & merchantRedirectURI.ToString() & "&api_key=" & api_key.ToString() & "&secret_key=" & secret_key.ToString())
     End Sub
     ' This function draws the success table 
 
-    Private Sub drawPanelForSuccess(ByVal panelParam As Panel)
+    Private Sub drawPanelForSuccess(panelParam As Panel)
         successTable = New Table()
         successTable.Font.Name = "Sans-serif"
         successTable.Font.Size = 8
@@ -214,7 +189,7 @@ Partial Public Class _Default
     End Sub
     'This function adds row to the success table 
 
-    Private Sub addRowToSuccessPanel(ByVal panelParam As Panel, ByVal attribute As String, ByVal value As String)
+    Private Sub addRowToSuccessPanel(panelParam As Panel, attribute As String, value As String)
         Dim row As New TableRow()
         Dim cellOne As New TableCell()
         cellOne.Text = attribute.ToString()
@@ -227,7 +202,7 @@ Partial Public Class _Default
     End Sub
     ' This function draws error table 
 
-    Private Sub drawPanelForFailure(ByVal panelParam As Panel, ByVal message As String)
+    Private Sub drawPanelForFailure(panelParam As Panel, message As String)
         failureTable = New Table()
         failureTable.Font.Name = "Sans-serif"
         failureTable.Font.Size = 8
@@ -249,59 +224,72 @@ Partial Public Class _Default
         failureTable.BackColor = System.Drawing.ColorTranslator.FromHtml("#fcc")
         panelParam.Controls.Add(failureTable)
     End Sub
-    'this function is called when user clicks on get transaction status
-    Protected Sub getTransactionButton_Click(ByVal sender As Object, ByVal e As EventArgs)
+    Protected Sub getTransactionButton_Click(sender As Object, e As EventArgs)
         Try
-
             Dim keyValue As String = ""
+            Dim resourcePathString As String = ""
             If Radio_TransactionStatus.SelectedIndex = 0 Then
                 keyValue = GetTransactionMerchantTransID.Text.ToString().Replace("Merchant Transaction ID: ", "")
                 If keyValue.Length = 0 Then
+                    'writeRefundToFile("a", "kdsfaksdf;akfjf");
+                    'Response.Redirect(Request.Url.ToString());
                     Return
-
                 End If
+                resourcePathString = "" & FQDN & "/Commerce/Payment/Rest/2/Transactions/MerchantTransactionId/" & keyValue.ToString()
             End If
             If Radio_TransactionStatus.SelectedIndex = 1 Then
                 keyValue = GetTransactionAuthCode.Text.ToString().Replace("Auth Code: ", "")
                 If keyValue.Length = 0 Then
                     Return
                 End If
+                resourcePathString = "" & FQDN & "/Commerce/Payment/Rest/2/Transactions/TransactionAuthCode/" & keyValue.ToString()
             End If
             If Radio_TransactionStatus.SelectedIndex = 2 Then
                 keyValue = GetTransactionTransID.Text.ToString().Replace("Transaction ID: ", "")
                 If keyValue.Length = 0 Then
                     Return
                 End If
+                resourcePathString = "" & FQDN & "/Commerce/Payment/Rest/2/Transactions/TransactionId/" & keyValue.ToString()
             End If
             If readAndGetAccessToken(newTransactionStatusPanel) = True Then
                 If access_token Is Nothing OrElse access_token.Length <= 0 Then
                     Return
                 End If
-                Dim getTransactionStatusResponseData As [String]
-                Dim objRequest As HttpWebRequest = DirectCast(System.Net.WebRequest.Create("" & FQDN & "/Commerce/Payment/Rest/2/Transactions/TransactionAuthCode/" & Session("vb_TranAuthCode").ToString() & "?access_token=" & access_token.ToString()), HttpWebRequest)
+                'String getTransactionStatusResponseData;
+                resourcePathString = resourcePathString & "?access_token=" & access_token.ToString()
+                'HttpWebRequest objRequest = (HttpWebRequest) System.Net.WebRequest.Create("" + FQDN + "/Commerce/Payment/Rest/2/Transactions/TransactionAuthCode/" + Session["TranAuthCode"].ToString() + "?access_token=" + access_token.ToString());
+                Dim objRequest As HttpWebRequest = DirectCast(System.Net.WebRequest.Create(resourcePathString), HttpWebRequest)
                 objRequest.Method = "GET"
                 Dim getTransactionStatusResponseObject As HttpWebResponse = DirectCast(objRequest.GetResponse(), HttpWebResponse)
                 Using getTransactionStatusResponseStream As New StreamReader(getTransactionStatusResponseObject.GetResponseStream())
-                    getTransactionStatusResponseData = getTransactionStatusResponseStream.ReadToEnd()
+                    Dim getTransactionStatusResponseData As [String] = getTransactionStatusResponseStream.ReadToEnd()
                     Dim deserializeJsonObject As New JavaScriptSerializer()
                     Dim deserializedJsonObj As transactionResponse = DirectCast(deserializeJsonObject.Deserialize(getTransactionStatusResponseData, GetType(transactionResponse)), transactionResponse)
-
-                    'getTransactionStatusResponseData = getTransactionStatusResponseStream.ReadToEnd();
+                    GetTransactionTransID.Text = "Transaction ID: " & deserializedJsonObj.TransactionId.ToString()
+                    lblstatusTranId.Text = deserializedJsonObj.TransactionId.ToString()
+                    lblstatusMerTranId.Text = deserializedJsonObj.MerchantTransactionId.ToString()
+                    'drawPanelForFailure(newTransactionStatusPanel, getTransactionStatusResponseData);
+                    If checkItemInRefundFile(deserializedJsonObj.TransactionId.ToString(), deserializedJsonObj.MerchantTransactionId.ToString()) = False Then
+                        'clearRefundTable();
+                        writeRefundToFile(deserializedJsonObj.TransactionId.ToString(), deserializedJsonObj.MerchantTransactionId.ToString())
+                    End If
+                    refundTable.Controls.Clear()
+                    drawRefundSection(False)
+                    tranGetStatusTable.Visible = True
                     drawPanelForGetTransactionSuccess(newTransactionStatusPanel)
-                    addRowToSuccessPanel(newTransactionStatusPanel, "Merchant Transaction ID", deserializedJsonObj.MerchantTransactionId)
-                    'addRowToSuccessPanel(newTransactionPanel, "Transaction Auth Cod", deserializedJsonObj.);
-                    addRowToSuccessPanel(newTransactionStatusPanel, "Transaction ID", deserializedJsonObj.TransactionId)
-                    addRowToSuccessPanel(newTransactionStatusPanel, "Amount", deserializedJsonObj.Amount)
-                    addRowToSuccessPanel(newTransactionStatusPanel, "Channel ", deserializedJsonObj.Channel)
-                    addRowToSuccessPanel(newTransactionStatusPanel, "ConsumerId", deserializedJsonObj.ConsumerId)
-                    addRowToSuccessPanel(newTransactionStatusPanel, "ContentCategory", deserializedJsonObj.ContentCategory)
-                    addRowToSuccessPanel(newTransactionStatusPanel, "Currency", deserializedJsonObj.Currency)
-                    addRowToSuccessPanel(newTransactionStatusPanel, "Description", deserializedJsonObj.Description)
-                    addRowToSuccessPanel(newTransactionStatusPanel, "MerchantApplicationId", deserializedJsonObj.MerchantApplicationId)
-                    addRowToSuccessPanel(newTransactionStatusPanel, "MerchantIdentifier", deserializedJsonObj.MerchantIdentifier)
-                    addRowToSuccessPanel(newTransactionStatusPanel, "MerchantProductId", deserializedJsonObj.MerchantProductId)
-                    addRowToSuccessPanel(newTransactionStatusPanel, "IsSuccess", deserializedJsonObj.IsSuccess)
-                    addRowToSuccessPanel(newTransactionStatusPanel, "TransactionStatus", deserializedJsonObj.TransactionStatus)
+                    addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "Amount", deserializedJsonObj.Amount.ToString())
+                    addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "Channel ", deserializedJsonObj.Channel.ToString())
+                    addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "ConsumerId", deserializedJsonObj.ConsumerId.ToString())
+                    addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "ContentCategory", deserializedJsonObj.ContentCategory.ToString())
+                    addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "Currency", deserializedJsonObj.Currency.ToString())
+                    addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "Description", deserializedJsonObj.Description.ToString())
+                    addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "MerchantApplicationId", deserializedJsonObj.MerchantApplicationId.ToString())
+                    addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "MerchantIdentifier", deserializedJsonObj.MerchantIdentifier.ToString())
+                    addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "MerchantProductId", deserializedJsonObj.MerchantProductId.ToString())
+                    addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "IsSuccess", deserializedJsonObj.IsSuccess.ToString())
+                    addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "TransactionStatus", deserializedJsonObj.TransactionStatus.ToString())
+                    addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "TransactionType", deserializedJsonObj.TransactionType.ToString())
+                    addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "Version", deserializedJsonObj.Version.ToString())
                     getTransactionStatusResponseStream.Close()
                 End Using
             End If
@@ -310,42 +298,55 @@ Partial Public Class _Default
         End Try
 
     End Sub
-    'this function draws the success table for get transaction status result
-    Private Sub drawPanelForGetTransactionSuccess(ByVal panelParam As Panel)
+    Private Sub drawPanelForGetTransactionSuccess(panelParam As Panel)
         successTableGetTransaction = New Table()
         successTableGetTransaction.Font.Name = "Sans-serif"
         successTableGetTransaction.Font.Size = 8
-        successTableGetTransaction.BorderStyle = BorderStyle.Outset
         successTableGetTransaction.Width = Unit.Pixel(650)
         Dim rowOne As New TableRow()
         Dim rowOneCellOne As New TableCell()
         rowOneCellOne.Font.Bold = True
-        rowOneCellOne.Text = "SUCCESS:"
+        rowOneCellOne.HorizontalAlign = HorizontalAlign.Right
+        rowOneCellOne.Text = "Parameter"
+        rowOneCellOne.Width = Unit.Pixel(300)
         rowOne.Controls.Add(rowOneCellOne)
+        Dim rowOneCellTwo As New TableCell()
+        rowOneCellTwo.Width = Unit.Pixel(50)
+        rowOne.Controls.Add(rowOneCellTwo)
+
+        Dim rowOneCellThree As New TableCell()
+        rowOneCellThree.Font.Bold = True
+        rowOneCellThree.HorizontalAlign = HorizontalAlign.Left
+        rowOneCellThree.Text = "Value"
+        rowOneCellThree.Width = Unit.Pixel(300)
+        rowOne.Controls.Add(rowOneCellThree)
         successTableGetTransaction.Controls.Add(rowOne)
-        successTableGetTransaction.BorderWidth = 2
-        successTableGetTransaction.BorderColor = Color.DarkGreen
-        successTableGetTransaction.BackColor = System.Drawing.ColorTranslator.FromHtml("#cfc")
         panelParam.Controls.Add(successTableGetTransaction)
     End Sub
     'This function adds row to the success table 
 
-    Private Sub addRowToGetTransactionSuccessPanel(ByVal panelParam As Panel, ByVal attribute As String, ByVal value As String)
+    Private Sub addRowToGetTransactionSuccessPanel(panelParam As Panel, attribute As String, value As String)
         Dim row As New TableRow()
         Dim cellOne As New TableCell()
+        cellOne.HorizontalAlign = HorizontalAlign.Right
         cellOne.Text = attribute.ToString()
-        cellOne.Font.Bold = True
+        cellOne.Width = Unit.Pixel(300)
         row.Controls.Add(cellOne)
         Dim cellTwo As New TableCell()
-        cellTwo.Text = value.ToString()
+        cellTwo.Width = Unit.Pixel(50)
         row.Controls.Add(cellTwo)
+        Dim cellThree As New TableCell()
+        cellThree.HorizontalAlign = HorizontalAlign.Left
+        cellThree.Text = value.ToString()
+        cellThree.Width = Unit.Pixel(300)
+        row.Controls.Add(cellThree)
         successTableGetTransaction.Controls.Add(row)
     End Sub
 
-    Protected Sub Unnamed1_Click(ByVal sender As Object, ByVal e As EventArgs)
-        If (Session("vb_payloadData") IsNot Nothing) AndAlso (Session("vb_signedPayLoad") IsNot Nothing) AndAlso (Session("vb_signedSignature") IsNot Nothing) Then
-            Session("vb_processNotary") = "notary"
-            Response.Redirect(notaryURL.ToString() & "?signed_payload=" & Session("vb_signedPayLoad").ToString() & "&goBackURL=" & merchantRedirectURI.ToString() & "&signed_signature=" & Session("vb_signedSignature").ToString() & "&signed_request=" & Session("vb_payloadData").ToString())
+    Protected Sub Unnamed1_Click(sender As Object, e As EventArgs)
+        If (Session("payloadData") IsNot Nothing) AndAlso (Session("signedPayLoad") IsNot Nothing) AndAlso (Session("signedSignature") IsNot Nothing) Then
+            Session("processNotary") = "notary"
+            Response.Redirect(notaryURL.ToString() & "?signed_payload=" & Session("signedPayLoad").ToString() & "&goBackURL=" & merchantRedirectURI.ToString() & "&signed_signature=" & Session("signedSignature").ToString() & "&signed_request=" & Session("payloadData").ToString())
         End If
     End Sub
 
@@ -409,15 +410,25 @@ Partial Public Class _Default
     '     * If type value is 2, access token is fetch for client credential flow based on the exisiting refresh token
     '     
 
-    Public Function getAccessToken(ByVal type As Integer, ByVal panelParam As Panel) As Boolean
+    Public Function getAccessToken(type As Integer, panelParam As Panel) As Boolean
         '  This is client credential flow: 
 
         If type = 1 Then
             Try
                 Dim currentServerTime As DateTime = DateTime.UtcNow.ToLocalTime()
-                Dim accessTokenRequest As WebRequest = System.Net.HttpWebRequest.Create("" & FQDN & "/oauth/access_token?client_id=" & api_key.ToString() & "&client_secret=" & secret_key.ToString() & "&grant_type=client_credentials&scope=PAYMENT")
-                accessTokenRequest.Method = "GET"
-
+                Dim OauthURL As String
+                OauthURL = "" & FQDN & "/oauth/token"
+                Dim accessTokenRequest As WebRequest = System.Net.HttpWebRequest.Create(OauthURL)
+                accessTokenRequest.Method = "POST"
+                Dim oauthParameters As String = "client_id=" & api_key.ToString() & "&client_secret=" & secret_key.ToString() & "&grant_type=client_credentials&scope=PAYMENT"
+                accessTokenRequest.ContentType = "application/x-www-form-urlencoded"
+                'sendSmsRequestObject.Accept = "application/json";
+                Dim encoding As New UTF8Encoding()
+                Dim postBytes As Byte() = encoding.GetBytes(oauthParameters)
+                accessTokenRequest.ContentLength = postBytes.Length
+                Dim postStream As Stream = accessTokenRequest.GetRequestStream()
+                postStream.Write(postBytes, 0, postBytes.Length)
+                postStream.Close()
                 Dim accessTokenResponse As WebResponse = accessTokenRequest.GetResponse()
                 Using accessTokenResponseStream As New StreamReader(accessTokenResponse.GetResponseStream())
                     Dim jsonAccessToken As String = accessTokenResponseStream.ReadToEnd().ToString()
@@ -450,8 +461,19 @@ Partial Public Class _Default
         ElseIf type = 2 Then
             Try
                 Dim currentServerTime As DateTime = DateTime.UtcNow.ToLocalTime()
-                Dim accessTokenRequest As WebRequest = System.Net.HttpWebRequest.Create("" & FQDN & "/oauth/access_token?grant_type=refresh_token&client_id=" & api_key.ToString() & "&client_secret=" & secret_key.ToString() & "&refresh_token=" & refresh_token.ToString())
-                accessTokenRequest.Method = "GET"
+                Dim OauthURL As String
+                OauthURL = "" & FQDN & "/oauth/token"
+                Dim accessTokenRequest As WebRequest = System.Net.HttpWebRequest.Create(OauthURL)
+                accessTokenRequest.Method = "POST"
+                Dim oauthParameters As String = "client_id=" & api_key.ToString() & "&client_secret=" & secret_key.ToString() & "&grant_type=refresh_token" & "&refresh_token=" + refresh_token.ToString()
+                accessTokenRequest.ContentType = "application/x-www-form-urlencoded"
+                'sendSmsRequestObject.Accept = "application/json";
+                Dim encoding As New UTF8Encoding()
+                Dim postBytes As Byte() = encoding.GetBytes(oauthParameters)
+                accessTokenRequest.ContentLength = postBytes.Length
+                Dim postStream As Stream = accessTokenRequest.GetRequestStream()
+                postStream.Write(postBytes, 0, postBytes.Length)
+                postStream.Close()
                 Dim accessTokenResponse As WebResponse = accessTokenRequest.GetResponse()
                 Using accessTokenResponseStream As New StreamReader(accessTokenResponse.GetResponseStream())
                     Dim access_token_json As String = accessTokenResponseStream.ReadToEnd().ToString()
@@ -490,11 +512,263 @@ Partial Public Class _Default
     Public Shared Sub BypassCertificateError()
         ServicePointManager.ServerCertificateValidationCallback = DirectCast([Delegate].Combine(ServicePointManager.ServerCertificateValidationCallback, Function(sender1 As [Object], certificate As X509Certificate, chain As X509Chain, sslPolicyErrors As SslPolicyErrors) True), RemoteCertificateValidationCallback)
     End Sub
+    '
+    '    public void addButtonToRefundSection(string caption)
+    '    {
+    '        TableRow rowOne = new TableRow();
+    '        TableCell cellOne = new TableCell();
+    '        cellOne.HorizontalAlign = HorizontalAlign.Right;
+    '        cellOne.CssClass = "cell";
+    '        cellOne.Width = Unit.Pixel(150);
+    '        rowOne.Controls.Add(cellOne);
+    '
+    '        TableCell CellTwo = new TableCell();
+    '        CellTwo.CssClass = "cell";
+    '        CellTwo.Width = Unit.Pixel(100);
+    '        rowOne.Controls.Add(CellTwo);
+    '
+    '        TableCell CellThree = new TableCell();
+    '        CellThree.CssClass = "cell";
+    '        CellThree.HorizontalAlign = HorizontalAlign.Left;
+    '        CellThree.Width = Unit.Pixel(240);
+    '        rowOne.Controls.Add(CellThree);
+    '
+    '        TableCell CellFour = new TableCell();
+    '        CellFour.CssClass = "cell";
+    '        refundButton.Text = caption.ToString();
+    '        CellFour.Controls.Add(refundButton);
+    '        rowOne.Controls.Add(CellFour);
+    '
+    '        refundTable.Controls.Add(rowOne);
+    '    }
+    '     
+
+    Public Sub addRowToRefundSection(transaction As String, merchant As String)
+        Dim rowOne As New TableRow()
+        Dim cellOne As New TableCell()
+        cellOne.HorizontalAlign = HorizontalAlign.Right
+        cellOne.CssClass = "cell"
+        cellOne.Width = Unit.Pixel(150)
+        'cellOne.Text = transaction.ToString();
+        Dim rbutton As New RadioButton()
+        rbutton.Text = transaction.ToString()
+        rbutton.GroupName = "RefundSection"
+        rbutton.ID = transaction.ToString()
+        cellOne.Controls.Add(rbutton)
+        rowOne.Controls.Add(cellOne)
+        Dim CellTwo As New TableCell()
+        CellTwo.CssClass = "cell"
+        CellTwo.Width = Unit.Pixel(100)
+        rowOne.Controls.Add(CellTwo)
+
+        Dim CellThree As New TableCell()
+        CellThree.CssClass = "cell"
+        CellThree.HorizontalAlign = HorizontalAlign.Left
+        CellThree.Width = Unit.Pixel(240)
+        CellThree.Text = merchant.ToString()
+        rowOne.Controls.Add(CellThree)
+
+        Dim CellFour As New TableCell()
+        CellFour.CssClass = "cell"
+        rowOne.Controls.Add(CellFour)
+
+        refundTable.Controls.Add(rowOne)
+    End Sub
+    Public Sub drawRefundSection(onlyRow As Boolean)
+        Try
+            If onlyRow = False Then
+                Dim headingRow As New TableRow()
+                Dim headingCellOne As New TableCell()
+                headingCellOne.HorizontalAlign = HorizontalAlign.Right
+                headingCellOne.CssClass = "cell"
+                headingCellOne.Width = Unit.Pixel(200)
+                headingCellOne.Font.Bold = True
+                headingCellOne.Text = "Transaction ID"
+                headingRow.Controls.Add(headingCellOne)
+                Dim headingCellTwo As New TableCell()
+                headingCellTwo.CssClass = "cell"
+                headingCellTwo.Width = Unit.Pixel(100)
+                headingRow.Controls.Add(headingCellTwo)
+                Dim headingCellThree As New TableCell()
+                headingCellThree.CssClass = "cell"
+                headingCellThree.HorizontalAlign = HorizontalAlign.Left
+                headingCellThree.Width = Unit.Pixel(240)
+                headingCellThree.Font.Bold = True
+                headingCellThree.Text = "Merchant Transaction ID"
+                headingRow.Controls.Add(headingCellThree)
+                Dim headingCellFour As New TableCell()
+                headingCellFour.CssClass = "warning"
+                Dim warningMessage As New LiteralControl("<b>WARNING:</b><br/>You must use Get Transaction Status to get the Transaction ID before you can refund it.")
+                headingCellFour.Controls.Add(warningMessage)
+                headingRow.Controls.Add(headingCellFour)
+                refundTable.Controls.Add(headingRow)
+            End If
+            resetRefundList()
+            getRefundListFromFile()
+
+            Dim tempCountToDisplay As Integer = 1
+            While (tempCountToDisplay <= refundCountToDisplay) AndAlso (tempCountToDisplay <= refundList.Count) AndAlso (refundList.Count > 0)
+                addRowToRefundSection(refundList(tempCountToDisplay - 1).Key, refundList(tempCountToDisplay - 1).Value)
+                tempCountToDisplay += 1
+                'addButtonToRefundSection("Refund Transaction");
+            End While
+        Catch ex As Exception
+            drawPanelForFailure(newTransactionPanel, ex.ToString())
+        End Try
+    End Sub
+
+
+    Public Sub updateRefundListToFile()
+        If refundList.Count <> 0 Then
+            refundList.Reverse(0, refundList.Count)
+        End If
+        Using sr As StreamWriter = File.CreateText(Request.MapPath(refundFile))
+            Dim tempCount As Integer = 0
+            While tempCount < refundList.Count
+                Dim lineToWrite As String = refundList(tempCount).Key & ":-:" & refundList(tempCount).Value
+                sr.WriteLine(lineToWrite)
+                tempCount += 1
+            End While
+            sr.Close()
+        End Using
+    End Sub
+
+    Public Sub resetRefundList()
+        refundList.RemoveRange(0, refundList.Count)
+    End Sub
+
+    Public Function checkItemInRefundFile(transactionid As String, merchantTransactionId As String) As Boolean
+        Dim line As String
+        Dim lineToFind As String = transactionid & ":-:" & merchantTransactionId
+        Dim file As New System.IO.StreamReader(Request.MapPath(refundFile))
+        While (InlineAssignHelper(line, file.ReadLine())) IsNot Nothing
+            If line.CompareTo(lineToFind) = 0 Then
+                file.Close()
+                Return True
+            End If
+        End While
+        file.Close()
+        Return False
+    End Function
+
+    Public Sub writeRefundToFile(transactionid As String, merchantTransactionId As String)
+        ' Read the refund file for the list of transactions and store locally 
+
+        'FileStream file = new FileStream(Request.MapPath(refundFile), FileMode.Append, FileAccess.Write);
+        'StreamWriter sr = new StreamWriter(file);
+        'DateTime junkTime = DateTime.UtcNow;
+        'string junkTimeString = String.Format("{0:dddMMMddyyyyHHmmss}", junkTime);
+        Using appendContent As StreamWriter = File.AppendText(Request.MapPath(refundFile))
+            Dim line As String = transactionid & ":-:" & merchantTransactionId
+            appendContent.WriteLine(line)
+            appendContent.Flush()
+            'file.Close();
+            appendContent.Close()
+        End Using
+    End Sub
+
+    Public Sub getRefundListFromFile()
+        ' Read the refund file for the list of transactions and store locally 
+
+        Dim file As New FileStream(Request.MapPath(refundFile), FileMode.Open, FileAccess.Read)
+        Dim sr As New StreamReader(file)
+        Dim line As String
+
+        While ((InlineAssignHelper(line, sr.ReadLine())) IsNot Nothing)
+            Dim refundKeys As String() = Regex.Split(line, ":-:")
+            If refundKeys(0) IsNot Nothing AndAlso refundKeys(1) IsNot Nothing Then
+                refundList.Add(New KeyValuePair(Of String, String)(refundKeys(0), refundKeys(1)))
+            End If
+        End While
+        sr.Close()
+        file.Close()
+        refundList.Reverse(0, refundList.Count)
+    End Sub
+
+    Private Sub clearRefundTable()
+        For Each refundTableRow As Control In refundTable.Controls
+            refundTable.Controls.Remove(refundTableRow)
+        Next
+    End Sub
+    '
+    '    void processRefundButtonClick()
+    '    {
+    '        if (refundList.Count > 0)
+    '        {
+    '            foreach (Control refundTableRow in refundTable.Controls)
+    '            {
+    '                if (refundTableRow is TableRow)
+    '                {
+    '                    foreach (Control refundTableRowCell in refundTableRow.Controls)
+    '                    {
+    '                        if (refundTableRowCell is TableCell)
+    '                        {
+    '                            foreach (Control refundTableCellControl in refundTableRowCell.Controls)
+    '                            {
+    '                                if ((refundTableCellControl is RadioButton))
+    '                                {
+    '
+    '                                    if (((RadioButton)refundTableCellControl).Checked)
+    '                                    {
+    '                                        string transactionToRefund = ((RadioButton)refundTableCellControl).Text.ToString();
+    '                                        refundList.RemoveAll(x => x.Key.Equals(Session[transactionToRefund].ToString()));
+    '                                        break;
+    '                                    }
+    '                                }
+    '                            }
+    '                        }
+    '                    }
+    '                }
+    '            }
+    '            updateRefundListToFile();
+    '            resetRefundList();
+    '            refundTable.Controls.Clear();
+    '            drawRefundSection(false);
+    '        }
+    '    }
+    '
+    '    protected void refundButtonClick(object sender, EventArgs e)
+    '    {
+    '        if (refundList.Count > 0)
+    '        {
+    '            foreach (Control refundTableRow in refundTable.Controls)
+    '            {
+    '                if (refundTableRow is TableRow)
+    '                {
+    '                    foreach (Control refundTableRowCell in refundTableRow.Controls)
+    '                    {
+    '                        if (refundTableRowCell is TableCell)
+    '                        {
+    '                            foreach (Control refundTableCellControl in refundTableRowCell.Controls)
+    '                            {
+    '                                if ((refundTableCellControl is RadioButton))
+    '                                {
+    '
+    '                                    if (((RadioButton)refundTableCellControl).Checked)
+    '                                    {
+    '                                        string transactionToRefund = ((RadioButton)refundTableCellControl).Text.ToString();
+    '                                        refundList.RemoveAll(x => x.Key.Equals(transactionToRefund));
+    '                                        break;
+    '                                    }
+    '                                }
+    '                            }
+    '                        }
+    '                    }
+    '                }
+    '            }
+    '            updateRefundListToFile();
+    '            resetRefundList();
+    '            refundTable.Controls.Clear();
+    '            drawRefundSection(false);
+    '        }
+    '    }
+    '     
+
     ' This function is used to read access token file and validate the access token
     '     * this function returns true if access token is valid, or else false is returned
     '     
 
-    Public Function readAndGetAccessToken(ByVal panelParam As Panel) As Boolean
+    Public Function readAndGetAccessToken(panelParam As Panel) As Boolean
         Dim result As Boolean = True
         If readAccessTokenFile() = False Then
             result = getAccessToken(1, panelParam)
@@ -508,18 +782,55 @@ Partial Public Class _Default
         End If
         Return result
     End Function
-    ' following are the data structures used for the applicaiton
     Public Class AccessTokenResponse
         Public access_token As String
         Public refresh_token As String
         Public expires_in As String
+    End Class
+    Public Class RefundResponse
+        Public Property TransactionId() As String
+            Get
+                Return m_TransactionId
+            End Get
+            Set(value As String)
+                m_TransactionId = Value
+            End Set
+        End Property
+        Private m_TransactionId As String
+        Public Property TransactionStatus() As String
+            Get
+                Return m_TransactionStatus
+            End Get
+            Set(value As String)
+                m_TransactionStatus = Value
+            End Set
+        End Property
+        Private m_TransactionStatus As String
+        Public Property IsSuccess() As String
+            Get
+                Return m_IsSuccess
+            End Get
+            Set(value As String)
+                m_IsSuccess = Value
+            End Set
+        End Property
+        Private m_IsSuccess As String
+        Public Property Version() As String
+            Get
+                Return m_Version
+            End Get
+            Set(value As String)
+                m_Version = Value
+            End Set
+        End Property
+        Private m_Version As String
     End Class
     Public Class transactionResponse
         Public Property Channel() As String
             Get
                 Return m_Channel
             End Get
-            Set(ByVal value As String)
+            Set(value As String)
                 m_Channel = Value
             End Set
         End Property
@@ -528,7 +839,7 @@ Partial Public Class _Default
             Get
                 Return m_Description
             End Get
-            Set(ByVal value As String)
+            Set(value As String)
                 m_Description = Value
             End Set
         End Property
@@ -537,7 +848,7 @@ Partial Public Class _Default
             Get
                 Return m_Currency
             End Get
-            Set(ByVal value As String)
+            Set(value As String)
                 m_Currency = Value
             End Set
         End Property
@@ -546,7 +857,7 @@ Partial Public Class _Default
             Get
                 Return m_TransactionType
             End Get
-            Set(ByVal value As String)
+            Set(value As String)
                 m_TransactionType = Value
             End Set
         End Property
@@ -555,7 +866,7 @@ Partial Public Class _Default
             Get
                 Return m_TransactionStatus
             End Get
-            Set(ByVal value As String)
+            Set(value As String)
                 m_TransactionStatus = Value
             End Set
         End Property
@@ -564,7 +875,7 @@ Partial Public Class _Default
             Get
                 Return m_ConsumerId
             End Get
-            Set(ByVal value As String)
+            Set(value As String)
                 m_ConsumerId = Value
             End Set
         End Property
@@ -573,7 +884,7 @@ Partial Public Class _Default
             Get
                 Return m_MerchantTransactionId
             End Get
-            Set(ByVal value As String)
+            Set(value As String)
                 m_MerchantTransactionId = Value
             End Set
         End Property
@@ -582,7 +893,7 @@ Partial Public Class _Default
             Get
                 Return m_MerchantApplicationId
             End Get
-            Set(ByVal value As String)
+            Set(value As String)
                 m_MerchantApplicationId = Value
             End Set
         End Property
@@ -591,7 +902,7 @@ Partial Public Class _Default
             Get
                 Return m_TransactionId
             End Get
-            Set(ByVal value As String)
+            Set(value As String)
                 m_TransactionId = Value
             End Set
         End Property
@@ -600,7 +911,7 @@ Partial Public Class _Default
             Get
                 Return m_ContentCategory
             End Get
-            Set(ByVal value As String)
+            Set(value As String)
                 m_ContentCategory = Value
             End Set
         End Property
@@ -609,7 +920,7 @@ Partial Public Class _Default
             Get
                 Return m_MerchantProductId
             End Get
-            Set(ByVal value As String)
+            Set(value As String)
                 m_MerchantProductId = Value
             End Set
         End Property
@@ -618,7 +929,7 @@ Partial Public Class _Default
             Get
                 Return m_MerchantIdentifier
             End Get
-            Set(ByVal value As String)
+            Set(value As String)
                 m_MerchantIdentifier = Value
             End Set
         End Property
@@ -627,7 +938,7 @@ Partial Public Class _Default
             Get
                 Return m_Amount
             End Get
-            Set(ByVal value As String)
+            Set(value As String)
                 m_Amount = Value
             End Set
         End Property
@@ -636,7 +947,7 @@ Partial Public Class _Default
             Get
                 Return m_Version
             End Get
-            Set(ByVal value As String)
+            Set(value As String)
                 m_Version = Value
             End Set
         End Property
@@ -645,11 +956,104 @@ Partial Public Class _Default
             Get
                 Return m_IsSuccess
             End Get
-            Set(ByVal value As String)
+            Set(value As String)
                 m_IsSuccess = Value
             End Set
         End Property
         Private m_IsSuccess As String
     End Class
-    '{ "Channel":"MOBILE_WEB", "":"TrDescSatJan072012131709", "":"USD", "TransactionType":"SINGLEPAY", "TransactionStatus":"SUCCESSFUL", "ConsumerId":"d2ca3d8b-df6b-49b0-a00d-e8b6336e62cb", "MerchantTransactionId":"TrIdSatJan072012131709", "MerchantApplicationId":"e1745ae95cfa72e5150446773be67ed1", "TransactionId":"8499458613902133", "ContentCategory":"1", "MerchantProductId":"ProdIdSatJan072012131709", "MerchantIdentifier":"a75ad884-cf58-4398-ae28-104b619da686", "Amount":"0.99", "Version":"1", "IsSuccess":"true" }
+    Protected Sub Unnamed1_Click1(sender As Object, e As EventArgs)
+        Dim transactionToRefund As String = ""
+        Dim recordFound As Boolean = False
+        Dim strReq As String = "{""RefundReasonCode"":1,""RefundReasonText"":""Customer was not happy""}"
+        Dim dataLength As String = ""
+        Try
+            If refundList.Count > 0 Then
+                For Each refundTableRow As Control In refundTable.Controls
+                    If TypeOf refundTableRow Is TableRow Then
+                        For Each refundTableRowCell As Control In refundTableRow.Controls
+                            If TypeOf refundTableRowCell Is TableCell Then
+                                For Each refundTableCellControl As Control In refundTableRowCell.Controls
+                                    If (TypeOf refundTableCellControl Is RadioButton) Then
+
+                                        If DirectCast(refundTableCellControl, RadioButton).Checked Then
+                                            transactionToRefund = DirectCast(refundTableCellControl, RadioButton).Text.ToString()
+                                            'refundList.RemoveAll(x => x.Key.Equals(transactionToRefund));
+                                            recordFound = True
+                                            Exit For
+                                        End If
+                                    End If
+                                Next
+                            End If
+                        Next
+                    End If
+                Next
+                If recordFound = True Then
+                    If readAndGetAccessToken(refundPanel) = True Then
+                        If access_token Is Nothing OrElse access_token.Length <= 0 Then
+                            Return
+                        End If
+                        'String getTransactionStatusResponseData;
+                        Dim objRequest As WebRequest = DirectCast(System.Net.WebRequest.Create("" & FQDN & "/Commerce/Payment/Rest/2/Transactions/" & transactionToRefund.ToString() & "?access_token=" & access_token.ToString() & "&Action=refund"), WebRequest)
+                        objRequest.Method = "PUT"
+                        objRequest.ContentType = "application/json"
+                        Dim encoding As New UTF8Encoding()
+                        Dim postBytes As Byte() = encoding.GetBytes(strReq)
+                        objRequest.ContentLength = postBytes.Length
+                        Dim postStream As Stream = objRequest.GetRequestStream()
+                        postStream.Write(postBytes, 0, postBytes.Length)
+                        dataLength = postBytes.Length.ToString()
+                        postStream.Close()
+                        Dim refundTransactionResponeObject As WebResponse = DirectCast(objRequest.GetResponse(), WebResponse)
+                        Using refundResponseStream As New StreamReader(refundTransactionResponeObject.GetResponseStream())
+                            Dim refundTransactionResponseData As [String] = refundResponseStream.ReadToEnd()
+                            'drawPanelForFailure(refundPanel, refundTransactionResponseData);
+                            '{ "TransactionId":"6216898841002136", "TransactionStatus":"SUCCESSFUL", "IsSuccess":true, "Version":"1" }
+                            Dim deserializeJsonObject As New JavaScriptSerializer()
+                            Dim deserializedJsonObj As RefundResponse = DirectCast(deserializeJsonObject.Deserialize(refundTransactionResponseData, GetType(RefundResponse)), RefundResponse)
+                            lbRefundTranID.Text = deserializedJsonObj.TransactionId.ToString()
+                            lbRefundTranStatus.Text = deserializedJsonObj.TransactionStatus.ToString()
+                            lbRefundIsSuccess.Text = deserializedJsonObj.IsSuccess.ToString()
+                            lbRefundVersion.Text = deserializedJsonObj.Version.ToString()
+                            'lbRefundTranID.Text = transactionToRefund.ToString();
+                            ' lbRefundTranStatus.Text = "SUCCESSFUL";
+                            'lbRefundIsSuccess.Text = "true";
+                            ' lbRefundVersion.Text = "1";
+                            refundSuccessTable.Visible = True
+                            refundResponseStream.Close()
+                            If LatestFive = False Then
+                                refundList.RemoveAll(Function(x) x.Key.Equals(transactionToRefund))
+                                updateRefundListToFile()
+                                resetRefundList()
+                                refundTable.Controls.Clear()
+                                drawRefundSection(False)
+                                GetTransactionMerchantTransID.Text = "Merchant Transaction ID: "
+                                GetTransactionAuthCode.Text = "Auth Code: "
+                                GetTransactionTransID.Text = "Transaction ID: "
+                            End If
+                        End Using
+
+                    End If
+                End If
+            End If
+        Catch ex As Exception
+            ' + strReq + transactionToRefund.ToString() + dataLength
+            drawPanelForFailure(refundPanel, ex.ToString())
+        End Try
+    End Sub
+    Private Shared Function InlineAssignHelper(Of T)(ByRef target As T, value As T) As T
+        target = value
+        Return value
+    End Function
 End Class
+
+'
+'use Request.InputStream:
+'byte[] buffer = new byte[1024];
+'int c;
+'while ((c = Request.InputStream.Read(buffer, 0, buffer.Length)) 0)
+'{
+'    drawPanelForFailure(refundPanel,buffer.tostring());
+'}
+'
+'

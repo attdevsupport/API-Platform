@@ -55,9 +55,7 @@ Each sample application contains a config.web file. It holds configurable parame
 
 1) short_code				: {set the value as per your registered application 'short code' field value}
 
-2) ImageDirectory		: {set the value to the path of the directory, which contains the received mms images }
-
-3) NumOfFilesToDisplay  : {set the value, so that application displays latest n images}
+2) NumOfFilesToDisplay  : {set the value, so that application displays latest n images}
 
 Note: If your application is promoted from Sandbox environment to Production environment and you decide to use production application settings, you must update parameters 1-2 as per production application details.
 

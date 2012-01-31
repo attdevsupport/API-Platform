@@ -63,7 +63,7 @@ Feature 1: Sign Payload</h2>
     <td class="cell" width="400px">
         <asp:TextBox runat="server" Height="223px" 
             Width="400px"  TextMode="MultiLine" 
-            ID="SignedPayLoadTextBox" BorderStyle="None"></asp:TextBox>
+            ID="SignedPayLoadTextBox"></asp:TextBox>
 </td>
   </tr>
 <tr>
@@ -73,7 +73,7 @@ Feature 1: Sign Payload</h2>
     <td valign="top" class="label">Signature:</td>
     <td class="cell">
         <asp:TextBox ID="SignatureTextBox" runat="server" Height="73px" Width="400px" 
-             TextMode="MultiLine" BorderStyle="None"></asp:TextBox>
+             TextMode="MultiLine"></asp:TextBox>
     </td>
 </tr>
   <tr>

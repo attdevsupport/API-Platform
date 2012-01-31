@@ -32,12 +32,10 @@ Partial Public Class _Default
     Private transactionTimeString As String
     Private payLoadStringFromRequest As String
 
-    ' this function returns true, if ssl handshake is done with the connecting server
     Public Shared Sub BypassCertificateError()
         ServicePointManager.ServerCertificateValidationCallback = DirectCast([Delegate].Combine(ServicePointManager.ServerCertificateValidationCallback, Function(sender1 As [Object], certificate As X509Certificate, chain As X509Chain, sslPolicyErrors As SslPolicyErrors) True), RemoteCertificateValidationCallback)
     End Sub
 
-    'This function reads transaction configuration parameters from config file and stores locally
     Private Sub readTransactionParametersFromConfigurationFile()
         transactionTime = DateTime.UtcNow
         transactionTimeString = [String].Format("{0:ddd-MMM-dd-yyyy-HH-mm-ss}", transactionTime)
@@ -74,8 +72,6 @@ Partial Public Class _Default
         merchantRedirectURI = New Uri(ConfigurationManager.AppSettings("MerchantPaymentRedirectUrl"))
         requestText.Text = requestText.Text + "MerchantPaymentRedirectUrl: " & Convert.ToString(merchantRedirectURI)
     End Sub
-    'This function reads subscription configuration parameters from config file and stores locally
-
     Private Sub readSubscriptionParametersFromConfigurationFile()
         If ConfigurationManager.AppSettings("MerchantSubscriptionIdList") Is Nothing Then
             MerchantSubscriptionIdList = "merSubIdList" & transactionTimeString
@@ -108,8 +104,7 @@ Partial Public Class _Default
         End If
         requestText.Text = requestText.Text + "IsPurchaseOnNoActiveSubscription: " & IsPurchaseOnNoActiveSubscription
     End Sub
-    'This function is called when applicaiton is getting loaded
-    Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs)
+    Protected Sub Page_Load(sender As Object, e As EventArgs)
         'BypassCertificateError()
         Dim currentServerTime As DateTime = DateTime.UtcNow
         serverTimeLabel.Text = [String].Format("{0:ddd, MMM dd, yyyy HH:mm:ss}", currentServerTime) & " UTC"
@@ -140,38 +135,45 @@ Partial Public Class _Default
             SignedPayLoadTextBox.Text = Request("signed_payload").ToString()
             SignatureTextBox.Text = Request("signed_signature").ToString()
             goBackURL = Request("goBackURL").ToString()
-        ElseIf (Request("request_to_sign") IsNot Nothing) AndAlso (Request("goBackURL") IsNot Nothing) AndAlso (Request("api_key") IsNot Nothing) AndAlso (Request("secret_key") IsNot Nothing) Then
-            payLoadStringFromRequest = Request("request_to_sign").ToString()
-            goBackURL = Request("goBackURL").ToString()
-            SignedPayLoadTextBox.Text = payLoadStringFromRequest.ToString()
-            api_key = Request("api_key").ToString()
-            secret_key = Request("secret_key").ToString()
-            executeSignedPayloadFromRequest()
         Else
-            If ConfigurationManager.AppSettings("paymentType") Is Nothing Then
-                drawPanelForFailure(notaryPanel, "paymentType is not defined in configuration file")
-                Return
-            End If
-            paymentType = ConfigurationManager.AppSettings("paymentType")
-            If paymentType.Equals("Transaction", StringComparison.OrdinalIgnoreCase) Then
-                readTransactionParametersFromConfigurationFile()
-            ElseIf paymentType.Equals("Subscription", StringComparison.OrdinalIgnoreCase) Then
-                readTransactionParametersFromConfigurationFile()
-                readSubscriptionParametersFromConfigurationFile()
+            If (Request("request_to_sign") IsNot Nothing) AndAlso (Request("goBackURL") IsNot Nothing) AndAlso (Request("api_key") IsNot Nothing) AndAlso (Request("secret_key") IsNot Nothing) Then
+                payLoadStringFromRequest = Request("request_to_sign").ToString()
+                goBackURL = Request("goBackURL").ToString()
+                SignedPayLoadTextBox.Text = payLoadStringFromRequest.ToString()
+                api_key = Request("api_key").ToString()
+                secret_key = Request("secret_key").ToString()
+                executeSignedPayloadFromRequest()
             Else
-                drawPanelForFailure(notaryPanel, "paymentType is  defined with invalid value in configuration file.  Valid values are Transaction or Subscription.")
-                Return
+                If ConfigurationManager.AppSettings("paymentType") Is Nothing Then
+                    drawPanelForFailure(notaryPanel, "paymentType is not defined in configuration file")
+                    Return
+                End If
+                paymentType = ConfigurationManager.AppSettings("paymentType")
+                If paymentType.Equals("Transaction", StringComparison.OrdinalIgnoreCase) Then
+                    readTransactionParametersFromConfigurationFile()
+                ElseIf paymentType.Equals("Subscription", StringComparison.OrdinalIgnoreCase) Then
+                    readTransactionParametersFromConfigurationFile()
+                    readSubscriptionParametersFromConfigurationFile()
+                Else
+                    drawPanelForFailure(notaryPanel, "paymentType is  defined with invalid value in configuration file.  Valid values are Transaction or Subscription.")
+                    Return
+                End If
+                Dim payLoadString As String = "{'Amount':'" & amount.ToString() & "','Category':'" & category.ToString() & "','Channel':'" & channel.ToString() & "','Description':'" & description.ToString() & "','MerchantTransactionId':'" & merchantTransactionId.ToString() & "','MerchantProductId':'" & merchantProductId.ToString() & "','MerchantApplicaitonId':'" & merchantApplicationId.ToString() & "','MerchantPaymentRedirectUrl':'" & merchantRedirectURI.ToString() & "','MerchantSubscriptionIdList':'" & MerchantSubscriptionIdList.ToString() & "','IsPurchaseOnNoActiveSubscription':'" & IsPurchaseOnNoActiveSubscription.ToString() & "','SubscriptionRecurringNumber':'" & SubscriptionRecurringNumber.ToString() & "','SubscriptionRecurringPeriod':'" & SubscriptionRecurringPeriod.ToString() & "','SubscriptionRecurringPeriodAmount':'" & SubscriptionRecurringPeriodAmount.ToString()
+                requestText.Text = payLoadString.ToString()
             End If
-            Dim payLoadString As String = "{'Amount':'" & amount.ToString() & "','Category':'" & category.ToString() & "','Channel':'" & channel.ToString() & "','Description':'" & description.ToString() & "','MerchantTransactionId':'" & merchantTransactionId.ToString() & "','MerchantProductId':'" & merchantProductId.ToString() & "','MerchantApplicaitonId':'" & merchantApplicationId.ToString() & "','MerchantPaymentRedirectUrl':'" & merchantRedirectURI.ToString() & "','MerchantSubscriptionIdList':'" & MerchantSubscriptionIdList.ToString() & "','IsPurchaseOnNoActiveSubscription':'" & IsPurchaseOnNoActiveSubscription.ToString() & "','SubscriptionRecurringNumber':'" & SubscriptionRecurringNumber.ToString() & "','SubscriptionRecurringPeriod':'" & SubscriptionRecurringPeriod.ToString() & "','SubscriptionRecurringPeriodAmount':'" & SubscriptionRecurringPeriodAmount.ToString()
-            requestText.Text = payLoadString.ToString()
         End If
     End Sub
-    'this function is called with other app call notary applicaiton to sign the payload
+
     Public Sub executeSignedPayloadFromRequest()
         Try
             Dim sendingData As String = payLoadStringFromRequest.ToString()
             Dim newTransactionResponseData As [String]
-            Dim newTransactionRequestObject As WebRequest = DirectCast(System.Net.WebRequest.Create("" & FQDN & "/Security/Notary/Rest/1/SignedPayload?client_id=" & api_key.ToString() & "&client_secret=" & secret_key.ToString()), WebRequest)
+            Dim notaryAddress As String
+            notaryAddress = "" & FQDN & "/Security/Notary/Rest/1/SignedPayload"
+            'WebRequest newTransactionRequestObject = (WebRequest)System.Net.WebRequest.Create("" + FQDN + "/Security/Notary/Rest/1/SignedPayload?client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString());
+            Dim newTransactionRequestObject As WebRequest = DirectCast(System.Net.WebRequest.Create(notaryAddress), WebRequest)
+            newTransactionRequestObject.Headers.Add("client_id", api_key.ToString())
+            newTransactionRequestObject.Headers.Add("client_secret", secret_key.ToString())
             newTransactionRequestObject.Method = "POST"
             newTransactionRequestObject.ContentType = "application/json"
             Dim encoding As New UTF8Encoding()
@@ -197,11 +199,16 @@ Partial Public Class _Default
         Catch ex As Exception
         End Try
     End Sub
-    'this function is called by the user clicke button function  to sign the payload
+
     Public Function executeSignedPayload() As Boolean
         Try
             Dim newTransactionResponseData As [String]
-            Dim newTransactionRequestObject As WebRequest = DirectCast(System.Net.WebRequest.Create("" & FQDN & "/Security/Notary/Rest/1/SignedPayload?client_id=" & api_key.ToString() & "&client_secret=" & secret_key.ToString()), WebRequest)
+            Dim notaryAddress As String
+            notaryAddress = "" & FQDN & "/Security/Notary/Rest/1/SignedPayload"
+            'WebRequest newTransactionRequestObject = (WebRequest)System.Net.WebRequest.Create("" + FQDN + "/Security/Notary/Rest/1/SignedPayload?client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString());
+            Dim newTransactionRequestObject As WebRequest = DirectCast(System.Net.WebRequest.Create(notaryAddress), WebRequest)
+            newTransactionRequestObject.Headers.Add("client_id", api_key.ToString())
+            newTransactionRequestObject.Headers.Add("client_secret", secret_key.ToString())
             Dim payLoadString As String = "{'Amount':'" & amount.ToString() & "','Category':'" & category.ToString() & "','Channel':'" & channel.ToString() & "','Description':'" & description.ToString() & "','MerchantTransactionId':'" & merchantTransactionId.ToString() & "','MerchantProductId':'" & merchantProductId.ToString() & "','MerchantApplicaitonId':'" & merchantApplicationId.ToString() & "','MerchantPaymentRedirectUrl':'" & merchantRedirectURI.ToString() & "','MerchantSubscriptionIdList':'" & MerchantSubscriptionIdList.ToString() & "','IsPurchaseOnNoActiveSubscription':'" & IsPurchaseOnNoActiveSubscription.ToString() & "','SubscriptionRecurringNumber':'" & SubscriptionRecurringNumber.ToString() & "','SubscriptionRecurringPeriod':'" & SubscriptionRecurringPeriod.ToString() & "','SubscriptionRecurringPeriodAmount':'" & SubscriptionRecurringPeriodAmount.ToString() & "'}"
             newTransactionRequestObject.Method = "POST"
             newTransactionRequestObject.ContentType = "application/json"
@@ -228,8 +235,7 @@ Partial Public Class _Default
             Return False
         End Try
     End Function
-    'this function is called if user clicks on signPayLoad button
-    Protected Sub signPayLoadButton_Click(ByVal sender As Object, ByVal e As EventArgs)
+    Protected Sub signPayLoadButton_Click(sender As Object, e As EventArgs)
         If signPayLoadButton.Text.Equals("Back", StringComparison.CurrentCultureIgnoreCase) Then
             Try
                 Response.Redirect(goBackURL.ToString() & "?shown_notary=true")
@@ -241,8 +247,8 @@ Partial Public Class _Default
         End If
     End Sub
 
-    'this function draws the failure result
-    Private Sub drawPanelForFailure(ByVal panelParam As Panel, ByVal message As String)
+
+    Private Sub drawPanelForFailure(panelParam As Panel, message As String)
         failureTable = New Table()
         failureTable.Font.Name = "Sans-serif"
         failureTable.Font.Size = 9
@@ -267,7 +273,7 @@ Partial Public Class _Default
         panelParam.Controls.Add(failureTable)
     End Sub
 End Class
-'Following are the data structures used for the application
+
 Public Class AccessTokenResponse
     Public access_token As String
     Public refresh_token As String
@@ -279,7 +285,7 @@ Public Class TransactionResponse
         Get
             Return m_SignedDocument
         End Get
-        Set(ByVal value As String)
+        Set(value As String)
             m_SignedDocument = Value
         End Set
     End Property
@@ -288,7 +294,7 @@ Public Class TransactionResponse
         Get
             Return m_Signature
         End Get
-        Set(ByVal value As String)
+        Set(value As String)
             m_Signature = Value
         End Set
     End Property

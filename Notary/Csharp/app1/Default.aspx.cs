@@ -33,7 +33,6 @@ public partial class _Default : System.Web.UI.Page
     string transactionTimeString;
     string payLoadStringFromRequest;
 
-    /* this function returns true, if ssl handshake is done with the connecting server */
     public static void BypassCertificateError()
     {
         ServicePointManager.ServerCertificateValidationCallback +=
@@ -43,7 +42,6 @@ public partial class _Default : System.Web.UI.Page
             };
     }
 
-    /* This function reads transaction configuration parameters from config file and stores locally */
     private void readTransactionParametersFromConfigurationFile()
     {
         transactionTime = DateTime.UtcNow;
@@ -54,14 +52,14 @@ public partial class _Default : System.Web.UI.Page
             return;
         }
         amount = ConfigurationManager.AppSettings["Amount"];
-        requestText.Text = "Amount: " + amount + "\r\n";
+        //requestText.Text = "Amount: " + amount + "\r\n";
         if (ConfigurationManager.AppSettings["Category"] == null)
         {
             drawPanelForFailure(notaryPanel, "Category is not defined in configuration file");
             return;
         }
         category = Convert.ToInt32(ConfigurationManager.AppSettings["Category"]);
-        requestText.Text = requestText.Text + "Category: " + category + "\r\n";
+        //requestText.Text = requestText.Text + "Category: " + category + "\r\n";
         if (ConfigurationManager.AppSettings["Channel"] == null)
         {
             channel = "MOBILE_WEB";
@@ -70,25 +68,23 @@ public partial class _Default : System.Web.UI.Page
         {
             channel = ConfigurationManager.AppSettings["Channel"];
         }
-        requestText.Text = requestText.Text + "Channel: " + channel + "\r\n";
+        //requestText.Text = requestText.Text + "Channel: " + channel + "\r\n";
         description = "TrDesc" + transactionTimeString;
-        requestText.Text = requestText.Text + "Description: " + description + "\r\n";
+        //requestText.Text = requestText.Text + "Description: " + description + "\r\n";
         merchantTransactionId = "TrId" + transactionTimeString;
-        requestText.Text = requestText.Text + "MerchantTransactionId: " + merchantTransactionId + "\r\n";
+        //requestText.Text = requestText.Text + "MerchantTransactionId: " + merchantTransactionId + "\r\n";
         merchantProductId = "ProdId" + transactionTimeString;
-        requestText.Text = requestText.Text + "MerchantProductId: " + merchantProductId + "\r\n";
+        //requestText.Text = requestText.Text + "MerchantProductId: " + merchantProductId + "\r\n";
         merchantApplicationId = "MerAppId" + transactionTimeString;
-        requestText.Text = requestText.Text + "MerchantApplicationId: " + merchantApplicationId + "\r\n";
+        //requestText.Text = requestText.Text + "MerchantApplicationId: " + merchantApplicationId + "\r\n";
         if (ConfigurationManager.AppSettings["MerchantPaymentRedirectUrl"] == null)
         {
             drawPanelForFailure(notaryPanel, "MerchantPaymentRedirectUrl is not defined in configuration file");
             return;
         }
         merchantRedirectURI = new Uri(ConfigurationManager.AppSettings["MerchantPaymentRedirectUrl"]);
-        requestText.Text = requestText.Text + "MerchantPaymentRedirectUrl: " + merchantRedirectURI;
+        //requestText.Text = requestText.Text + "MerchantPaymentRedirectUrl: " + merchantRedirectURI;
     }
-
-    /* This function reads subscription configuration parameters from config file and stores locally */
     private void readSubscriptionParametersFromConfigurationFile()
     {
         if (ConfigurationManager.AppSettings["MerchantSubscriptionIdList"] == null)
@@ -99,7 +95,7 @@ public partial class _Default : System.Web.UI.Page
         {
             MerchantSubscriptionIdList = ConfigurationManager.AppSettings["MerchantSubscriptionIdList"];
         }
-        requestText.Text = requestText.Text + "\r\n" + "MerchantSubscriptionIdList: " + MerchantSubscriptionIdList + "\r\n";
+        //requestText.Text = requestText.Text + "\r\n" + "MerchantSubscriptionIdList: " + MerchantSubscriptionIdList + "\r\n";
         if (ConfigurationManager.AppSettings["SubscriptionRecurringPeriod"] == null)
         {
             SubscriptionRecurringPeriod = "MONTHLY";
@@ -108,7 +104,7 @@ public partial class _Default : System.Web.UI.Page
         {
             SubscriptionRecurringPeriod = ConfigurationManager.AppSettings["SubscriptionRecurringPeriod"];
         }
-        requestText.Text = requestText.Text + "SubscriptionRecurringPeriod: " + SubscriptionRecurringPeriod + "\r\n";
+        //requestText.Text = requestText.Text + "SubscriptionRecurringPeriod: " + SubscriptionRecurringPeriod + "\r\n";
         if (ConfigurationManager.AppSettings["SubscriptionRecurringNumber"] == null)
         {
             SubscriptionRecurringNumber = Convert.ToInt32("9999");
@@ -117,7 +113,7 @@ public partial class _Default : System.Web.UI.Page
         {
             SubscriptionRecurringNumber = Convert.ToInt32(ConfigurationManager.AppSettings["SubscriptionRecurringNumber"]);
         }
-        requestText.Text = requestText.Text + "SubscriptionRecurringNumber: " + SubscriptionRecurringNumber + "\r\n";
+        //requestText.Text = requestText.Text + "SubscriptionRecurringNumber: " + SubscriptionRecurringNumber + "\r\n";
         if (ConfigurationManager.AppSettings["SubscriptionRecurringPeriodAmount"] == null)
         {
             SubscriptionRecurringPeriodAmount = Convert.ToInt32("1");
@@ -126,7 +122,7 @@ public partial class _Default : System.Web.UI.Page
         {
             SubscriptionRecurringPeriodAmount = Convert.ToInt32(ConfigurationManager.AppSettings["SubscriptionRecurringPeriodAmount"]);
         }
-        requestText.Text = requestText.Text + "SubscriptionRecurringPeriodAmount: " + SubscriptionRecurringPeriodAmount + "\r\n";
+        // requestText.Text = requestText.Text + "SubscriptionRecurringPeriodAmount: " + SubscriptionRecurringPeriodAmount + "\r\n";
         if (ConfigurationManager.AppSettings["IsPurchaseOnNoActiveSubscription"] == null)
         {
             IsPurchaseOnNoActiveSubscription = "false";
@@ -135,11 +131,8 @@ public partial class _Default : System.Web.UI.Page
         {
             IsPurchaseOnNoActiveSubscription = ConfigurationManager.AppSettings["IsPurchaseOnNoActiveSubscription"];
         }
-        requestText.Text = requestText.Text + "IsPurchaseOnNoActiveSubscription: " + IsPurchaseOnNoActiveSubscription;
+        //requestText.Text = requestText.Text + "IsPurchaseOnNoActiveSubscription: " + IsPurchaseOnNoActiveSubscription;
     }
-
-    /* This function is called when applicaiton is getting loaded */
-
     protected void Page_Load(object sender, EventArgs e)
     {
         BypassCertificateError();
@@ -181,59 +174,66 @@ public partial class _Default : System.Web.UI.Page
             SignatureTextBox.Text = Request["signed_signature"].ToString();
             goBackURL = Request["goBackURL"].ToString();
         }
-        else if ((Request["request_to_sign"] != null) && (Request["goBackURL"] != null)
-                  && (Request["api_key"] != null) && (Request["secret_key"] != null))
-        {
-            payLoadStringFromRequest = Request["request_to_sign"].ToString();
-            goBackURL = Request["goBackURL"].ToString();
-            SignedPayLoadTextBox.Text = payLoadStringFromRequest.ToString();
-            api_key = Request["api_key"].ToString();
-            secret_key = Request["secret_key"].ToString();
-            executeSignedPayloadFromRequest();
-        }
         else
         {
-            if (ConfigurationManager.AppSettings["paymentType"] == null)
+            if ((Request["request_to_sign"] != null) && (Request["goBackURL"] != null)
+                  && (Request["api_key"] != null) && (Request["secret_key"] != null))
             {
-                drawPanelForFailure(notaryPanel, "paymentType is not defined in configuration file");
-                return;
-            }
-            paymentType = ConfigurationManager.AppSettings["paymentType"];
-            if (paymentType.Equals("Transaction", StringComparison.OrdinalIgnoreCase))
-            {
-                readTransactionParametersFromConfigurationFile();
-            }
-            else if (paymentType.Equals("Subscription", StringComparison.OrdinalIgnoreCase))
-            {
-                readTransactionParametersFromConfigurationFile();
-                readSubscriptionParametersFromConfigurationFile();
+                payLoadStringFromRequest = Request["request_to_sign"].ToString();
+                goBackURL = Request["goBackURL"].ToString();
+                SignedPayLoadTextBox.Text = payLoadStringFromRequest.ToString();
+                api_key = Request["api_key"].ToString();
+                secret_key = Request["secret_key"].ToString();
+                executeSignedPayloadFromRequest();
             }
             else
             {
-                drawPanelForFailure(notaryPanel, "paymentType is  defined with invalid value in configuration file.  Valid values are Transaction or Subscription.");
-                return;
-            }
-            string payLoadString = "{'Amount':'" + amount.ToString() + "','Category':'" + category.ToString() + "','Channel':'" +
-                        channel.ToString() + "','Description':'" + description.ToString() + "','MerchantTransactionId':'"
+                if (!Page.IsPostBack)
+                {
+                    if (ConfigurationManager.AppSettings["paymentType"] == null)
+                    {
+                        drawPanelForFailure(notaryPanel, "paymentType is not defined in configuration file");
+                        return;
+                    }
+                    paymentType = ConfigurationManager.AppSettings["paymentType"];
+                    if (paymentType.Equals("Transaction", StringComparison.OrdinalIgnoreCase))
+                    {
+                        readTransactionParametersFromConfigurationFile();
+                        string payLoadString = "{'Amount':'" + amount.ToString() + "','Category':'" + category.ToString() +                                     "','Channel':'" + channel.ToString() + "','Description':'" + description.ToString() +                                                   "','MerchantTransactionId':'"
                         + merchantTransactionId.ToString() + "','MerchantProductId':'" + merchantProductId.ToString()
                         + "','MerchantApplicaitonId':'" + merchantApplicationId.ToString() + "','MerchantPaymentRedirectUrl':'"
-                        + merchantRedirectURI.ToString() + "','MerchantSubscriptionIdList':'" + MerchantSubscriptionIdList.ToString()
-                        + "','IsPurchaseOnNoActiveSubscription':'" + IsPurchaseOnNoActiveSubscription.ToString()
-                        + "','SubscriptionRecurringNumber':'" + SubscriptionRecurringNumber.ToString()
-                        + "','SubscriptionRecurringPeriod':'" + SubscriptionRecurringPeriod.ToString()
-                        + "','SubscriptionRecurringPeriodAmount':'" + SubscriptionRecurringPeriodAmount.ToString();
-            requestText.Text = payLoadString.ToString();
+                        + merchantRedirectURI.ToString() + "'}";
+                        requestText.Text = payLoadString.ToString();
+                    }
+                    else if (paymentType.Equals("Subscription", StringComparison.OrdinalIgnoreCase))
+                    {
+                        readTransactionParametersFromConfigurationFile();
+                        readSubscriptionParametersFromConfigurationFile();
+                        string payLoadString = "{'Amount':'" + amount.ToString() + "','Category':'" + category.ToString() +                                     "','Channel':'" + channel.ToString() + "','Description':'" + description.ToString() +                                                   "','MerchantTransactionId':'" + merchantTransactionId.ToString() + "','MerchantProductId':'" +                                          merchantProductId.ToString() + "','MerchantApplicaitonId':'" + merchantApplicationId.ToString() +                                       "','MerchantPaymentRedirectUrl':'" + merchantRedirectURI.ToString() + "','MerchantSubscriptionIdList':'" +                              MerchantSubscriptionIdList.ToString() + "','IsPurchaseOnNoActiveSubscription':'" +                                                      IsPurchaseOnNoActiveSubscription.ToString() + "','SubscriptionRecurringNumber':'" +                                                     SubscriptionRecurringNumber.ToString() + "','SubscriptionRecurringPeriod':'" +                                                          SubscriptionRecurringPeriod.ToString() + "','SubscriptionRecurringPeriodAmount':'" +                                                    SubscriptionRecurringPeriodAmount.ToString() + "'}";
+                        requestText.Text = payLoadString.ToString();
+                    }
+                    else
+                    {
+                        drawPanelForFailure(notaryPanel, "paymentType is  defined with invalid value in configuration file.  Valid values are Transaction or Subscription.");
+                        return;
+                    }
+                }
+            }
         }
     }
 
-    /* this function is called with other app call notary applicaiton to sign the payload */
     public void executeSignedPayloadFromRequest()
     {
         try
         {
             string sendingData = payLoadStringFromRequest.ToString();
             String newTransactionResponseData;
-            WebRequest newTransactionRequestObject = (WebRequest)System.Net.WebRequest.Create("" + FQDN + "/Security/Notary/Rest/1/SignedPayload?client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString());
+            string notaryAddress;
+            notaryAddress = "" + FQDN + "/Security/Notary/Rest/1/SignedPayload";
+            //WebRequest newTransactionRequestObject = (WebRequest)System.Net.WebRequest.Create("" + FQDN + "/Security/Notary/Rest/1/SignedPayload?client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString());
+            WebRequest newTransactionRequestObject = (WebRequest)System.Net.WebRequest.Create(notaryAddress);
+            newTransactionRequestObject.Headers.Add("client_id", api_key.ToString());
+            newTransactionRequestObject.Headers.Add("client_secret", secret_key.ToString());
             newTransactionRequestObject.Method = "POST";
             newTransactionRequestObject.ContentType = "application/json";
             UTF8Encoding encoding = new UTF8Encoding();
@@ -263,28 +263,22 @@ public partial class _Default : System.Web.UI.Page
         }
     }
 
-    /* this function is called by the user clicke button function  to sign the payload */
     public bool executeSignedPayload()
     {
         try
         {
             String newTransactionResponseData;
-            WebRequest newTransactionRequestObject = (WebRequest)System.Net.WebRequest.Create("" + FQDN + "/Security/Notary/Rest/1/SignedPayload?client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString());
-            string payLoadString = "{'Amount':'" + amount.ToString() + "','Category':'" + category.ToString() + "','Channel':'" +
-                                    channel.ToString() + "','Description':'" + description.ToString() + "','MerchantTransactionId':'"
-                                    + merchantTransactionId.ToString() + "','MerchantProductId':'" + merchantProductId.ToString()
-                                    + "','MerchantApplicaitonId':'" + merchantApplicationId.ToString() + "','MerchantPaymentRedirectUrl':'"
-                                    + merchantRedirectURI.ToString() + "','MerchantSubscriptionIdList':'" + MerchantSubscriptionIdList.ToString()
-                                    + "','IsPurchaseOnNoActiveSubscription':'" + IsPurchaseOnNoActiveSubscription.ToString()
-                                    + "','SubscriptionRecurringNumber':'" + SubscriptionRecurringNumber.ToString()
-                                    + "','SubscriptionRecurringPeriod':'" + SubscriptionRecurringPeriod.ToString()
-                                    + "','SubscriptionRecurringPeriodAmount':'" + SubscriptionRecurringPeriodAmount.ToString() + "'}";
+            string notaryAddress;
+            notaryAddress = "" + FQDN + "/Security/Notary/Rest/1/SignedPayload";
+            WebRequest newTransactionRequestObject = (WebRequest)System.Net.WebRequest.Create(notaryAddress);
+            newTransactionRequestObject.Headers.Add("client_id", api_key.ToString());
+            newTransactionRequestObject.Headers.Add("client_secret", secret_key.ToString());
             newTransactionRequestObject.Method = "POST";
             newTransactionRequestObject.ContentType = "application/json";
             UTF8Encoding encoding = new UTF8Encoding();
+            string payLoadString = requestText.Text.ToString();
             byte[] postBytes = encoding.GetBytes(payLoadString);
             newTransactionRequestObject.ContentLength = postBytes.Length;
-
             Stream postStream = newTransactionRequestObject.GetRequestStream();
             postStream.Write(postBytes, 0, postBytes.Length);
             postStream.Close();
@@ -307,8 +301,6 @@ public partial class _Default : System.Web.UI.Page
             return false;
         }
     }
-
-    /* this function is called if user clicks on signPayLoad button */
     protected void signPayLoadButton_Click(object sender, EventArgs e)
     {
         if (signPayLoadButton.Text.Equals("Back", StringComparison.CurrentCultureIgnoreCase))
@@ -328,7 +320,6 @@ public partial class _Default : System.Web.UI.Page
         }
     }
 
-    /* this function draws the failure result */
 
     private void drawPanelForFailure(Panel panelParam, string message)
     {
@@ -356,8 +347,6 @@ public partial class _Default : System.Web.UI.Page
         panelParam.Controls.Add(failureTable);
     }
 }
-
-/* Following are the data structures used for the application */
 
 public class AccessTokenResponse
 {

@@ -104,8 +104,17 @@ Partial Public Class [Default]
         If type = 1 Then
             Try
                 Dim currentServerTime As DateTime = DateTime.UtcNow.ToLocalTime()
-                Dim accessTokenRequest As WebRequest = System.Net.HttpWebRequest.Create("" & FQDN & "/oauth/access_token?client_id=" & api_key.ToString() & "&client_secret=" & secret_key.ToString() & "&grant_type=client_credentials&scope=MMS")
-                accessTokenRequest.Method = "GET"
+                Dim accessTokenRequest As WebRequest = System.Net.HttpWebRequest.Create("" & FQDN & "/oauth/token")
+                accessTokenRequest.Method = "POST"
+                Dim oauthParameters As String = "client_id=" & api_key.ToString() & "&client_secret=" & secret_key.ToString() & "&grant_type=client_credentials&scope=MMS"
+                accessTokenRequest.ContentType = "application/x-www-form-urlencoded"
+                'sendSmsRequestObject.Accept = "application/json";
+                Dim encoding As New UTF8Encoding()
+                Dim postBytes As Byte() = encoding.GetBytes(oauthParameters)
+                accessTokenRequest.ContentLength = postBytes.Length
+                Dim postStream As Stream = accessTokenRequest.GetRequestStream()
+                postStream.Write(postBytes, 0, postBytes.Length)
+                postStream.Close()
 
                 Dim accessTokenResponse As WebResponse = accessTokenRequest.GetResponse()
                 Using accessTokenResponseStream As New StreamReader(accessTokenResponse.GetResponseStream())
@@ -139,8 +148,17 @@ Partial Public Class [Default]
         ElseIf type = 2 Then
             Try
                 Dim currentServerTime As DateTime = DateTime.UtcNow.ToLocalTime()
-                Dim accessTokenRequest As WebRequest = System.Net.HttpWebRequest.Create("" & FQDN & "/oauth/access_token?grant_type=refresh_token&client_id=" & api_key.ToString() & "&client_secret=" & secret_key.ToString() & "&refresh_token=" & refresh_token.ToString())
-                accessTokenRequest.Method = "GET"
+                Dim accessTokenRequest As WebRequest = System.Net.HttpWebRequest.Create("" & FQDN & "/oauth/token")
+                accessTokenRequest.Method = "POST"
+                Dim oauthParameters As String = "grant_type=refresh_token&client_id=" & api_key.ToString() & "&client_secret=" & secret_key.ToString() & "&refresh_token=" & refresh_token.ToString()
+                accessTokenRequest.ContentType = "application/x-www-form-urlencoded"
+                'sendSmsRequestObject.Accept = "application/json";
+                Dim encoding As New UTF8Encoding()
+                Dim postBytes As Byte() = encoding.GetBytes(oauthParameters)
+                accessTokenRequest.ContentLength = postBytes.Length
+                Dim postStream As Stream = accessTokenRequest.GetRequestStream()
+                postStream.Write(postBytes, 0, postBytes.Length)
+                postStream.Close()
                 Dim accessTokenResponse As WebResponse = accessTokenRequest.GetResponse()
                 Using accessTokenResponseStream As New StreamReader(accessTokenResponse.GetResponseStream())
                     Dim access_token_json As String = accessTokenResponseStream.ReadToEnd().ToString()

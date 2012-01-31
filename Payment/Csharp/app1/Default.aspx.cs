@@ -1,20 +1,4 @@
-﻿/*using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using System.Net;
-using System.IO;
-using System.Web.Services;
-using System.Text;
-using System.Configuration;
-using System.Web.Script.Serialization;
-using System.Drawing;
-using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
-*/
+﻿
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,13 +12,13 @@ using System.Xml;
 using System.Text;
 using System.Web.Script.Serialization;
 using System.Drawing;
-using System.Net;
 using System.Net.Security;
-using System.Security.Cryptography.X509Certificates; 
+using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 
 public partial class _Default : System.Web.UI.Page
 {
-    string shortCode, accessTokenFilePath, FQDN, oauthFlow;
+    string shortCode, accessTokenFilePath, FQDN, oauthFlow, refundFile;
     string api_key, secret_key, auth_code, access_token, authorize_redirect_uri, scope, expiryMilliSeconds, refresh_token, lastTokenTakenTime, refreshTokenExpiryTime;
     Table successTable, failureTable;
     Table successTableGetTransaction, failureTableGetTransaction;
@@ -42,7 +26,6 @@ public partial class _Default : System.Web.UI.Page
     Int32 category;
     string channel, description, merchantTransactionId, merchantProductId, merchantApplicationId;
     Uri merchantRedirectURI;
-    string paymentType;
     string MerchantSubscriptionIdList, SubscriptionRecurringPeriod;
     Int32 SubscriptionRecurringNumber, SubscriptionRecurringPeriodAmount;
     string IsPurchaseOnNoActiveSubscription;
@@ -51,14 +34,19 @@ public partial class _Default : System.Web.UI.Page
     string payLoadStringFromRequest;
     string signedPayload, signedSignature;
     string notaryURL;
-
-    /* This function is called when application is getting loaded */
-
+   // Button refundButton;
+    int refundCountToDisplay = 0;
+    List<KeyValuePair<string, string>> refundList = new List<KeyValuePair<string, string>>();
+    bool LatestFive = true;
     protected void Page_Load(object sender, EventArgs e)
     {
         transactionSuccessTable.Visible = false;
+        tranGetStatusTable.Visible = false;
+        refundSuccessTable.Visible = false;
         DateTime currentServerTime = DateTime.UtcNow;
         serverTimeLabel.Text = String.Format("{0:ddd, MMM dd, yyyy HH:mm:ss}", currentServerTime) + " UTC";
+        //refundButton = new Button();
+        //refundButton.Click += new EventHandler(refundButtonClick);
         FQDN = ConfigurationManager.AppSettings["FQDN"].ToString();
         if (ConfigurationManager.AppSettings["FQDN"] == null)
         {
@@ -86,6 +74,24 @@ public partial class _Default : System.Web.UI.Page
         {
             accessTokenFilePath = "~\\PayApp1AccessToken.txt";
         }
+        if (ConfigurationManager.AppSettings["refundFile"] != null)
+        {
+            refundFile = ConfigurationManager.AppSettings["refundFile"];
+        }
+        else
+        {
+            refundFile = "~\\refundFile.txt";
+        }
+
+        if (ConfigurationManager.AppSettings["refundCountToDisplay"] != null)
+        {
+            refundCountToDisplay = Convert.ToInt32(ConfigurationManager.AppSettings["refundCountToDisplay"]);
+        }
+        else
+        {
+            refundCountToDisplay = 5;
+        }
+
         if (ConfigurationManager.AppSettings["scope"] == null)
         {
             scope = "PAYMENT";
@@ -93,6 +99,10 @@ public partial class _Default : System.Web.UI.Page
         else
         {
             scope = ConfigurationManager.AppSettings["scope"].ToString();
+        }
+        if (ConfigurationManager.AppSettings["DisableLatestFive"] != null)
+        {
+            LatestFive = false;
         }
         if (ConfigurationManager.AppSettings["notaryURL"] == null)
         {
@@ -124,22 +134,14 @@ public partial class _Default : System.Web.UI.Page
             GetTransactionMerchantTransID.Text = "Merchant Transaction ID: " + Session["tempMerTranId"].ToString();
             GetTransactionAuthCode.Text = "Auth Code: " + Session["TranAuthCode"].ToString();
         }
+        refundTable.Controls.Clear();
+        drawRefundSection(false);
         return;
     }
-
-    /* This function reads transaction parameter values from configuration file */
     private void readTransactionParametersFromConfigurationFile()
     {
         transactionTime = DateTime.UtcNow;
         transactionTimeString = String.Format("{0:dddMMMddyyyyHHmmss}", transactionTime);
-        /*
-        if (ConfigurationManager.AppSettings["Amount"] == null)
-        {
-            drawPanelForFailure(newTransactionPanel, "Amount is not defined in configuration file");
-            return;
-        }
-        amount = ConfigurationManager.AppSettings["Amount"];
-        */
         if (Radio_TransactionProductType.SelectedIndex == 0)
             amount = "0.99";
         else if (Radio_TransactionProductType.SelectedIndex == 1)
@@ -166,7 +168,7 @@ public partial class _Default : System.Web.UI.Page
         merchantApplicationId = "MerAppId" + transactionTimeString;
     }
 
-    /* This function is called after receiving response from notary application */
+
     private void processNotaryResponse()
     {
         if (Session["tranType"] != null)
@@ -178,51 +180,8 @@ public partial class _Default : System.Web.UI.Page
 
     }
 
-    /* This function is called if user clicks on view notary button */
-
-    protected void viewNotary_Click(object sender, EventArgs e)
-    {
-        if ((Session["payloadData"] != null) && (Session["signedPayLoad"] != null) && (Session["signedSignature"] != null))
-        {
-            //Response.Redirect("www.google.com");
-            Response.Redirect(notaryURL.ToString() + "?signed_payload=" + Session["payloadData"].ToString() + "&goBackURL=" + merchantRedirectURI.ToString() + "&signed_signature=" + Session["signedSignature"].ToString() + "&signed_request=" + Session["signedSignature"].ToString());
-        }/*
-        if (Session["payloadData"] != null)
-            addRowToGetTransactionSuccessPanel(newTransactionPanel, "Merchant Transaction ID", "user573transaction1377");
-        if (Session["signedPayLoad"] != null)
-            addRowToGetTransactionSuccessPanel(newTransactionPanel, "Transaction Auth Cod", "66574834711");
-        if (Session["signedSignature"] != null)
-            addRowToGetTransactionSuccessPanel(newTransactionPanel, "Transaction ID", "trx83587123897598612897");
-
-         */
-    }
-
-    /* this function is called to add button to success table */
-    private void addButtonToSuccessPanel(Panel panelParam)
-    {
-        Button button = new Button();
-        button.Click += new EventHandler(getTransactionButton_Click);
-        button.Text = "View Notary";
-        TableRow row = new TableRow();
-        TableCell cellOne = new TableCell();
-        cellOne.Text = "";
-        row.Controls.Add(cellOne);
-        TableCell cellTwo = new TableCell();
-        cellTwo.Controls.Add(button);
-        row.Controls.Add(cellTwo);
-        successTable.Controls.Add(row);
-        return;
-    }
-
-    /* this function is called after getting transaction response */
     public void processCreateTransactionResponse()
     {
-        //drawPanelForSuccess(newTransactionPanel);
-        //addRowToSuccessPanel(newTransactionPanel, "Merchant Transaction ID", Session["merTranId"].ToString());
-        //addRowToSuccessPanel(newTransactionPanel, "Transaction Auth Cod", Request["TransactionAuthCode"].ToString());
-        //addRowToSuccessPanel(newTransactionPanel, "", "");
-        //addRowToSuccessPanel(newTransactionPanel, "", "");
-        //addButtonToSuccessPanel(newTransactionPanel);
         lbltrancode.Text = Request["TransactionAuthCode"].ToString();
         lbltranid.Text = Session["merTranId"].ToString();
         transactionSuccessTable.Visible = true;
@@ -235,8 +194,6 @@ public partial class _Default : System.Web.UI.Page
         return;
     }
     //"\",\"MerchantApplicationId\":\"" + merchantApplicationId.ToString() +
-
-    /* this function is called if user clicks on new transaction button */
     protected void newTransactionButton_Click(object sender, EventArgs e)
     {
         readTransactionParametersFromConfigurationFile();
@@ -304,31 +261,35 @@ public partial class _Default : System.Web.UI.Page
         failureTable.BackColor = System.Drawing.ColorTranslator.FromHtml("#fcc");
         panelParam.Controls.Add(failureTable);
     }
-
-    /* this function is called when user clicks on get transaction status */
     protected void getTransactionButton_Click(object sender, EventArgs e)
     {
         try {
-
         string keyValue = "";
+        string resourcePathString = "";
         if (Radio_TransactionStatus.SelectedIndex == 0)
         {
             keyValue = GetTransactionMerchantTransID.Text.ToString().Replace("Merchant Transaction ID: ","");
             if (keyValue.Length == 0)
+            {
+                //writeRefundToFile("a", "kdsfaksdf;akfjf");
+                //Response.Redirect(Request.Url.ToString());
                 return;
-            
+            }
+            resourcePathString = "" + FQDN + "/Commerce/Payment/Rest/2/Transactions/MerchantTransactionId/" + keyValue.ToString();
         }
         if (Radio_TransactionStatus.SelectedIndex == 1)
         {
             keyValue = GetTransactionAuthCode.Text.ToString().Replace("Auth Code: ", "");
             if (keyValue.Length == 0)
                 return;
+            resourcePathString = "" + FQDN + "/Commerce/Payment/Rest/2/Transactions/TransactionAuthCode/" + keyValue.ToString();
         }
         if (Radio_TransactionStatus.SelectedIndex == 2)
         {
             keyValue = GetTransactionTransID.Text.ToString().Replace("Transaction ID: ", "");
             if (keyValue.Length == 0)
                 return;
+            resourcePathString = "" + FQDN + "/Commerce/Payment/Rest/2/Transactions/TransactionId/" + keyValue.ToString();
         }
         if (readAndGetAccessToken(newTransactionStatusPanel) == true)
         {
@@ -336,32 +297,43 @@ public partial class _Default : System.Web.UI.Page
             {
                 return;
             }
-            String getTransactionStatusResponseData;
-            HttpWebRequest objRequest = (HttpWebRequest)System.Net.WebRequest.Create("" + FQDN + "/Commerce/Payment/Rest/2/Transactions/TransactionAuthCode/" + Session["TranAuthCode"].ToString() + "?access_token=" + access_token.ToString());
+            //String getTransactionStatusResponseData;
+            resourcePathString = resourcePathString + "?access_token=" + access_token.ToString();
+            //HttpWebRequest objRequest = (HttpWebRequest) System.Net.WebRequest.Create("" + FQDN + "/Commerce/Payment/Rest/2/Transactions/TransactionAuthCode/" + Session["TranAuthCode"].ToString() + "?access_token=" + access_token.ToString());
+            HttpWebRequest objRequest = (HttpWebRequest)System.Net.WebRequest.Create(resourcePathString);
             objRequest.Method = "GET";
-            HttpWebResponse getTransactionStatusResponseObject = (HttpWebResponse)objRequest.GetResponse();
+            HttpWebResponse getTransactionStatusResponseObject = (HttpWebResponse) objRequest.GetResponse();
             using (StreamReader getTransactionStatusResponseStream = new StreamReader(getTransactionStatusResponseObject.GetResponseStream()))
             {
-                getTransactionStatusResponseData = getTransactionStatusResponseStream.ReadToEnd();
+                String getTransactionStatusResponseData = getTransactionStatusResponseStream.ReadToEnd();
                 JavaScriptSerializer deserializeJsonObject = new JavaScriptSerializer();
                 transactionResponse deserializedJsonObj = (transactionResponse)deserializeJsonObject.Deserialize(getTransactionStatusResponseData, typeof(transactionResponse));
-                    
-                //getTransactionStatusResponseData = getTransactionStatusResponseStream.ReadToEnd();
+                GetTransactionTransID.Text = "Transaction ID: " + deserializedJsonObj.TransactionId.ToString();
+                lblstatusTranId.Text = deserializedJsonObj.TransactionId.ToString();
+                lblstatusMerTranId.Text = deserializedJsonObj.MerchantTransactionId.ToString();
+                //drawPanelForFailure(newTransactionStatusPanel, getTransactionStatusResponseData);
+                if (checkItemInRefundFile(deserializedJsonObj.TransactionId.ToString(), deserializedJsonObj.MerchantTransactionId.ToString()) == false)
+                {
+                    writeRefundToFile(deserializedJsonObj.TransactionId.ToString(), deserializedJsonObj.MerchantTransactionId.ToString());
+                    //clearRefundTable();
+                }
+                refundTable.Controls.Clear();
+                drawRefundSection(false);
+                tranGetStatusTable.Visible = true;
                 drawPanelForGetTransactionSuccess(newTransactionStatusPanel);
-                addRowToSuccessPanel(newTransactionStatusPanel, "Merchant Transaction ID", deserializedJsonObj.MerchantTransactionId);
-                //addRowToSuccessPanel(newTransactionPanel, "Transaction Auth Cod", deserializedJsonObj.);
-                addRowToSuccessPanel(newTransactionStatusPanel, "Transaction ID", deserializedJsonObj.TransactionId);
-                addRowToSuccessPanel(newTransactionStatusPanel, "Amount", deserializedJsonObj.Amount);
-                addRowToSuccessPanel(newTransactionStatusPanel, "Channel ", deserializedJsonObj.Channel);
-                addRowToSuccessPanel(newTransactionStatusPanel, "ConsumerId", deserializedJsonObj.ConsumerId);
-                addRowToSuccessPanel(newTransactionStatusPanel, "ContentCategory", deserializedJsonObj.ContentCategory);
-                addRowToSuccessPanel(newTransactionStatusPanel, "Currency", deserializedJsonObj.Currency);
-                addRowToSuccessPanel(newTransactionStatusPanel, "Description", deserializedJsonObj.Description);
-                addRowToSuccessPanel(newTransactionStatusPanel, "MerchantApplicationId", deserializedJsonObj.MerchantApplicationId);
-                addRowToSuccessPanel(newTransactionStatusPanel, "MerchantIdentifier", deserializedJsonObj.MerchantIdentifier);
-                addRowToSuccessPanel(newTransactionStatusPanel, "MerchantProductId", deserializedJsonObj.MerchantProductId);
-                addRowToSuccessPanel(newTransactionStatusPanel, "IsSuccess", deserializedJsonObj.IsSuccess);
-                addRowToSuccessPanel(newTransactionStatusPanel, "TransactionStatus", deserializedJsonObj.TransactionStatus);
+                addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "Amount", deserializedJsonObj.Amount.ToString());
+                addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "Channel ", deserializedJsonObj.Channel.ToString());
+                addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "ConsumerId", deserializedJsonObj.ConsumerId.ToString());
+                addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "ContentCategory", deserializedJsonObj.ContentCategory.ToString());
+                addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "Currency", deserializedJsonObj.Currency.ToString());
+                addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "Description", deserializedJsonObj.Description.ToString());
+                addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "MerchantApplicationId", deserializedJsonObj.MerchantApplicationId.ToString());
+                addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "MerchantIdentifier", deserializedJsonObj.MerchantIdentifier.ToString());
+                addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "MerchantProductId", deserializedJsonObj.MerchantProductId.ToString());
+                addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "IsSuccess", deserializedJsonObj.IsSuccess.ToString());
+                addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "TransactionStatus", deserializedJsonObj.TransactionStatus.ToString());
+                addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "TransactionType", deserializedJsonObj.TransactionType.ToString());
+                addRowToGetTransactionSuccessPanel(newTransactionStatusPanel, "Version", deserializedJsonObj.Version.ToString());
                 getTransactionStatusResponseStream.Close();
             }
         }
@@ -372,24 +344,30 @@ public partial class _Default : System.Web.UI.Page
         }
 
     }
-
-    /* this function draws the success table for get transaction status result */
     private void drawPanelForGetTransactionSuccess(Panel panelParam)
     {
         successTableGetTransaction = new Table();
         successTableGetTransaction.Font.Name = "Sans-serif";
         successTableGetTransaction.Font.Size = 8;
-        successTableGetTransaction.BorderStyle = BorderStyle.Outset;
         successTableGetTransaction.Width = Unit.Pixel(650);
         TableRow rowOne = new TableRow();
         TableCell rowOneCellOne = new TableCell();
         rowOneCellOne.Font.Bold = true;
-        rowOneCellOne.Text = "SUCCESS:";
+        rowOneCellOne.HorizontalAlign = HorizontalAlign.Right;
+        rowOneCellOne.Text = "Parameter";
+        rowOneCellOne.Width = Unit.Pixel(300);
         rowOne.Controls.Add(rowOneCellOne);
+        TableCell rowOneCellTwo = new TableCell();
+        rowOneCellTwo.Width = Unit.Pixel(50);
+        rowOne.Controls.Add(rowOneCellTwo);
+
+        TableCell rowOneCellThree = new TableCell();
+        rowOneCellThree.Font.Bold = true;
+        rowOneCellThree.HorizontalAlign = HorizontalAlign.Left;
+        rowOneCellThree.Text = "Value";
+        rowOneCellThree.Width = Unit.Pixel(300);
+        rowOne.Controls.Add(rowOneCellThree);
         successTableGetTransaction.Controls.Add(rowOne);
-        successTableGetTransaction.BorderWidth = 2;
-        successTableGetTransaction.BorderColor = Color.DarkGreen;
-        successTableGetTransaction.BackColor = System.Drawing.ColorTranslator.FromHtml("#cfc");
         panelParam.Controls.Add(successTableGetTransaction);
     }
     /*This function adds row to the success table */
@@ -397,15 +375,20 @@ public partial class _Default : System.Web.UI.Page
     {
         TableRow row = new TableRow();
         TableCell cellOne = new TableCell();
+        cellOne.HorizontalAlign = HorizontalAlign.Right;
         cellOne.Text = attribute.ToString();
-        cellOne.Font.Bold = true;
+        cellOne.Width = Unit.Pixel(300);
         row.Controls.Add(cellOne);
         TableCell cellTwo = new TableCell();
-        cellTwo.Text = value.ToString();
+        cellTwo.Width = Unit.Pixel(50);
         row.Controls.Add(cellTwo);
+        TableCell cellThree = new TableCell();
+        cellThree.HorizontalAlign = HorizontalAlign.Left;
+        cellThree.Text = value.ToString();
+        cellThree.Width = Unit.Pixel(300);
+        row.Controls.Add(cellThree);
         successTableGetTransaction.Controls.Add(row);
     }
-
 
     protected void Unnamed1_Click(object sender, EventArgs e)
     {
@@ -494,9 +477,19 @@ public partial class _Default : System.Web.UI.Page
             try
             {
                 DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
-                WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create("" + FQDN + "/oauth/access_token?client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString() + "&grant_type=client_credentials&scope=PAYMENT");
-                accessTokenRequest.Method = "GET";
-
+                string OauthURL;
+                OauthURL = "" + FQDN + "/oauth/token";
+                WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create(OauthURL);
+                accessTokenRequest.Method = "POST";
+                string oauthParameters = "client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString() + "&grant_type=client_credentials&scope=PAYMENT";
+                accessTokenRequest.ContentType = "application/x-www-form-urlencoded";
+                //sendSmsRequestObject.Accept = "application/json";
+                UTF8Encoding encoding = new UTF8Encoding();
+                byte[] postBytes = encoding.GetBytes(oauthParameters);
+                accessTokenRequest.ContentLength = postBytes.Length;
+                Stream postStream = accessTokenRequest.GetRequestStream();
+                postStream.Write(postBytes, 0, postBytes.Length);
+                postStream.Close();
                 WebResponse accessTokenResponse = accessTokenRequest.GetResponse();
                 using (StreamReader accessTokenResponseStream = new StreamReader(accessTokenResponse.GetResponseStream()))
                 {
@@ -535,8 +528,19 @@ public partial class _Default : System.Web.UI.Page
             try
             {
                 DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
-                WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create("" + FQDN + "/oauth/access_token?grant_type=refresh_token&client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString() + "&refresh_token=" + refresh_token.ToString());
-                accessTokenRequest.Method = "GET";
+                string OauthURL;
+                OauthURL = "" + FQDN + "/oauth/token";
+                WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create(OauthURL);
+                accessTokenRequest.Method = "POST";
+                string oauthParameters = "client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString() + "&grant_type=refresh_token" + "&refresh_token=" + refresh_token.ToString();
+                accessTokenRequest.ContentType = "application/x-www-form-urlencoded";
+                //sendSmsRequestObject.Accept = "application/json";
+                UTF8Encoding encoding = new UTF8Encoding();
+                byte[] postBytes = encoding.GetBytes(oauthParameters);
+                accessTokenRequest.ContentLength = postBytes.Length;
+                Stream postStream = accessTokenRequest.GetRequestStream();
+                postStream.Write(postBytes, 0, postBytes.Length);
+                postStream.Close();
                 WebResponse accessTokenResponse = accessTokenRequest.GetResponse();
                 using (StreamReader accessTokenResponseStream = new StreamReader(accessTokenResponse.GetResponseStream()))
                 {
@@ -582,6 +586,274 @@ public partial class _Default : System.Web.UI.Page
                 return true;
             };
     }
+    /*
+    public void addButtonToRefundSection(string caption)
+    {
+        TableRow rowOne = new TableRow();
+        TableCell cellOne = new TableCell();
+        cellOne.HorizontalAlign = HorizontalAlign.Right;
+        cellOne.CssClass = "cell";
+        cellOne.Width = Unit.Pixel(150);
+        rowOne.Controls.Add(cellOne);
+
+        TableCell CellTwo = new TableCell();
+        CellTwo.CssClass = "cell";
+        CellTwo.Width = Unit.Pixel(100);
+        rowOne.Controls.Add(CellTwo);
+
+        TableCell CellThree = new TableCell();
+        CellThree.CssClass = "cell";
+        CellThree.HorizontalAlign = HorizontalAlign.Left;
+        CellThree.Width = Unit.Pixel(240);
+        rowOne.Controls.Add(CellThree);
+
+        TableCell CellFour = new TableCell();
+        CellFour.CssClass = "cell";
+        refundButton.Text = caption.ToString();
+        CellFour.Controls.Add(refundButton);
+        rowOne.Controls.Add(CellFour);
+
+        refundTable.Controls.Add(rowOne);
+    }
+     */
+    public void addRowToRefundSection(string transaction, string merchant)
+    {
+        TableRow rowOne = new TableRow();
+        TableCell cellOne = new TableCell();
+        cellOne.HorizontalAlign = HorizontalAlign.Right;
+        cellOne.CssClass = "cell";
+        cellOne.Width = Unit.Pixel(150);
+        //cellOne.Text = transaction.ToString();
+        RadioButton rbutton = new RadioButton();
+        rbutton.Text = transaction.ToString();
+        rbutton.GroupName = "RefundSection";
+        rbutton.ID = transaction.ToString();
+        cellOne.Controls.Add(rbutton);
+        rowOne.Controls.Add(cellOne);
+        TableCell CellTwo = new TableCell();
+        CellTwo.CssClass = "cell";
+        CellTwo.Width = Unit.Pixel(100);
+        rowOne.Controls.Add(CellTwo);
+
+        TableCell CellThree = new TableCell();
+        CellThree.CssClass = "cell";
+        CellThree.HorizontalAlign = HorizontalAlign.Left;
+        CellThree.Width = Unit.Pixel(240);
+        CellThree.Text = merchant.ToString();
+        rowOne.Controls.Add(CellThree);
+
+        TableCell CellFour = new TableCell();
+        CellFour.CssClass = "cell";
+        rowOne.Controls.Add(CellFour);
+
+        refundTable.Controls.Add(rowOne);
+    }
+    public void drawRefundSection(bool onlyRow)
+    {
+        try
+        {
+            if (onlyRow == false)
+            {
+                TableRow headingRow = new TableRow();
+                TableCell headingCellOne = new TableCell();
+                headingCellOne.HorizontalAlign = HorizontalAlign.Right;
+                headingCellOne.CssClass = "cell";
+                headingCellOne.Width = Unit.Pixel(200);
+                headingCellOne.Font.Bold = true;
+                headingCellOne.Text = "Transaction ID";
+                headingRow.Controls.Add(headingCellOne);
+                TableCell headingCellTwo = new TableCell();
+                headingCellTwo.CssClass = "cell";
+                headingCellTwo.Width = Unit.Pixel(100);
+                headingRow.Controls.Add(headingCellTwo);
+                TableCell headingCellThree = new TableCell();
+                headingCellThree.CssClass = "cell";
+                headingCellThree.HorizontalAlign = HorizontalAlign.Left;
+                headingCellThree.Width = Unit.Pixel(240);
+                headingCellThree.Font.Bold = true;
+                headingCellThree.Text = "Merchant Transaction ID";
+                headingRow.Controls.Add(headingCellThree);
+                TableCell headingCellFour = new TableCell();
+                headingCellFour.CssClass = "warning";
+                LiteralControl warningMessage = new LiteralControl("<b>WARNING:</b><br/>You must use Get Transaction Status to get the Transaction ID before you can refund it.");
+                headingCellFour.Controls.Add(warningMessage);
+                headingRow.Controls.Add(headingCellFour);
+                refundTable.Controls.Add(headingRow);
+            }
+            resetRefundList();
+            getRefundListFromFile();
+
+            int tempCountToDisplay = 1;
+            while ((tempCountToDisplay <= refundCountToDisplay) && (tempCountToDisplay <= refundList.Count) && (refundList.Count > 0))
+            {
+                addRowToRefundSection(refundList[tempCountToDisplay - 1].Key, refundList[tempCountToDisplay - 1].Value);
+                tempCountToDisplay++;
+            }
+            //addButtonToRefundSection("Refund Transaction");
+        }
+        catch (Exception ex)
+        {
+            drawPanelForFailure(newTransactionPanel, ex.ToString());
+        }
+    }
+
+
+    public void updateRefundListToFile()
+    {
+        if (refundList.Count != 0)
+            refundList.Reverse(0, refundList.Count);
+        using (StreamWriter sr = File.CreateText(Request.MapPath(refundFile)))
+        {
+            int tempCount = 0;
+            while (tempCount < refundList.Count)
+            {
+                string lineToWrite = refundList[tempCount].Key + ":-:" + refundList[tempCount].Value;
+                sr.WriteLine(lineToWrite);
+                tempCount++;
+            }
+            sr.Close();
+        }
+    }
+
+    public void resetRefundList()
+    {
+        refundList.RemoveRange(0, refundList.Count);
+    }
+
+    public bool checkItemInRefundFile(string transactionid, string merchantTransactionId)
+    {
+        string line;
+        string lineToFind = transactionid + ":-:" + merchantTransactionId;
+        System.IO.StreamReader file = new System.IO.StreamReader(Request.MapPath(refundFile));
+        while ((line = file.ReadLine()) != null)
+        {
+            if (line.CompareTo(lineToFind) == 0)
+            {
+                file.Close();
+                return true;
+            }
+        }
+        file.Close();
+        return false;
+    }
+
+    public void writeRefundToFile(string transactionid, string merchantTransactionId)
+    {
+        /* Read the refund file for the list of transactions and store locally */
+        //FileStream file = new FileStream(Request.MapPath(refundFile), FileMode.Append, FileAccess.Write);
+        //StreamWriter sr = new StreamWriter(file);
+        //DateTime junkTime = DateTime.UtcNow;
+        //string junkTimeString = String.Format("{0:dddMMMddyyyyHHmmss}", junkTime);
+        using (StreamWriter appendContent = File.AppendText(Request.MapPath(refundFile)))
+        {
+            string line = transactionid + ":-:" + merchantTransactionId;
+            appendContent.WriteLine(line);
+            appendContent.Flush();
+            appendContent.Close();
+            //file.Close();
+        }
+    }
+
+    public void getRefundListFromFile()
+    {
+        /* Read the refund file for the list of transactions and store locally */
+        FileStream file = new FileStream(Request.MapPath(refundFile), FileMode.Open, FileAccess.Read);
+        StreamReader sr = new StreamReader(file);
+        string line;
+
+        while (((line = sr.ReadLine()) != null))
+        {
+            string[] refundKeys = Regex.Split(line, ":-:");
+            if (refundKeys[0] != null && refundKeys[1] != null)
+            {
+                refundList.Add(new KeyValuePair<string, string>(refundKeys[0], refundKeys[1]));
+            }
+        }
+        sr.Close();
+        file.Close();
+        refundList.Reverse(0, refundList.Count);
+    }
+
+    void clearRefundTable()
+    {
+        foreach (Control refundTableRow in refundTable.Controls)
+        {
+            refundTable.Controls.Remove(refundTableRow);
+        }
+    }
+    /*
+    void processRefundButtonClick()
+    {
+        if (refundList.Count > 0)
+        {
+            foreach (Control refundTableRow in refundTable.Controls)
+            {
+                if (refundTableRow is TableRow)
+                {
+                    foreach (Control refundTableRowCell in refundTableRow.Controls)
+                    {
+                        if (refundTableRowCell is TableCell)
+                        {
+                            foreach (Control refundTableCellControl in refundTableRowCell.Controls)
+                            {
+                                if ((refundTableCellControl is RadioButton))
+                                {
+
+                                    if (((RadioButton)refundTableCellControl).Checked)
+                                    {
+                                        string transactionToRefund = ((RadioButton)refundTableCellControl).Text.ToString();
+                                        refundList.RemoveAll(x => x.Key.Equals(Session[transactionToRefund].ToString()));
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            updateRefundListToFile();
+            resetRefundList();
+            refundTable.Controls.Clear();
+            drawRefundSection(false);
+        }
+    }
+
+    protected void refundButtonClick(object sender, EventArgs e)
+    {
+        if (refundList.Count > 0)
+        {
+            foreach (Control refundTableRow in refundTable.Controls)
+            {
+                if (refundTableRow is TableRow)
+                {
+                    foreach (Control refundTableRowCell in refundTableRow.Controls)
+                    {
+                        if (refundTableRowCell is TableCell)
+                        {
+                            foreach (Control refundTableCellControl in refundTableRowCell.Controls)
+                            {
+                                if ((refundTableCellControl is RadioButton))
+                                {
+
+                                    if (((RadioButton)refundTableCellControl).Checked)
+                                    {
+                                        string transactionToRefund = ((RadioButton)refundTableCellControl).Text.ToString();
+                                        refundList.RemoveAll(x => x.Key.Equals(transactionToRefund));
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            updateRefundListToFile();
+            resetRefundList();
+            refundTable.Controls.Clear();
+            drawRefundSection(false);
+        }
+    }
+     */
     /* This function is used to read access token file and validate the access token
      * this function returns true if access token is valid, or else false is returned
      */
@@ -606,13 +878,18 @@ public partial class _Default : System.Web.UI.Page
         }
         return result;
     }
-
-    /* following are the data structures used for the applicaiton */
     public class AccessTokenResponse
     {
         public string access_token;
         public string refresh_token;
         public string expires_in;
+    }
+    public class RefundResponse
+    {
+        public string TransactionId { get; set; }
+        public string TransactionStatus { get; set; }
+        public string IsSuccess { get; set; }
+        public string Version { get; set; }
     }
     public class transactionResponse
     {
@@ -632,5 +909,111 @@ public partial class _Default : System.Web.UI.Page
         public string Version { get; set; }
         public string IsSuccess { get; set; }
     }
-    	//{ "Channel":"MOBILE_WEB", "":"TrDescSatJan072012131709", "":"USD", "TransactionType":"SINGLEPAY", "TransactionStatus":"SUCCESSFUL", "ConsumerId":"d2ca3d8b-df6b-49b0-a00d-e8b6336e62cb", "MerchantTransactionId":"TrIdSatJan072012131709", "MerchantApplicationId":"e1745ae95cfa72e5150446773be67ed1", "TransactionId":"8499458613902133", "ContentCategory":"1", "MerchantProductId":"ProdIdSatJan072012131709", "MerchantIdentifier":"a75ad884-cf58-4398-ae28-104b619da686", "Amount":"0.99", "Version":"1", "IsSuccess":"true" }
+    protected void Unnamed1_Click1(object sender, EventArgs e)
+    {
+        string transactionToRefund = "";
+        bool recordFound = false;
+        string strReq = "{\"RefundReasonCode\":1,\"RefundReasonText\":\"Customer was not happy\"}";
+        string dataLength = "";
+        try
+        {
+            if (refundList.Count > 0)
+            {
+                foreach (Control refundTableRow in refundTable.Controls)
+                {
+                    if (refundTableRow is TableRow)
+                    {
+                        foreach (Control refundTableRowCell in refundTableRow.Controls)
+                        {
+                            if (refundTableRowCell is TableCell)
+                            {
+                                foreach (Control refundTableCellControl in refundTableRowCell.Controls)
+                                {
+                                    if ((refundTableCellControl is RadioButton))
+                                    {
+
+                                        if (((RadioButton)refundTableCellControl).Checked)
+                                        {
+                                            transactionToRefund = ((RadioButton)refundTableCellControl).Text.ToString();
+                                            //refundList.RemoveAll(x => x.Key.Equals(transactionToRefund));
+                                            recordFound = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (recordFound == true)
+                {
+                    if (readAndGetAccessToken(refundPanel) == true)
+                    {
+                        if (access_token == null || access_token.Length <= 0)
+                        {
+                            return;
+                        }
+                        //String getTransactionStatusResponseData;
+                        WebRequest objRequest = (WebRequest)System.Net.WebRequest.Create("" + FQDN + "/Commerce/Payment/Rest/2/Transactions/" + transactionToRefund.ToString() + "?access_token=" + access_token.ToString() + "&Action=refund");
+                        objRequest.Method = "PUT";
+                        objRequest.ContentType = "application/json";
+                        UTF8Encoding encoding = new UTF8Encoding();
+                        byte[] postBytes = encoding.GetBytes(strReq);
+                        objRequest.ContentLength = postBytes.Length;
+                        Stream postStream = objRequest.GetRequestStream();
+                        postStream.Write(postBytes, 0, postBytes.Length);
+                        dataLength = postBytes.Length.ToString();
+                        postStream.Close();
+                        WebResponse refundTransactionResponeObject = (WebResponse)objRequest.GetResponse();
+                        using (StreamReader refundResponseStream = new StreamReader(refundTransactionResponeObject.GetResponseStream()))
+                        {
+                            String refundTransactionResponseData = refundResponseStream.ReadToEnd();
+                            //drawPanelForFailure(refundPanel, refundTransactionResponseData);
+                            //{ "TransactionId":"6216898841002136", "TransactionStatus":"SUCCESSFUL", "IsSuccess":true, "Version":"1" }
+                            JavaScriptSerializer deserializeJsonObject = new JavaScriptSerializer();
+                            RefundResponse deserializedJsonObj = (RefundResponse)deserializeJsonObject.Deserialize(refundTransactionResponseData, typeof(RefundResponse));
+                            lbRefundTranID.Text = deserializedJsonObj.TransactionId.ToString();
+                            lbRefundTranStatus.Text = deserializedJsonObj.TransactionStatus.ToString();
+                            lbRefundIsSuccess.Text = deserializedJsonObj.IsSuccess.ToString();
+                            lbRefundVersion.Text = deserializedJsonObj.Version.ToString();
+                            //lbRefundTranID.Text = transactionToRefund.ToString();
+                           // lbRefundTranStatus.Text = "SUCCESSFUL";
+                            //lbRefundIsSuccess.Text = "true";
+                           // lbRefundVersion.Text = "1";
+                            refundSuccessTable.Visible = true;
+                            refundResponseStream.Close();
+                            if (LatestFive == false)
+                            {
+                                refundList.RemoveAll(x => x.Key.Equals(transactionToRefund));
+                                updateRefundListToFile();
+                                resetRefundList();
+                                refundTable.Controls.Clear();
+                                drawRefundSection(false);
+                                GetTransactionMerchantTransID.Text = "Merchant Transaction ID: ";
+                                GetTransactionAuthCode.Text = "Auth Code: ";
+                                GetTransactionTransID.Text = "Transaction ID: ";
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // + strReq + transactionToRefund.ToString() + dataLength
+            drawPanelForFailure(refundPanel, ex.ToString());
+        }
+    }
 }
+
+/*
+use Request.InputStream:
+byte[] buffer = new byte[1024];
+int c;
+while ((c = Request.InputStream.Read(buffer, 0, buffer.Length)) 0)
+{
+    drawPanelForFailure(refundPanel,buffer.tostring());
+}
+
+*/

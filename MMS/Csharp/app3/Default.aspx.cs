@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -11,13 +11,9 @@ using System.Xml;
 using System.Text;
 using System.Web.Script.Serialization;
 using System.Drawing;
-using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates; 
 
-/* This funciton is called when applicaiton is getting loaded, this reads the web.config and stores parameters,
-   The function search the directory MoImages and based on the configuration parameter, application displays images.
- */
 public partial class _Default : System.Web.UI.Page
 {
     string shortCode, directoryPath;
@@ -81,6 +77,7 @@ public partial class _Default : System.Web.UI.Page
                 TableRow.Controls.Add(TableCellImage);
                 TableCell TableCellSubject = new TableCell();
                 TableCellSubject.Text = file.Name;
+                TableCellSubject.Width = 150;
                 tr.Controls.Add(TableCellSubject);
                 columnCount += 1;
             }
@@ -96,6 +93,7 @@ public partial class _Default : System.Web.UI.Page
                 TableRow.Controls.Add(TableCellImage);
                 TableCell TableCellSubject = new TableCell();
                 TableCellSubject.Text = file.Name;
+                TableCellSubject.Width = 150;
                 tr.Controls.Add(TableCellSubject);
                 columnCount += 1;
                 if (columnCount == 5)
@@ -109,8 +107,6 @@ public partial class _Default : System.Web.UI.Page
         }
         messagePanel.Controls.Add(pictureTable);
     }
-
-    /* This function draws failure table, in case there is an error */
     public void drawPanelForFailure(string message)
     {
         Table table = new Table();

@@ -5,8 +5,6 @@
     <title>AT&T Sample Payment Application - Single Pay Application</title>
     <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
     <link rel="stylesheet" type="text/css" href="../../style/common.css"/ >
-    <script type="text/javascript" src="js/helper.js">
-</script>
 <body>
 
 <div id="container">
@@ -50,8 +48,8 @@
   <tr>
      <asp:RadioButtonList ID="Radio_TransactionProductType" runat="server" 
                             RepeatDirection="Vertical" Font-Names="Calibri" Font-Size="Small">
-       <asp:ListItem Selected="True">Buy product 1 for$0.99</asp:ListItem>
-       <asp:ListItem>Buy product 2 for$2.99m</asp:ListItem>
+       <asp:ListItem Selected="True">Buy product 1 for $0.99</asp:ListItem>
+       <asp:ListItem>Buy product 2 for $2.99m</asp:ListItem>
      </asp:RadioButtonList>
     </td>
   </tr>
@@ -96,6 +94,7 @@
 </form>
 </div><br/>
 -->
+<br clear="all" />
 <div id="wrapper">
 <div id="content">
 
@@ -132,21 +131,51 @@ Feature 2: Get Transaction Status</h2>
   </tbody></table>
 </div>
 <br clear="all" />
-<div align="center">
+
+        <div class="successWide" id="tranGetStatusTable" runat="server" visible="False">
+            <strong>SUCCESS:</strong><br/>
+            <strong>Transaction ID:</strong>
+                            <asp:Label ID="lblstatusTranId" runat="server" Text="" />
+                        <br/>
+            <strong>Merchant Transaction ID:</strong>
+                            <asp:Label ID="lblstatusMerTranId" runat="server" Text="" />
+        </div>
+        <div align="center">
     <asp:Panel runat="server" ID="newTransactionStatusPanel">
     </asp:Panel></div>
-<!--
-<div class="successWide">
-<strong>SUCCESS:</strong><br />
-<strong>Transaction ID</strong> trx83587123897598612897<br />
-<strong>Merchant Transaction ID</strong> user573transaction1377<br/>
-</div><br/>
--->
-
-
 <br clear="all" />
 
+<div id="wrapper">
+<div id="content">
 
+<h2><br />Feature 3: Refund Transaction</h2>
+
+</div>
+</div>
+
+<div id="navigation" align="center">
+    <asp:Table id="refundTable" runat="server" width=750px cellpadding="1" cellspacing="1" border="0">
+    </asp:Table>
+</div>
+<br clear="all" />
+<div id="extra" >
+    <asp:Button runat="server" Text="Refund Transaction" 
+        onclick="Unnamed1_Click1" />
+</div>
+<br clear="all" />
+<br clear="all" />
+        <div class="successWide" id="refundSuccessTable" runat="server" visible="False">
+        <strong>SUCCESS:</strong><br />
+        <strong>Transaction ID </strong> <asp:Label ID="lbRefundTranID" runat="server" Text="" /><br />
+        <strong>Transaction Status </strong> <asp:Label ID="lbRefundTranStatus" runat="server" Text="" /><br/>
+        <strong>IsSuccess </strong> <asp:Label ID="lbRefundIsSuccess" runat="server" Text="" /><br/>
+        <strong>Version </strong> <asp:Label ID="lbRefundVersion" runat="server" Text="" /><br/>
+        </div>
+        <div align="center">
+    <asp:Panel runat="server" ID="refundPanel">
+    </asp:Panel></div>
+<br/>
+<br clear="all" />
 <div id="footer">
 
 	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>

@@ -10,15 +10,15 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Net;
-using System.IO;
 using System.Configuration;
+using System.IO;
+using System.Xml;
+using System.Text;
 using System.Web.Script.Serialization;
 using System.Drawing;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using System.Timers;
-using System.Threading;
 
 public partial class Default : System.Web.UI.Page
 {
@@ -103,8 +103,17 @@ public partial class Default : System.Web.UI.Page
             try
             {
                 DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
-                WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create("" + FQDN + "/oauth/access_token?client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString() + "&grant_type=client_credentials&scope=SMS");
-                accessTokenRequest.Method = "GET";
+                WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create("" + FQDN + "/oauth/token");
+                accessTokenRequest.Method = "POST";
+                string oauthParameters = "client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString() + "&grant_type=client_credentials&scope=SMS";
+                accessTokenRequest.ContentType = "application/x-www-form-urlencoded";
+                //sendSmsRequestObject.Accept = "application/json";
+                UTF8Encoding encoding = new UTF8Encoding();
+                byte[] postBytes = encoding.GetBytes(oauthParameters);
+                accessTokenRequest.ContentLength = postBytes.Length;
+                Stream postStream = accessTokenRequest.GetRequestStream();
+                postStream.Write(postBytes, 0, postBytes.Length);
+                postStream.Close();
 
                 WebResponse accessTokenResponse = accessTokenRequest.GetResponse();
                 using (StreamReader accessTokenResponseStream = new StreamReader(accessTokenResponse.GetResponseStream()))
@@ -144,8 +153,17 @@ public partial class Default : System.Web.UI.Page
             try
             {
                 DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
-                WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create("" + FQDN + "/oauth/access_token?grant_type=refresh_token&client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString() + "&refresh_token=" + refresh_token.ToString());
-                accessTokenRequest.Method = "GET";
+                WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create("" + FQDN + "/oauth/token");
+                accessTokenRequest.Method = "POST";
+                string oauthParameters = "grant_type=refresh_token&client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString() + "&refresh_token=" + refresh_token.ToString();
+                accessTokenRequest.ContentType = "application/x-www-form-urlencoded";
+                //sendSmsRequestObject.Accept = "application/json";
+                UTF8Encoding encoding = new UTF8Encoding();
+                byte[] postBytes = encoding.GetBytes(oauthParameters);
+                accessTokenRequest.ContentLength = postBytes.Length;
+                Stream postStream = accessTokenRequest.GetRequestStream();
+                postStream.Write(postBytes, 0, postBytes.Length);
+                postStream.Close();
                 WebResponse accessTokenResponse = accessTokenRequest.GetResponse();
                 using (StreamReader accessTokenResponseStream = new StreamReader(accessTokenResponse.GetResponseStream()))
                 {
