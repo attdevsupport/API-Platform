@@ -36,7 +36,7 @@ end
 
 def mms_listener
   input   = request.env["rack.input"].read
-  address = /\<sender\-address\>tel:([0-9\+]+)<\/sender-address>/.match(input)[1]
+  address = /\<SenderAddress\>tel:([0-9\+]+)<\/SenderAddress>/.match(input)[1]
   parts   = input.split "--Nokia-mm-messageHandler-BoUnDaRy"
   body    = parts[2].split "BASE64"
   type    = /Content\-Type: image\/([^;]+)/.match(body[0])[1];
