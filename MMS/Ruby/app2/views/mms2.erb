@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
+	<head>
+		<title>AT&T Sample MMS Application 2 - MMS Coupon Application</title>
+		<meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
+		<link rel="stylesheet" type="text/css" href="style/common.css"/ >
+		</script>
+		<body>
+			<div id="container">
+				<div id="header">
+					<div>
+						<div id="hcRight">
+							<%= Time.now %>
+						</div>
+						<div id="hcLeft">
+							Server Time:
+						</div>
+					</div>
+					<div>
+						<div id="hcRight">
+							<script language="JavaScript" type="text/javascript">
+								var myDate = new Date();
+								document.write(myDate);
+
+							</script>
+						</div>
+						<div id="hcLeft">
+							Client Time:
+						</div>
+					</div>
+					<div>
+						<div id="hcRight">
+							<script language="JavaScript" type="text/javascript">
+								document.write("" + navigator.userAgent);
+
+							</script>
+						</div>
+						<div id="hcLeft">
+							User Agent:
+						</div>
+					</div>
+					<br clear="all" />
+				</div><!-- close HEADER -->
+				<div id="wrapper">
+					<div id="content">
+						<h1>AT&T Sample MMS Application 2 - MMS Coupon Application</h1>
+						<h2>Feature 1: Send coupon image to list of subscribers</h2>
+					</div>
+				</div>
+				<form method="post" name="sendMms" enctype="multipart/form-data" action="/submit">
+					<div id="navigation">
+						<table border="0" width="100%">
+							<tbody>
+								<tr>
+									<td width="20%" valign="top" class="label">Phone:</td>
+									<td class="cell">
+									<input name="address" value="<%= session[:mms2_phones].join(",") %>" style="width: 90%">
+									</td>
+								</tr>
+								<tr>
+									<td valign="top" class="label">Subject:</td>
+									<td class="cell"><%= session[:mms2_subject] %></td>
+								</tr>
+							</tbody>
+						</table>
+						<div class="warning">
+							<strong>WARNING:</strong>
+							<br />
+							total size of all attachments cannot exceed 600 KB.
+						</div>
+					</div>
+					<div id="extra">
+						<table border="0" width="100%">
+							<tbody>
+								<tr>
+									<td valign="top" class="label">Attachment:</td>
+									<td class="cell">
+									<div style="width: 250px; background: #fc9; border: 3px double #006; text-align: center; padding: 25px"><img src="<%= settings.coupon_file %>">
+									</div></td>
+								</tr>
+							</tbody>
+						</table>
+						<table>
+							<tbody>
+								<tr>
+									<td>
+									<br />
+									<button type="submit" name="submit">
+										Send Coupon
+									</button></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<br clear="all" />
+					<div align="center"></div>
+				</form>
+				<% unless @result.nil? %>
+				<div class="successWide">
+					<strong>SUCCESS:</strong>
+					<br />
+					<strong>Message ID:</strong> <%= @result['Id'] %>
+				</div>
+				<% end %>
+				<% unless @error.nil? %>
+				<div class="errorWide">
+					<strong>ERROR:</strong>
+					<br />
+					<%= @error %>
+				</div>
+				<% end %>
+				<br />
+				<div id="wrapper">
+					<div id="content">
+						<h2>
+						<br />
+						Feature 2: Check Delivery Status for each Recipient</h2>
+					</div>
+				</div>
+				<div id="navigation">
+					<form method="post" name="checkStatus" enctype="multipart/form-data" action="/checkStatus">
+						<table border="0" width="100%">
+							<tbody>
+								<tr>
+									<td class="cell">
+									<button type="submit" name="checStatus">
+										Check Status
+									</button></td>
+								</tr>
+							</tbody>
+						</table>
+					</form>
+				</div>
+				<div id="extra"></div>
+				<br clear="all" />
+				<% unless @result2.nil? %>
+				<div class="successWide">
+					<strong>SUCCESS:</strong>
+					<br />
+					Messages Delivered
+				</div>
+				<br />
+				<div align="center">
+					<table width="500" cellpadding="1" cellspacing="1" border="0">
+						<thead>
+							<tr>
+								<th width="50%" class="label">Recipient</th>
+								<th width="50%" class="label">Status</th>
+							</tr>
+						</thead>
+						<tbody>
+							<% @result2['DeliveryInfoList']['DeliveryInfo'].each do |h|%>
+							<tr>
+								<td class="cell" align="center"><%= h['Address'] %></td>
+								<td class="cell" align="center"><%= h['DeliveryStatus'] %></td>
+							</tr>
+							<% end %>
+						</tbody>
+					</table>
+				</div>
+				<% end %>
+				<% unless @error2.nil? %>
+				<div class="errorWide">
+					<strong>ERROR:</strong>
+					<br />
+					<%= @error2 %>
+				</div>
+				<% end %>
+				<div id="footer">
+					<div style="float: right; width: 20%; font-size: 9px; text-align: right">
+						Powered by AT&amp;T Virtual Mobile
+					</div>
+					<p>
+						&copy; 2011 AT&amp;T Intellectual Property. All rights reserved. <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+						<br>
+						The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
+						<br>
+						For download of tools and documentation, please go to <a href="https://devconnect-api.att.com/" target="_blank">https://devconnect-api.att.com</a>
+						<br>
+						For more information contact <a href="mailto:developer.support@att.com">developer.support@att.com</a>
+				</div>
+			</div>
+		</body>
+</html>

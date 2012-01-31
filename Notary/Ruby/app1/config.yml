@@ -1,0 +1,5 @@
+port:             4568
+api_key:
+secret_key:
+tokens_file:      tokens
+FQDN:             https://api.att.com

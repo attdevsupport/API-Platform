@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <title>AT&amp;T Sample SMS Application - SMS app 2 - Voting</title>
+    <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type"/>
+    <link rel="stylesheet" type="text/css" href="/css/common.css"/>
+  </head>
+  <body>
+    <div id="container">
+      <div id="header"><!-- open HEADER -->
+        <div>
+          <div id="hcRight">
+            <%= Time.now.strftime("%B %d, %Y %H:%M")  %>
+          </div>
+	      <div id="hcLeft">Server Time:</div>
+        </div>
+        <div>
+	      <div id="hcRight">
+            <script language="JavaScript" type="text/javascript">
+              document.write(new Date());
+            </script>
+          </div>
+          <div id="hcLeft">Client Time:</div>
+        </div>
+        <div>
+	      <div id="hcRight">
+            <script language="JavaScript" type="text/javascript">
+              document.write("" + navigator.userAgent);
+            </script>
+          </div>
+	      <div id="hcLeft">User Agent:</div>
+        </div>
+        <br clear="all" />
+      </div><!-- close HEADER -->
+
+      <div id="wrapper">
+        <div id="content">
+          <h1>AT&amp;T Sample SMS Application - SMS app 2 - Voting</h1>
+          <h2>
+            Feature 1 - Calculate votes sent via SMS to short code <strong><%= settings.registration_id %></strong> with text "Football", "Baseball", or "Basketball"
+          </h2>
+        </div>
+      </div>
+
+      <form name="getReceivedSms" action="/getReceivedSms" method="get">
+        <div id="navigation">
+          <br/>
+          <br/>
+
+          <%if @received_error %>
+            <div class="errorWide">
+              <strong>ERROR:</strong><br/>
+              <%= @received_error %>          
+            </div>
+            <br/>
+          <%end%>
+
+          <%if @received_total %>
+            <div class="success">
+              <strong>SUCCESS:</strong><br>
+              <strong>Total votes:</strong>  <%= @received_total %>
+            </div>
+          <% end %>
+
+          <table style="width: 300px" cellpadding="1" cellspacing="1" border="0">
+            <thead>
+	          <tr>
+    	        <th style="width: 125px" class="cell"><strong>Favorite Sport</strong></th>
+                <th style="width: 125px" class="cell"><strong>Number of Votes</strong></th>
+	          </tr>
+            </thead>
+            <tbody>
+	          <tr>
+                <td align="center" class="cell">Football</td>
+                <td align="center" class="cell"><%= session[:batch1] %></td>
+              </tr>
+	          <tr>
+                <td align="center" class="cell">Baseball</td>
+                <td align="center" class="cell"><%= session[:batch2] %></td>
+              </tr>
+	          <tr>
+                <td align="center" class="cell">Basketball</td>
+                <td align="center" class="cell"><%= session[:batch3] %></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="extra">
+          <table>
+            <tbody>
+              <tr>
+  	            <td><br><br><br><br><br><br><br><br><button type="submit" name="getReceivedSms">Update Vote Totals</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <br clear="all"/>
+        <div align="center"></div>
+
+        <% if @invalid_messages && !@invalid_messages.empty?  %>
+          <table border="1" style="background: #f00; border-collapse: collapse">
+		    <tr>
+              <th>
+                Invalid Vote Text
+              </th>
+              <th>
+                Sender Address
+              </th>
+            </tr>
+            <% @invalid_messages.each do |message|
+              text = message['message']
+            if (text != 'football') && (text != 'baseball') && (text != 'basketball') %>
+    	    <tr>
+              <td align="center">
+                <%= text %>
+              </td>
+              <td align="center">
+                <%= message['senderAddress'] %>
+              </td>
+            </tr>
+	      <% end %>
+	    <% end %>
+		  </table>
+	    <% end %>
+      </form>
+        
+      <div id="footer">
+	    <div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
+        <p>&copy; 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+        <br/>
+        The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
+        <br/>
+        For download of tools and documentation, please go to <a href="https://devconnect-api.att.com/" target="_blank">https://devconnect-api.att.com</a>
+        <br/>
+        For more information contact <a href="mailto:developer.support@att.com">developer.support@att.com</a>
+      </div>
+    </div>
+  </body>
+</html>

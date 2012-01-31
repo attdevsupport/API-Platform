@@ -1,0 +1,39 @@
+@charset "utf-8";
+/* CSS Document */
+
+html,body{ margin:0;padding:0 }
+body{font: 12px arial,sans-serif;text-align:center; color: #000}
+p{margin:0 10px 10px}
+a{color: #69BBE5 }
+h1 { font-size: 16px; margin: 0 0; }
+h2 { font-size: 14px; margin: 0 0; }
+div#header { background:url(../images/att.gif) left center no-repeat; margin: 10px 5px;  }
+#hcLeft { float:left; text-align: right; width: 39%; font-weight: bold }
+#hcRight { float:right; width: 59% }
+
+div#content { border-top: 1px dashed #999; }
+
+div#container{ text-align:left; }
+div#content p{line-height:1.4}
+div#navigation{ }
+div#extra{ }
+div#footer{ font-size: 9px; text-align: center; border-top: 1px dashed #999; margin-top: 10px; padding-top: 10px }
+div#footer p{ width: 500px; margin:0 auto;padding:5px 10px}
+
+div#container{width:1000px;margin:0 auto}
+div#navigation{float:left;width:500px}
+div#extra{float:right;width:500px}
+div#footer{clear:both;width:100%}
+
+div#gallerywrapper { width: 900px; margin: 10px auto; padding: 10px }
+div#gallery { float: left; width: 150px; height: 240px; padding: 10px; margin-bottom: 15px; font-size: 9px }
+
+.label, .cell { font: 12px Arial, Sans-serif; }
+.label { font-weight: bold }
+
+.error { margin: 0 auto; border: 3px outset red; background: #fcc; width: 250px; padding: 5px; font-size: 11px }
+.warning { margin: 0 auto; border: 3px outset yellow; background: #ffc; width: 250px; padding: 5px; font-size: 11px }
+.success { margin: 0 auto; border: 3px outset green; background: #cfc; width: 250px; padding: 5px; font-size: 11px }
+.errorWide { margin: 0 auto; border: 3px outset red; background: #fcc; width: 650px; padding: 5px; font-size: 11px }
+.warningWide { margin: 0 auto; border: 3px outset yellow; background: #ffc; width: 650px; padding: 5px; font-size: 11px }
+.successWide { margin: 0 auto; border: 3px outset green; background: #cfc; width: 650px; padding: 5px; font-size: 11px }

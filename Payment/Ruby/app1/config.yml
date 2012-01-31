@@ -1,0 +1,10 @@
+port:                          4567
+api_key:
+secret_key:
+tokens_file:                   tokens
+transactions_file:             transactions
+recent_transactions_stored:    5
+notary_app_sign_url:           http://localhost:4568/signPayload
+notary_app_view_payload_url:   http://localhost:4568/
+payment_redirect_url:          http://localhost:4567/returnTransaction
+FQDN:                          https://api.att.com

@@ -1,0 +1,6 @@
+port:             4567
+api_key:
+secret_key:
+redirect_url:     http://localhost:4567/auth/callback
+default_phone:    425-802-8620
+FQDN:             https://api.att.com

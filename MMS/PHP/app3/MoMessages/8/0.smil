@@ -1,0 +1,15 @@
+<smil>
+<head>
+<layout>
+ <root-layout/>
+<region id="Text" top="70%" left="0%" height="30%" width="100%" fit="scroll"/>
+<region id="Image" top="0%" left="0%" height="70%" width="100%" fit="meet"/>
+</layout>
+</head>
+<body>
+<par dur="10s">
+<img src="IMG_2500.png" region="Image"/>
+<text src="text_0002.txt" region="Text"/>
+</par>
+</body>
+</smil>

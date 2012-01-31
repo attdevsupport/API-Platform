@@ -1,0 +1,10 @@
+port:             4567
+phone_number:     425-802-8620
+registration_id:  22627096
+api_key:
+secret_key:
+listener_url:     http://localhost:4567/mmslistener
+images_url:       http://localhost:4567
+momms_data_dir:   MoMmsData
+momms_image_dir:  public/MoMmsImages
+FQDN:             https://api.att.com

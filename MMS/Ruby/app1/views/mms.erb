@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <title>AT&amp;T Sample MMS Application 1 - Basic SMS Service Application</title>
+    <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type"/>
+    <link rel="stylesheet" type="text/css" href="/css/common.css"/>
+  </head>
+  <body>
+    <div id="container">
+      <div id="header"><!-- open HEADER -->
+        <div>
+          <div id="hcRight">
+            <%= Time.now.strftime("%B %d, %Y %H:%M")  %>
+          </div>
+	      <div id="hcLeft">Server Time:</div>
+        </div>
+        <div>
+	      <div id="hcRight">
+            <script language="JavaScript" type="text/javascript">
+              document.write(new Date());
+            </script>
+          </div>
+          <div id="hcLeft">Client Time:</div>
+        </div>
+        <div>
+	      <div id="hcRight">
+            <script language="JavaScript" type="text/javascript">
+              document.write("" + navigator.userAgent);
+            </script>
+          </div>
+	      <div id="hcLeft">User Agent:</div>
+        </div>
+        <br clear="all" />
+      </div><!-- close HEADER -->
+      
+      <div id="wrapper">
+        <div id="content">
+          <h1>AT&amp;T Sample MMS Application 1 - Basic MMS Service Application</h1>
+          <h2>Feature 1: Send MMS Message</h2>
+        </div>
+      </div>
+      
+      <form method="post" name="sendMms" enctype="multipart/form-data" action="/sendMms">
+        <div id="navigation">
+          <table border="0" width="100%">
+            <tbody>
+              <tr>
+                <td width="20%" valign="top" class="label">Phone:</td>
+                <td class="cell"><input maxlength="16" size="12" name="address" value='<%= session[:mms1_address] || settings.phone_number %>' style="width: 90%">
+                </td>
+              </tr>
+              <tr>
+                <td valign="top" class="label">Message:</td>
+                <td class="cell">
+                  <textarea rows="4" name="subject" style="width: 90%"><%= session[:mms1_subject] || "simple message to myself" %></textarea>
+	            </td>
+              </tr>
+            </tbody>
+          </table>          
+        </div>
+        <div id="extra">
+          <div class="warning">
+            <strong>WARNING:</strong><br />
+            total size of all attachments cannot exceed 600 KB.
+          </div>
+          
+          <table border="0" width="100%">
+            <tbody>
+              <tr>
+                <td valign="top" class="label">Attachment 1:</td>
+                <td class="cell"><input name="f1" type="file">
+                </td>
+              </tr>
+              <tr>
+                <td valign="top" class="label">Attachment 2:</td>
+                <td class="cell"><input name="f2" type="file">
+                </td>
+              </tr>
+              <tr>
+                <td valign="top" class="label">Attachment 3:</td>
+                <td class="cell"><input name="f3" type="file">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <table>
+            <tbody>
+              <tr>
+  	            <td><button type="submit" name="sendMms">Send MMS Message</button></td>
+              </tr>
+            </tbody>
+          </table>          
+        </div>
+        <br clear="all" />
+        <div align="center"></div>
+      </form>
+        
+      <div id="wrapper">
+        <div id="content">
+
+          <% if @address_valid == false %>
+            <div class="errorWide">
+              <strong>ERROR:</strong><br/>
+              Phone number format not recognized.
+            </div>
+            <br/>
+          <% end %>
+
+          <% if @send_error %>
+            <div class="errorWide">
+              <strong>ERROR:</strong>
+              <br />
+              <%= @send_error %>
+            </div>
+          <% end %>
+
+          <% if @mms_id %>
+            <div class="successWide">
+              <strong>SUCCESS:</strong><br>
+              <strong>Message ID:</strong> <%= @mms_id %>
+            </div>
+          <% end %>
+
+          <h2>
+            <br/>
+          Feature 2: Get Delivery Status</h2>            
+        </div>
+      </div>
+        
+      <form method="GET" name="getMmsDeliveryStatus" action="/getMmsDeliveryStatus">
+        <div id="navigation">
+            
+          <table border="0" width="100%">
+            <tbody>
+              <tr>
+                <td width="20%" valign="top" class="label">Message ID:</td>
+                <td class="cell">
+                  <input maxlength="20" size="12" name="mmsId" value='<%= session[:mms_id] %>' style="width: 90%">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+             
+        </div>
+        <div id="extra">
+          <table border="0" width="100%">
+            <tbody>
+              <tr>
+                <td class="cell"><button type="submit" name="getMmsDeliveryStatus">Get Status</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <br clear="all" />
+      </form>
+
+      <% if @delivery_error %>
+        <div class="errorWide">
+          <strong>ERROR:</strong>
+          <br/>
+          <%= @delivery_error %>
+        </div>
+      <% end %>
+
+      <% if @delivery_status %>
+        <div class="successWide">
+          <strong>SUCCESS:</strong><br>
+          <strong>Status:</strong> 
+          <%= @delivery_status %>
+          <br/>
+          <strong>Resource URL:</strong>
+          <%= @delivery_URL %>
+        </div>
+      <% end %>
+      <div id="footer">
+	    <div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
+        <p>&copy; 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+        <br/>
+        The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
+        <br/>
+        For download of tools and documentation, please go to <a href="https://devconnect-api.att.com/" target="_blank">https://devconnect-api.att.com</a>
+        <br/>
+        For more information contact <a href="mailto:developer.support@att.com">developer.support@att.com</a>
+      </div>
+    </div>
+        
+  </body>
+</html>

@@ -1,0 +1,8 @@
+port:             4567
+api_key:
+secret_key:
+tokens_file:      tokens
+subject_file:     subject.txt
+phones_file:      phones.txt
+coupon_file:      images/coupon.jpg
+FQDN:             https://api.att.com
