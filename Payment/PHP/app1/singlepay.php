@@ -46,7 +46,7 @@ if($product==1) {
 function RefreshToken($FQDN,$api_key,$secret_key,$scope,$fullToken){
 
   $refreshToken=$fullToken["refreshToken"];
-  $accessTok_Url = $FQDN."/oauth/access_token";
+  $accessTok_Url = $FQDN."/oauth/token";
 
   //http header values
   $accessTok_headers = array(
@@ -98,7 +98,7 @@ function RefreshToken($FQDN,$api_key,$secret_key,$scope,$fullToken){
 
 function GetAccessToken($FQDN,$api_key,$secret_key,$scope){
 
-  $accessTok_Url = $FQDN."/oauth/access_token";
+  $accessTok_Url = $FQDN."/oauth/token";
   //http header values
   $accessTok_headers = array(
 			     'Content-Type: application/x-www-form-urlencoded'

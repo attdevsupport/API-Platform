@@ -37,7 +37,7 @@ if($subject==null){
 function RefreshToken($FQDN,$api_key,$secret_key,$scope,$fullTocken){
 
   $refreshToken=$fullTocken["refreshToken"];
-  $accessTok_Url = $FQDN."/oauth/access_token";
+  $accessTok_Url = $FQDN."/oauth/token";
 
   //http header values
   $accessTok_headers = array(
@@ -89,7 +89,7 @@ function RefreshToken($FQDN,$api_key,$secret_key,$scope,$fullTocken){
 }
 function GetAccessToken($FQDN,$api_key,$secret_key,$scope){
 
-  $accessTok_Url = $FQDN."/oauth/access_token";
+  $accessTok_Url = $FQDN."/oauth/token";
 	    
   //http header values
   $accessTok_headers = array(
@@ -386,7 +386,7 @@ At this time, AT&T only supports Service Type: Service Indication due to securit
 <div id="footer">
 
 	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
-    <p>© 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+    <p>ï¿½ 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
 <br>
 The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br>

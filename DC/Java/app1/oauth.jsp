@@ -41,7 +41,7 @@ document.write(myDate.format('l, F d, Y  H:i') + ' PDT');
 <%@ page import="org.json.JSONObject"%>
 <%@ include file="config.jsp" %>
 <%
-	String clientId = request.getParameter("clientId");
+    String clientId = request.getParameter("clientId");
 if(clientId!=null)
 if(clientId.equalsIgnoreCase("default"))
 	clientId = clientIdWeb;
@@ -99,12 +99,14 @@ Redirect URI <input type="text" name="redirectUri" value="<%=redirectUri%>" size
    	   }
    
        if(!code.equalsIgnoreCase("")) {
-           String url = FQDN + "/oauth/access_token";   
-           HttpClient client = new HttpClient();
-           GetMethod method = new GetMethod(url);   
-           method.setQueryString("grant_type=authorization_code&client_id=" + clientId + "&client_secret=" + clientSecret + "&code=" + code);
-           int statusCode = client.executeMethod(method);    
-           print = method.getResponseBodyAsString();
+            String url = FQDN + "/oauth/token";   
+            HttpClient client = new HttpClient();
+            PostMethod method = new PostMethod(url); 
+            String b = "client_id=" + clientId + "&client_secret=" + clientSecret + "&grant_type=authorization_code&code=" + code;
+            method.addRequestHeader("Content-Type","application/x-www-form-urlencoded");
+            method.setRequestBody(b);
+            int statusCode = client.executeMethod(method);    
+            print = method.getResponseBodyAsString();
            if(statusCode==200){ 
             	JSONObject rpcObject = new JSONObject(method.getResponseBodyAsString());
             	String accessToken = rpcObject.getString("access_token");
@@ -133,10 +135,12 @@ Refresh Token <input type="text" name="refreshToken" value="<%=refreshToken%>" s
        if(!getRefreshToken.equalsIgnoreCase("")) {
     	   session.setAttribute("clientId",clientId);
     	   session.setAttribute("clientSecret",clientSecret);
-           String url = FQDN + "/oauth/access_token";   
-           HttpClient client = new HttpClient();
-           GetMethod method = new GetMethod(url);   
-           method.setQueryString("grant_type=refresh_token&client_id=" + clientId + "&client_secret=" + clientSecret + "&refresh_token=" + refreshToken);
+            String url = FQDN + "/oauth/token";   
+            HttpClient client = new HttpClient();
+            PostMethod method = new PostMethod(url); 
+            String b = "client_id=" + clientIdAut + "&client_secret=" + clientSecretAut + "&grant_type=refresh_token&refresh_token=" + refreshToken;
+            method.addRequestHeader("Content-Type","application/x-www-form-urlencoded");
+            method.setRequestBody(b);
            int statusCode = client.executeMethod(method);    
            print = method.getResponseBodyAsString();
            if(statusCode==200){ 

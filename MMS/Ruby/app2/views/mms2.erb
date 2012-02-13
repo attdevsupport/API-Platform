@@ -54,7 +54,7 @@
 								<tr>
 									<td width="20%" valign="top" class="label">Phone:</td>
 									<td class="cell">
-									<input name="address" value="<%= session[:mms2_phones].join(",") %>" style="width: 90%">
+									<input name="address" value="<%= session[:mms2_entered_address] || session[:mms2_phones].join(",") %>" style="width: 90%">
 									</td>
 								</tr>
 								<tr>
@@ -102,7 +102,7 @@
 					<strong>Message ID:</strong> <%= @result['Id'] %>
 				</div>
 				<% end %>
-				<% unless @error.nil? %>
+				<% if @error.length > 0 %>
 				<div class="errorWide">
 					<strong>ERROR:</strong>
 					<br />

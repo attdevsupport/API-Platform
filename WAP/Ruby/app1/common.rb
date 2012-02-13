@@ -26,9 +26,9 @@ def obtain_tokens(fqdn, client_id, client_secret, scope, tokens_file)
   if @access_token and @access_token_expires > Time.now
     return
   elsif @refresh_token and @refresh_token_expires > Time.now
-    response = RestClient.post "#{fqdn}/oauth/access_token", :grant_type => 'refresh_token', :client_id => client_id, :client_secret => client_secret, :refresh_token => @refresh_token
+    response = RestClient.post "#{fqdn}/oauth/token", :grant_type => 'refresh_token', :client_id => client_id, :client_secret => client_secret, :refresh_token => @refresh_token
   else
-    response = RestClient.post "#{fqdn}/oauth/access_token", :grant_type => 'client_credentials', :client_id => client_id, :client_secret => client_secret, :scope => scope
+    response = RestClient.post "#{fqdn}/oauth/token", :grant_type => 'client_credentials', :client_id => client_id, :client_secret => client_secret, :scope => scope
   end
 
   from_json = JSON.parse(response.to_str)

@@ -42,11 +42,11 @@ def send_messages
   
   split = "----=_Part_0_#{((rand*10000000) + 10000000).to_i}.#{((Time.new.to_f) * 1000).to_i}"
   
-  addresses = ""
+  addresses = ''
   session[:mms2_address].each do |p|
-    addresses += '"tel:'+p+'",'
+    addresses += '"tel:' + p + '",'
   end
-  
+
   contents = Array.new
   
   # part 1
@@ -135,21 +135,26 @@ end
 
 post '/submit' do
   addresses = params[:address].strip.split ","
+  session[:mms2_entered_address] = params[:address]
   
   session[:mms2_address] = Array.new
   
+  @error = ''
+
   addresses.each do |address|
     a = parse_address(address)
-    unless a then
-      @error = 'Phone number format not recognized. Numbers should be comma-separated and can look like this: "123-456-7890,2345678901,+13456789012"'
-      break
+    if a
+      session[:mms2_address] << a
+    else
+      @error += 'Phone number format not recognized: ' + address + '<br>'
     end
-    session[:mms2_address] << a
   end
-  unless @error.nil?
+
+  if session[:mms2_address].length > 0
+    send_messages
+  else
     return erb :mms2
   end
-  send_messages
 end
 
 post '/checkStatus' do

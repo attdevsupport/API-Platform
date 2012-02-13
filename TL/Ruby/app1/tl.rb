@@ -60,7 +60,7 @@ get '/' do
 end
 
 get '/auth/callback' do
-  response = RestClient.get "#{settings.FQDN}/oauth/access_token?grant_type=authorization_code&client_id=#{settings.api_key}&client_secret=#{settings.secret_key}&code=#{params[:code]}"
+  response = RestClient.get "#{settings.FQDN}/oauth/token?grant_type=authorization_code&client_id=#{settings.api_key}&client_secret=#{settings.secret_key}&code=#{params[:code]}"
   from_json = JSON.parse(response.to_str)
   session[:tl_access_token] = from_json['access_token']
   redirect '/getDeviceLocation'

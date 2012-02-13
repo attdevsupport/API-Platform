@@ -26,9 +26,9 @@ def obtain_tokens(fqdn, client_id, client_secret, scope, tokens_file)
   if !@access_token.nil? and @access_token_expires > Time.now
     return
   elsif !@refresh_token.nil? and @refresh_token_expires > Time.now
-    url = "#{fqdn}/oauth/access_token?grant_type=refresh_token&client_id=" + client_id + "&client_secret=" + client_secret + "&refresh_token=" + @refresh_token
+    url = "#{fqdn}/oauth/token?grant_type=refresh_token&client_id=" + client_id + "&client_secret=" + client_secret + "&refresh_token=" + @refresh_token
   else
-    url = "#{fqdn}/oauth/access_token?grant_type=client_credentials&client_id=" + client_id + "&client_secret=" + client_secret + "&scope=" + scope
+    url = "#{fqdn}/oauth/token?grant_type=client_credentials&client_id=" + client_id + "&client_secret=" + client_secret + "&scope=" + scope
   end
 
   response = RestClient.get url

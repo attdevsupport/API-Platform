@@ -16,7 +16,7 @@ function GetAccessToken($FQDN,$api_key,$secret_key,$scope,$authCode){
   // **********************************************************************
 
   //Form URL to get the access token
-  $accessTok_Url = "$FQDN/oauth/access_token";
+  $accessTok_Url = "$FQDN/oauth/token";
   $accessTok_Url .= "?client_id=".$api_key;
   $accessTok_Url .= "&client_secret=".$secret_key;
   $accessTok_Url .= "&code=" . $authCode . "&grant_type=authorization_code";
@@ -287,7 +287,7 @@ document.write("" + navigator.userAgent);
 <div id="footer">
 
 	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
-    <p>© 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+    <p>ï¿½ 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
 <br>
 The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br>
