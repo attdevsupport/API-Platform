@@ -45,19 +45,25 @@ NOTE: You MUST select MMS in the list of services under field 'Services' in orde
 
 ** Requirements
 
-   To run the this sample application you need an IIS Server. 
+   1. To run the this sample application you need an IIS Server. 
+   2. Change the value of "href" at the following line in Default.aspx to point to the location of the "common.css" of "style" folder:
+	<link rel="stylesheet" type="text/css" href="../../style/common.css"/>
+   3. Change the value of the "url" at the following line in common.css to point to the location of the "att.gif" of "images" folder.
+	div#header { background:url(../images/att.gif) left center no-repeat; margin: 10px 5px} 
 
 
 3. Parameters
 
    
-Each sample application contains a config.web file. It holds configurable parameters described in an easy to read format. Please populate the following parameters in config.web as specified below:
+Each sample application contains a config.web file. It holds configurable parameters described in an easy to read format. 
+Please populate the following parameters in config.web as specified below:
 
 1) short_code				: {set the value as per your registered application 'short code' field value}
 
 2) NumOfFilesToDisplay  : {set the value, so that application displays latest n images}
 
-Note: If your application is promoted from Sandbox environment to Production environment and you decide to use production application settings, you must update parameters 1-2 as per production application details.
+Note: If your application is promoted from Sandbox environment to Production environment and you decide to use production application settings, 
+you must update parameters 1-2 as per production application details.
 
 
 

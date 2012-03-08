@@ -44,13 +44,18 @@ NOTE: You MUST select MMS in the list of services under field 'Services' in orde
 
 ** Requirements
 
-   To run the this sample application you need an IIS Server. 
+   1. To run the this sample application you need an IIS Server. 
+   2. Change the value of "href" at the following line in Default.aspx to point to the location of the "common.css" of "style" folder:
+	<link rel="stylesheet" type="text/css" href="../../style/common.css"/>
+   3. Change the value of the "url" at the following line in common.css to point to the location of the "att.gif" of "images" folder.
+	div#header { background:url(../images/att.gif) left center no-repeat; margin: 10px 5px}
 
 
 3. Parameters
 
    
-Each sample application contains a config.web file. It holds configurable parameters described in an easy to read format. Please populate the following parameters in config.web as specified below:
+Each sample application contains a config.web file. It holds configurable parameters described in an easy to read format. 
+Please populate the following parameters in config.web as specified below:
 
 1) api_key                		: {set the value as per your registered application 'API key' field value} 
 
@@ -62,13 +67,14 @@ Each sample application contains a config.web file. It holds configurable parame
 
 4) FQDN			  	 : https://api.att.com
 
-5) scope				 : SMS   
+5) scope				 : MMS   
 
 6) short_code				: {set the value as per your registered application 'short code' field value}
 
 7) AccessTokenFilePath		: {set the value to the path of the file, which application creates and stores access token }
 
-Note: If your application is promoted from Sandbox environment to Production environment and you decide to use production application settings, you must update parameters 1-2 as per production application details.
+Note: If your application is promoted from Sandbox environment to Production environment and you decide to use production application settings, 
+you must update parameters 1-2 as per production application details.
 
 
 
