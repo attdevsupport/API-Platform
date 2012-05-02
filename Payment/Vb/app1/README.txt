@@ -25,7 +25,7 @@ create and run one's own full-fledged sample applications.
   Be careful while filling in the "OAuth Redirect URL" field. It should contain the URL that the oAuth provider will redirect
   users to when he/she successfully authenticates and authorizes your application.
 
-NOTE: You MUST select WAP in the list of services under field 'Services' in order to use this sample application code. 
+NOTE: You MUST select PAYMENT in the list of services under field 'Services' in order to use this sample application code. 
 
   Having your application registered, you will get back an important pair of data: an API key and Secret key. They are 
   necessary to get your applications working with the AT&T HTML5 APIs. See 'Adjusting parameters' below to learn how to use 
@@ -61,7 +61,7 @@ Each sample application contains a config.web file. It holds configurable parame
 
 4) scope				 : PAYMENT   
 
-5) paymentType			: {set the value to "subscription" or "transaction"}
+5) refundFile			: {set the value to file path which has read/write permissions}
 
 6) Amount			: {set the value to decimal value}
 
@@ -69,7 +69,7 @@ Each sample application contains a config.web file. It holds configurable parame
 
 8) Channel			: {set the value to MOBILE_WEB}
 
-9) MerchantPaymentRedirectUrl	 : {set the value to the notary applicatoin link}
+9) MerchantPaymentRedirectUrl	 : {set the value to the payment application url}
 
 10) IsPurchaseOnNoActiveSubscription	 : {set the value to false}
 
@@ -85,8 +85,8 @@ Each sample application contains a config.web file. It holds configurable parame
 
 4. Running the application
 
-Notary applicaiton is needed for this applicaiton.
-Suppose you copied the sample app files in your IIS server webroot/notary/app1/ folder, In order to run the sample application, type in'http://IIS_HOSTNAME/notary/app1/Default.aspx'
+Notary application 1 is needed for this application.
+Suppose you copied the sample app files in your IIS server webroot/payment/app1/ folder, In order to run the sample application, type in'http://IIS_HOSTNAME/payment/app1/Default.aspx'
 
 
 

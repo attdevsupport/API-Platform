@@ -44,8 +44,11 @@ NOTE: You MUST select SMS in the list of services under field 'Services' in orde
 
 ** Requirements
 
-   To run the this sample application you need an IIS Server. 
-
+   1. To run the this sample application you need an IIS Server. 
+   2. Change the value of "href" at the following line in Default.aspx to point to the location of the "common.css" of "style" folder:
+	<link rel="stylesheet" type="text/css" href="../../style/common.css"/>
+   3. Change the value of the "url" at the following line in common.css to point to the location of the "att.gif" of "images" folder.
+	div#header { background:url(../images/att.gif) left center no-repeat; margin: 10px 5px}
 
 3. Parameters
 
