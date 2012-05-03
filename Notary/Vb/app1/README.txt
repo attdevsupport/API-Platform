@@ -2,7 +2,7 @@
   AT&T API Samples - Notary app 1
  ------------------------------
 
-This file describes how to set up, configure and run the VB Applications of the AT&T HTML5 Program sample applications. 
+This file describes how to set up, configure and run the VB Applications of the AT&T RESTFul sample applications. 
 It covers all steps required to register the application on DevConnect and, based on the generated API keys and secrets, 
 create and run one's own full-fledged sample applications.
 
@@ -25,7 +25,7 @@ create and run one's own full-fledged sample applications.
   Be careful while filling in the "OAuth Redirect URL" field. It should contain the URL that the oAuth provider will redirect
   users to when he/she successfully authenticates and authorizes your application.
 
-NOTE: You MUST select WAP in the list of services under field 'Services' in order to use this sample application code. 
+NOTE: You MUST select PAYMENT in the list of services under field 'Services' in order to use this sample application code. 
 
   Having your application registered, you will get back an important pair of data: an API key and Secret key. They are 
   necessary to get your applications working with the AT&T HTML5 APIs. See 'Adjusting parameters' below to learn how to use 
@@ -36,21 +36,26 @@ NOTE: You MUST select WAP in the list of services under field 'Services' in orde
   so these values in your application should be adjusted accordingly.
 
   Depending on the kind of authentication used, an application may be based on either the Autonomous Client or the Web-Server 
-  Client OAuth flow (see https://devconnect-api.att.com/docs/oauth20/autonomous-client-application-oauth-flow or
-  https://devconnect-api.att.com/docs/oauth20/web-server-client-application-oauth-flow respectively).
+  Client OAuth flow (see https://devconnect-api.att.com/docs/oauth-v1/client-credentials-grant-type or
+  https://devconnect-api.att.com/docs/oauth-v1/authorization-code-grant-type respectively).
 
 
 2. Installation
 
 ** Requirements
 
-   To run the this sample application you need an IIS Server. 
+   1. To run the this sample application you need an IIS Server. 
+   2. Change the value of "href" at the following line in Default.aspx to point to the location of the "common.css" of "style" folder:
+	<link rel="stylesheet" type="text/css" href="../../style/common.css"/>
+   3. Change the value of the "url" at the following line in common.css to point to the location of the "att.gif" of "images" folder.
+	div#header { background:url(../images/att.gif) left center no-repeat; margin: 10px 5px}
 
 
 3. Parameters
 
    
-Each sample application contains a config.web file. It holds configurable parameters described in an easy to read format. Please populate the following parameters in config.web as specified below:
+Each sample application contains a config.web file. It holds configurable parameters described in an easy to read format. 
+Please populate the following parameters in config.web as specified below:
 
 1) api_key                		: {set the value as per your registered application 'API key' field value} 
 
