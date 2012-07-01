@@ -1,0 +1,167 @@
+
+<!-- Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012 
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com 
+For more information contact developer.support@att.com -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+   <title>AT&amp;T Sample Speech Application - Speech to Text (Generic) Application</title>
+   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+   <link rel="stylesheet" type="text/css" href="style/common.css"/>
+</head>
+   <body>
+        <div id="container">
+            <!-- open HEADER -->
+            <div id="header">
+                <div>
+                    <div class="hcRight">
+                        <script language="JavaScript" type="text/javascript">
+                            var myDate = new Date();
+                            document.write(myDate);
+                        </script>
+                    </div>
+                    <div class="hcLeft">
+                        Server Time:</div>
+                </div>
+                <div>
+                    <div class="hcRight">
+                        <script language="JavaScript" type="text/javascript">
+                            var myDate = new Date();
+                            document.write(myDate);
+                        </script>
+                    </div>
+                    <div class="hcLeft">
+                        Client Time:</div>
+                </div>
+                <div>
+                    <div class="hcRight">
+                        <script language="JavaScript" type="text/javascript">
+                            document.write("" + navigator.userAgent);
+                        </script>
+                    </div>
+                    <div class="hcLeft">
+                        User Agent:</div>
+                </div>
+                <br clear="all" />
+            </div>
+            <!-- close HEADER -->
+            <div>
+                <div class="content">
+                    <h1>
+                        AT&amp;T Sample Speech Application - Speech to Text (Generic) Application</h1>
+                    <h2>
+                        Feature 1: Speech to Text (Generic)</h2>
+                </div>
+            </div>
+            <br />
+            <br />
+            <form enctype="multipart/form-data" name="SpeechToText" action="/SpeechToText" method="post">
+                <div class="navigation">
+                    <table border="0" width="100%">
+                        <tbody>
+                            <tr>
+                                <td width="20%" valign="top" class="label">Audio File:</td>
+                                <td class="cell"><input name="f1" type="file"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="extra">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td><button type="submit" name="submit" value="SpeechToText">Submit</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+			<br clear="all" />
+				<div align="center">
+				<% unless @result.nil? %>
+					<div class="successWide" align="left">
+						<strong>SUCCESS:</strong>
+						<br />
+						Response parameters listed below.
+					</div>
+					<table width="500" cellpadding="1" cellspacing="1" border="0">
+						<thead>
+							<tr>
+								<th width="50%" class="label">Parameter</th>
+								<th width="50%" class="label">Value</th>
+							</tr>
+						</thead>
+						<tbody>
+							<%   
+							nbest = @result['Recognition']['NBest'];
+							nbest.each do |key, val| %>
+							<tr> 
+							    <td class="cell" align="center"><em>ResponseId</em></td>
+								<td class="cell" align="center"><em><%= @result['Recognition']['ResponseId'] %></em></td>
+							</tr>
+							<tr> 
+							    <td class="cell" align="center"><em>Hypothesis</em></td>
+								<td class="cell" align="center"><em><%= key['Hypothesis'] %></em></td>
+							</tr>
+							<tr> 
+							    <td class="cell" align="center"><em>LanguageId</em></td>
+								<td class="cell" align="center"><em><%= key['LanguageId'] %></em></td>
+							</tr>
+							<tr> 
+							    <td class="cell" align="center"><em>Confidence</em></td>
+								<td class="cell" align="center"><em><%= key['Confidence'] %></em></td>
+							</tr>
+							<tr> 
+							    <td class="cell" align="center"><em>Grade</em></td>
+								<td class="cell" align="center"><em><%= key['Grade'] %></em></td>
+							</tr>
+							<tr> 
+							    <td class="cell" align="center"><em>ResultText</em></td>
+								<td class="cell" align="center"><em><%= key['ResultText'] %></em></td>
+							</tr>
+							<tr> 
+							    <td class="cell" align="center"><em>Words</em></td>
+								<td class="cell" align="center"><em><%= key['Words'] %></em></td>
+							</tr>
+							<tr> 
+							    <td class="cell" align="center"><em>WordScores</em></td>
+								<td class="cell" align="center"><em><%= key['WordScores'] %></em></td>
+							</tr>
+							<% end %>
+						</tbody>
+					</table>
+				<% end %>
+				</div>
+				<% unless @error.nil? %>
+					<div class="errorWide">
+						<strong>ERROR:</strong>
+						<br />
+						Invalid file specified. Valid file formats are .wav and .amr
+					</div>
+				<% end %>
+            <br clear="all" />
+            <div id="footer">
+                <div style="float: right; width: 20%; font-size: 9px; text-align: right">
+                    Powered by AT&amp;T Virtual Mobile</div>
+                <p>
+                    &#169; 2012 AT&amp;T Intellectual Property. All rights reserved. <a href="http://developer.att.com/"
+                        target="_blank">http://developer.att.com</a>
+                    <br />
+                    The Application hosted on this site are working examples intended to be used for
+                    reference in creating products to consume AT&amp;T Services and not meant to be
+                    used as part of your product. The data in these pages is for test purposes only
+                    and intended only for use as a reference in how the services perform.
+                    <br />
+                    For download of tools and documentation, please go to <a href="https://devconnect-api.att.com/"
+                        target="_blank">https://devconnect-api.att.com</a>
+                    <br />
+                    For more information contact <a href="mailto:developer.support@att.com">developer.support@att.com</a></p>
+            </div>
+        </div>
+        <p>
+            &nbsp;</p>
+    </body>
+</html>
+
