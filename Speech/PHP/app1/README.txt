@@ -1,4 +1,4 @@
-censed Under .License Agreement for AT&T Developer Website APIs and SDKs.
+*Licensed Under .License Agreement for AT&T Developer Website APIs and SDKs.
 * at http://developer.att.com/sdk/licenses.
 * Copyright AT&T, 2012. All Rights Reserved.
 ******************************************************************************
