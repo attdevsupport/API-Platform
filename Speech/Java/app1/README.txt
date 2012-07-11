@@ -1,15 +1,9 @@
-<!-- 
-Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
-TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
-Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
-For more information contact developer.support@att.com
--->
 
-AT&T API Samples - Speech app 1
+  AT&T API Samples - SMS app 1
  ------------------------------
 
-This file describes how to set up, configure and run the Java Applications of the AT&T HTML5 Program sample applications.
-It covers all steps required to register the application on DevConnect and, based on the generated API keys and secrets,
+This file describes how to set up, configure and run the Java Applications of the AT&T HTML5 Program sample applications. 
+It covers all steps required to register the application on DevConnect and, based on the generated API keys and secrets, 
 create and run one's own full-fledged sample applications.
 
   1. Configuration
@@ -20,25 +14,30 @@ create and run one's own full-fledged sample applications.
 
 1. Configuration
 
-  Configuration consists of a few steps necessary to get an application registered on DevConnect with the proper services and
-  endpoints, depending on the type of client-side application (autonomous/non-autonomous).
+  Configuration consists of a few steps necessary to get an application registered on DevConnect with the proper services and 
+  endpoints, depending on the type of client-side application (autonomous/non-autonomous). 
 
   To register an application, go to https://devconnect-api.att.com/ and login with your valid username and password.
-  Next, choose "My Apps" from the bar at the top of the page and click the "Setup a New Application" button.
+  Next, choose "My Apps" from the bar at the top of the page and click the "Setup a New Application" button. 
 
   Fill in the form, in particular all fields marked as "required".
 
-  NOTE: You MUST select Speech in the list of services under field 'Services' in order to use this sample application code.
+  Be careful while filling in the "OAuth Redirect URL" field. It should contain the URL that the oAuth provider will redirect
+  users to when he/she successfully authenticates and authorizes your application. For this application, it should point to 
+  the oauth.jsp file inside this application folder. For example, if running on a local machine in a default Tomcat installation, 
+  your OAuth Redirect URL might be http://localhost:8080/SampleApp/oauth.jsp
 
-  Having your application registered, you will get back an important pair of data: an API key and Secret key. They are
-  necessary to get your applications working with the AT&T HTML5 APIs. See 'Adjusting parameters' below to learn how to use
+NOTE: You MUST select SMS in the list of services under field 'Services' in order to use this sample application code. 
+
+  Having your application registered, you will get back an important pair of data: an API key and Secret key. They are 
+  necessary to get your applications working with the AT&T HTML5 APIs. See 'Adjusting parameters' below to learn how to use 
   these keys.
 
   Initially your newly registered application is restricted to the "Sandbox" environment only. To move it to production,
   you may promote it by clicking the "Promote to production" button. Notice that you will get a different API key and secret,
   so these values in your application should be adjusted accordingly.
 
-  Depending on the kind of authentication used, an application may be based on either the Autonomous Client or the Web-Server
+  Depending on the kind of authentication used, an application may be based on either the Autonomous Client or the Web-Server 
   Client OAuth flow (see https://devconnect-api.att.com/docs/oauth20/autonomous-client-application-oauth-flow or
   https://devconnect-api.att.com/docs/oauth20/web-server-client-application-oauth-flow respectively).
 
@@ -47,36 +46,41 @@ create and run one's own full-fledged sample applications.
 
 ** Requirements
 
-   To run the examples you need a Java environment and at least Apache Tomcat 6, or another Java web server such as Jetty.
+   To run the examples you need a Java environment and at least Apache Tomcat 6, or another Java web server such as Jetty. 
 
 ** Setting up multiple sample applications simultaneously
 
-   In case multiple applications need to be run at the same time, make sure to put each app in a separate folder and
+   In case multiple applications need to be run at the same time, make sure to put each app in a separate folder and 
    adjust your OAuth Redirect URL accordingly.
 
-   
 3. Parameters
    
-Each sample application contains a config.jsp file. It holds configurable parameters described in an easy to read format.
+Each sample application contains a config.jsp file. It holds configurable parameters described in an easy to read format. 
 Please populate the following parameters in config.jsp as specified below:
 
-1) clientIdWeb : {set the value as per your registered appliaction 'API key' field value}
+1) savedAccessToken { This will be populated with a saved access token}
 
-2) clientSecretWeb : {set the value as per your registered appliaction 'Secret key' field value}
+2) savedAccessTokenExpiry { This represents when the saved access token will expire }
 
-3) FQDN : https://api.att.com
+3) savedRefreshToken  { This will be populated with a refresh token }
 
-Note: If your application is promoted from Sandbox environment to Production environment and you decide to use production
+4) savedRefreshTokenExpiry {This represents when the saved refresh token will expire}
+
+
+
+Note: If your application is promoted from Sandbox environment to Production environment and you decide to use production 
 application settings, you must update parameters 1-2 as per production application details.
 
 
 4. Running the application
 
-  To run the application, put the entire contents of the application folder into a separate folder named SampleApp inside the webapps
-  folder in your Apache Tomcat home directory. If you have specified a different home directory in Tomcat for your web applications,
-  put it there instead.
+  To run the application, put the entire contents of the application folder into a separate folder named SampleApp inside the webapps 
+  folder in your Apache Tomcat home directory. If you have specified a different home directory in Tomcat for your web applications, 
+  put it there instead. 
 
   Depending on your security settings in Apache Tomcat, you might need to enable write access to the OauthStorage.jsp file.
 
-  Once you start tomcat, typically using the command "<your-tomcat-root-folder>/bin/startup.sh", your application becomes available
-  in a web browser, so you may visit: http://localhost:8080/SampleAppFolder/Speech.jsp to see it working.
+  Once you start tomcat, typically using the command "<your-tomcat-root-folder>/bin/startup.sh", your application becomes available 
+  in a web browser, so you may visit: http://localhost:8080/SampleApp/SMS.jsp to see it working.
+
+

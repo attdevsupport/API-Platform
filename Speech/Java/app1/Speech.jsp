@@ -5,6 +5,58 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.a
 Copyright 2011 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 For more information contact developer.support@att.com
 -->
+<%@ page contentType="text/html; charset=iso-8859-1" language="java" %>
+<%@ page import="org.apache.commons.httpclient.*"%>
+<%@ page import="org.apache.commons.httpclient.methods.*"%>
+<%@ page import="com.sun.jersey.multipart.file.*" %>
+<%@ page import="com.sun.jersey.multipart.BodyPart" %>
+<%@ page import="com.sun.jersey.multipart.MultiPart" %>
+<%@ page import="com.att.rest.*" %>
+<%@ page import="java.net.*" %>
+<%@ page import="javax.ws.rs.core.*" %>
+<%@ page import="org.json.*"%>
+<%@ page import="org.json.JSONObject"%>
+<%@ page import="org.json.JSONArray"%>
+<%@ page import="org.w3c.dom.*" %>
+<%@ page import="javax.xml.parsers.*" %>
+<%@ page import="javax.xml.transform.*" %>
+<%@ page import="javax.xml.transform.stream.*" %>
+<%@ page import="org.apache.commons.fileupload.*"%>
+<%@ page import="javax.xml.transform.dom.*" %>
+<%@ page import="java.io.*" %>
+<%@ page import="java.util.List"%>  
+<%@ page import="java.util.Iterator"%>  
+<%@ page import="java.io.File"%>  
+<%@ page import="org.apache.commons.fileupload.*"%>  
+<%@ page import="org.apache.commons.fileupload.disk.*"%>  
+<%@ page import="org.apache.commons.fileupload.servlet.*"%>
+<%@ include file="getToken.jsp"%>
+<%@ page import="java.util.*"%>
+<%@ page import="java.net.URL"%>
+<%@ page import="java.net.URLConnection"%>
+<%@ page import="java.net.URLEncoder,java.io.*"%>
+<%@ page import="org.apache.commons.httpclient.HttpClient"%>
+<%@ page import="org.apache.commons.httpclient.methods.PostMethod"%>
+<%@ page import="org.apache.http.entity.mime.MultipartEntity"%>
+<%@ page import="org.apache.http.params.CoreProtocolPNames"%>
+<%@ page import="org.apache.http.util.EntityUtils"%>
+<%@ page import="org.apache.http.impl.client.DefaultHttpClient"%>
+<%@ page import="org.apache.http.entity.mime.content.ContentBody"%>
+<%@ page import="org.apache.http.entity.mime.content.FileBody"%>
+<%@ page import="org.apache.http.HttpEntity"%>
+<%@ page import="org.apache.http.HttpResponse"%>
+<%@ page import="org.apache.http.client.methods.HttpPost"%>
+
+<%@ page import="org.apache.http.client.ResponseHandler"%>
+
+<%@ page import="org.apache.http.client.methods.HttpGet"%>
+<%@ page import="org.apache.http.impl.client.BasicResponseHandler"%>
+
+<%@ page import="org.apache.commons.httpclient.HttpClient"%>
+<%@ page import="org.apache.commons.httpclient.HostConfiguration"%>
+<%@ page import="org.apache.commons.httpclient.methods.GetMethod"%>
+<%@ page import="org.apache.http.entity.mime.content.StringBody"%>
+<%@ page import="org.apache.http.entity.FileEntity"%>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
@@ -73,7 +125,7 @@ For more information contact developer.support@att.com
                                            <div id = "extraleft"> 
                                             <div class="warning">
                             <strong>Note:</strong><br />
-                            If no file is chosen, a  <a href="./bostonSeltics.wav">default .wav</a>will be loaded on submit.<br />
+                            If no file chosen, a <a href="./bostonSeltics.wav">default.wav</a> will be loaded on submit.<br />
                             <strong>Speech file format constraints:</strong> <br />
                                 *   16 bit PCM WAV, single channel, 8 kHz sampling<br />
                                 *	AMR (narrowband), 12.2 kbit/s, 8 kHz sampling<br />
@@ -97,58 +149,7 @@ For more information contact developer.support@att.com
             </form>
             <br clear="all" />
         
-    <%@ page contentType="text/html; charset=iso-8859-1" language="java" %>
-<%@ page import="org.apache.commons.httpclient.*"%>
-<%@ page import="org.apache.commons.httpclient.methods.*"%>
-<%@ page import="com.sun.jersey.multipart.file.*" %>
-<%@ page import="com.sun.jersey.multipart.BodyPart" %>
-<%@ page import="com.sun.jersey.multipart.MultiPart" %>
-<%@ page import="com.att.rest.*" %>
-<%@ page import="java.net.*" %>
-<%@ page import="javax.ws.rs.core.*" %>
-<%@ page import="org.json.*"%>
-<%@ page import="org.json.JSONObject"%>
-<%@ page import="org.json.JSONArray"%>
-<%@ page import="org.w3c.dom.*" %>
-<%@ page import="javax.xml.parsers.*" %>
-<%@ page import="javax.xml.transform.*" %>
-<%@ page import="javax.xml.transform.stream.*" %>
-<%@ page import="org.apache.commons.fileupload.*"%>
-<%@ page import="javax.xml.transform.dom.*" %>
-<%@ page import="java.io.*" %>
-<%@ page import="java.util.List"%>  
-<%@ page import="java.util.Iterator"%>  
-<%@ page import="java.io.File"%>  
-<%@ page import="org.apache.commons.fileupload.*"%>  
-<%@ page import="org.apache.commons.fileupload.disk.*"%>  
-<%@ page import="org.apache.commons.fileupload.servlet.*"%>
-<%@ include file="getToken.jsp"%>
-<%@ page import="java.util.*"%>
-<%@ page import="java.net.URL"%>
-<%@ page import="java.net.URLConnection"%>
-<%@ page import="java.net.URLEncoder,java.io.*"%>
-<%@ page import="org.apache.commons.httpclient.HttpClient"%>
-<%@ page import="org.apache.commons.httpclient.methods.PostMethod"%>
-<%@ page import="org.apache.http.entity.mime.MultipartEntity"%>
-<%@ page import="org.apache.http.params.CoreProtocolPNames"%>
-<%@ page import="org.apache.http.util.EntityUtils"%>
-<%@ page import="org.apache.http.impl.client.DefaultHttpClient"%>
-<%@ page import="org.apache.http.entity.mime.content.ContentBody"%>
-<%@ page import="org.apache.http.entity.mime.content.FileBody"%>
-<%@ page import="org.apache.http.HttpEntity"%>
-<%@ page import="org.apache.http.HttpResponse"%>
-<%@ page import="org.apache.http.client.methods.HttpPost"%>
 
-<%@ page import="org.apache.http.client.ResponseHandler"%>
-
-<%@ page import="org.apache.http.client.methods.HttpGet"%>
-<%@ page import="org.apache.http.impl.client.BasicResponseHandler"%>
-
-<%@ page import="org.apache.commons.httpclient.HttpClient"%>
-<%@ page import="org.apache.commons.httpclient.HostConfiguration"%>
-<%@ page import="org.apache.commons.httpclient.methods.GetMethod"%>
-<%@ page import="org.apache.http.entity.mime.content.StringBody"%>
-<%@ page import="org.apache.http.entity.FileEntity"%>
 
 
 <% 
