@@ -43,6 +43,11 @@ function RefreshToken($FQDN,$api_key,$secret_key,$scope,$fullToken){
     $accessToken = $jsonObj->{'access_token'};//fetch the access token from the response.
     $refreshToken = $jsonObj->{'refresh_token'};
     $expiresIn = $jsonObj->{'expires_in'};
+
+      if($expiresIn == 0) {
+          $expiresIn = 24*60*60;
+          }
+
 	      
     $refreshTime=$currentTime+(int)($expiresIn); // Time for token refresh
     $updateTime=$currentTime + ( 24*60*60); // Time to get for a new token update, current time + 24h 
@@ -98,6 +103,11 @@ function GetAccessToken($FQDN,$api_key,$secret_key,$scope){
       $accessToken = $jsonObj->{'access_token'};//fetch the access token from the response.
       $refreshToken = $jsonObj->{'refresh_token'};
       $expiresIn = $jsonObj->{'expires_in'};
+
+       if($expiresIn == 0) {
+          $expiresIn = 24*60*60*365*100;
+          }
+
 
       $refreshTime=$currentTime+(int)($expiresIn); // Time for token refresh
       $updateTime=$currentTime + ( 24*60*60); // Time to get for a new token update, current time + 24h
@@ -173,10 +183,7 @@ function check_token( $FQDN,$api_key,$secret_key,$scope, $fullToken,$oauth_file)
             <div id="header">
                 <div>
                     <div class="hcRight">
-                        <script language="JavaScript" type="text/javascript">
-                            var myDate = new Date();
-                            document.write(myDate);
-                        </script>
+                       <?php echo date("D M j G:i:s T Y");?>
                     </div>
                     <div class="hcLeft">
                         Server Time:</div>
@@ -213,14 +220,29 @@ function check_token( $FQDN,$api_key,$secret_key,$scope, $fullToken,$oauth_file)
             </div>
             <br />
             <br />
-            <form enctype="multipart/form-data" name="SpeechToText" action="" method="post">
+			
+			  <form enctype="multipart/form-data" name="SpeechToText" action="" method="post">
                 <div class="navigation">
                     <table border="0" width="100%">
                         <tbody>
                             <tr>
                                 <td width="20%" valign="top" class="label">Audio File:</td>
-                                <td class="cell"><input name="f1" type ="file"></td>
+                                <td class="cell"><input name="f1" type="file"></td>
                             </tr>
+			    <tr>
+			<td />
+			<td>
+			<div id="extraleft">
+                        <div class="warning">
+                            <strong>Note:</strong><br />
+                            If no is file chosen, a <a href="./bostonSeltics.wav">default.wav</a> file will be loaded on submit.<br />
+                            <strong>Speech file format constraints:</strong> <br />
+                                .	16 bit PCM WAV, single channel, 8 kHz sampling<br />
+                                .	AMR (narrowband), 12.2 kbit/s, 8 kHz sampling<br />
+                        </div>
+                        </div>
+			        </td>
+			    </tr>
                         </tbody>
                     </table>
                 </div>
@@ -234,6 +256,11 @@ function check_token( $FQDN,$api_key,$secret_key,$scope, $fullToken,$oauth_file)
                     </table>
                 </div>
             </form>
+			
+			
+			
+			
+			
 				<br clear="all" />
 				<div align="center">
 			<?php
@@ -269,12 +296,7 @@ function check_token( $FQDN,$api_key,$secret_key,$scope, $fullToken,$oauth_file)
 	  $type = 'audio/'.$ext;
 	  
 	  
-	 
-       
-
-
-
-	  
+	 if($type == 'audio/wav' || $type == 'audio/amr') {	  
 
 	 $speech_info_url = $FQDN."/rest/1/SpeechToText";
 	 
@@ -348,11 +370,11 @@ function check_token( $FQDN,$api_key,$secret_key,$scope, $fullToken,$oauth_file)
 							</tr>
 							<tr>
 							    <td class="cell" align="center"><em>Words</em></td> 
-								<td class="cell" align="center"><em><?php for ($i=0; $i<=10; $i++) { echo $jsonObj2->Recognition->NBest[0]->Words[$i]; echo ' '; }?></em></td>
+								<td class="cell" align="center"><em><?php for ($i=0; $i<=100; $i++) { echo $jsonObj2->Recognition->NBest[0]->Words[$i]; echo ' '; }?></em></td>
 							</tr>
 							<tr> 
 							    <td class="cell" align="center"><em>WordScores</em></td>
-								<td class="cell" align="center"><em><?php for ($i=0; $i<=10; $i++) { echo $jsonObj2->Recognition->NBest[0]->WordScores[$i]; echo ' '; }?></em></td>
+								<td class="cell" align="center"><em><?php for ($i=0; $i<=100; $i++) { echo $jsonObj2->Recognition->NBest[0]->WordScores[$i]; echo ' '; }?></em></td>
 							</tr>
 						</tbody>
 					</table><?php
@@ -370,17 +392,23 @@ function check_token( $FQDN,$api_key,$secret_key,$scope, $fullToken,$oauth_file)
                ?>
 		<div class="errorWide">
                 <strong>ERROR:</strong><br />
-                <?php  echo "Invalid file specified. Valid file formats are .wav and .amr";?>
+                <?php  echo $errormsg?>
                 </div>
        <?php }
 	curl_close ($speech_info_request);
-	}
+	}else{
+	         ?>
+		<div class="errorWide">
+                <strong>ERROR:</strong><br />
+                <?php echo "Invalid file specified. Valid file formats are .wav and .amr"?>
+                </div>
+       <?php }}
 	
 ?>
             <br clear="all" />
             <div id="footer">
                 <div style="float: right; width: 20%; font-size: 9px; text-align: right">
-                    Powered by AT&amp;T Virtual Mobile</div>
+                    Powered by AT&amp;T Cloud Architecture</div>
                 <p>
                     &#169; 2012 AT&amp;T Intellectual Property. All rights reserved. <a href="http://developer.att.com/"
                         target="_blank">http://developer.att.com</a>
@@ -400,4 +428,5 @@ function check_token( $FQDN,$api_key,$secret_key,$scope, $fullToken,$oauth_file)
             </p>
     </body>
 </html>
+
 

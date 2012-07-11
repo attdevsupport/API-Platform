@@ -47,7 +47,6 @@ For more information contact developer.support@att.com
             </div>
             <br clear="all" />
         </div>
-        <!-- close HEADER -->
         <div>
             <div class="content">
                 <h1>
@@ -73,6 +72,21 @@ For more information contact developer.support@att.com
                                 onclick="BtnSubmit_Click" />
                         </td>
                     </tr> 
+                    <tr>
+                    <td />
+                    <td>
+                    <div id="extraleft">
+                        <div class="warning">
+                            <strong>Note:</strong><br />
+                            If no is file chosen, a <a href="./default.wav">default.wav</a> file will be loaded on submit.<br />
+                            <strong>Speech file format constraints:</strong> <br />
+                                •	16 bit PCM WAV, single channel, 8 kHz sampling<br />
+                                •	AMR (narrowband), 12.2 kbit/s, 8 kHz sampling<br />
+                        </div>
+                    </div>
+                    </td>
+                    <td />
+                    </tr>
                 </tbody>
             </table>            
         </div>
@@ -171,7 +185,7 @@ For more information contact developer.support@att.com
         <br clear="all" />
         <div id="footer">
             <div style="float: right; width: 20%; font-size: 9px; text-align: right">
-                Powered by AT&amp;T Virtual Mobile</div>
+                Powered by AT&amp;T Cloud Architecture</div>
             <p>
                 &#169; 2012 AT&amp;T Intellectual Property. All rights reserved. <a href="http://developer.att.com/"
                     target="_blank">http://developer.att.com</a>

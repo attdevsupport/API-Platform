@@ -51,7 +51,7 @@ For more information contact developer.support@att.com
         <div>
             <div class="content">
                 <h1>
-                    AT&amp;T Sample Speech Application - Speech to Text(Generic) Application</h1>
+                    AT&amp;T Sample Speech Application  - Speech to Text(Generic) Application</h1>
                 <h2>
                     Feature 1: Speech to Text(Generic)</h2>
             </div>
@@ -69,118 +69,124 @@ For more information contact developer.support@att.com
                             <asp:FileUpload runat="server" ID="fileUpload1" />
                         </td>
                         <td>
-                            <asp:Button runat="server" ID="btnSubmit" Text="Submit" OnClick="BtnSubmit_Click" />
+                            <asp:Button runat="server" ID="btnSubmit" text="Submit" 
+                                onclick="BtnSubmit_Click" />
                         </td>
+                    </tr> 
+                                        <tr>
+                    <td />
+                    <td>
+                    <div id="extraleft">
+                        <div class="warning">
+                            <strong>Note:</strong><br />
+                            If no is file chosen, a <a href="./default.wav">default.wav</a> file will be loaded on submit.<br />
+                            <strong>Speech file format constraints:</strong> <br />
+                                •	16 bit PCM WAV, single channel, 8 kHz sampling<br />
+                                •	AMR (narrowband), 12.2 kbit/s, 8 kHz sampling<br />
+                        </div>
+                    </div>
+                    </td>
+                    <td />
                     </tr>
                 </tbody>
-            </table>
+            </table>            
         </div>
         <br clear="all" />
         <br clear="all" />
         <div align="center">
-            <asp:Panel ID="statusPanel" runat="server" Font-Names="Calibri" Font-Size="XX-Small">
+            <asp:Panel ID="statusPanel" runat="server" Font-Names="Calibri" 
+                Font-Size="XX-Small">
             </asp:Panel>
         </div>
+
         <div align="center">
-            <asp:Panel ID="resultsPanel" runat="server" BorderWidth="0" Width="80%">
-                <table width="500" cellpadding="1" cellspacing="1" border="0">
-                    <thead>
-                        <tr>
-                            <th width="50%" class="label">
-                                Parameter
-                            </th>
-                            <th width="50%" class="label">
-                                Value
-                            </th>
-                        </tr>
-                    </thead>
+        <asp:Panel ID="resultsPanel" runat="server" BorderWidth="0" Width="80%">
+            <table width="500" cellpadding="1" cellspacing="1" border="0">
+                <thead>
                     <tr>
-                        <td class="cell" align="center">
-                            <i>ResponseId </i>
-                        </td>
-                        <td class="cell" align="center">
-                            <i>
-                                <asp:Label ID="lblResponseId" runat="server"></asp:Label>
-                            </i>
-                        </td>
+                    	<th width="50%" class="label">Parameter</th>
+                        <th width="50%" class="label">Value</th>
                     </tr>
-                    <tr>
-                        <td class="cell" align="center">
-                            <i>Hypothesis </i>
-                        </td>
-                        <td class="cell" align="center">
-                            <i>
-                                <asp:Label ID="lblHypothesis" runat="server"></asp:Label>
-                            </i>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="cell" align="center">
-                            <i>LanguageId </i>
-                        </td>
-                        <td class="cell" align="center">
-                            <i>
-                                <asp:Label ID="lblLanguageId" runat="server"></asp:Label>
-                            </i>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="cell" align="center">
-                            <i>Confidence </i>
-                        </td>
-                        <td class="cell" align="center">
-                            <i>
-                                <asp:Label ID="lblConfidence" runat="server"></asp:Label>
-                            </i>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="cell" align="center">
-                            <i>Grade </i>
-                        </td>
-                        <td class="cell" align="center">
-                            <i>
-                                <asp:Label ID="lblGrade" runat="server"></asp:Label>
-                            </i>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="cell" align="center">
-                            <i>ResultText </i>
-                        </td>
-                        <td class="cell" align="center">
-                            <i>
-                                <asp:Label ID="lblResultText" runat="server"></asp:Label>
-                            </i>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="cell" align="center">
-                            <i>Words </i>
-                        </td>
-                        <td class="cell" align="center">
-                            <i>
-                                <asp:Label ID="lblWords" runat="server"></asp:Label>
-                            </i>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="cell" align="center">
-                            <i>WordScores </i>
-                        </td>
-                        <td class="cell" align="center">
-                            <i>
-                                <asp:Label ID="lblWordScores" runat="server"></asp:Label>
-                            </i>
-                        </td>
-                    </tr>
-                </table>
-            </asp:Panel>
+                </thead>
+                <tr>
+                    <td class="cell" align="center">
+                        <i>ResponseId </i>
+                    </td>
+                    <td class="cell" align="center">
+                        <i><asp:Label ID="lblResponseId" runat="server"></asp:Label>
+                        </i>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="cell" align="center">
+                        <i>Hypothesis </i>
+                    </td>
+                    <td class="cell" align="center">
+                        <i><asp:Label ID="lblHypothesis" runat="server"></asp:Label>
+                        </i>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="cell" align="center">
+                        <i>LanguageId </i>
+                    </td>
+                    <td class="cell" align="center">
+                        <i><asp:Label ID="lblLanguageId" runat="server"></asp:Label>
+                        </i>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="cell" align="center">
+                        <i>Confidence </i>
+                    </td>
+                    <td class="cell" align="center">
+                        <i><asp:Label ID="lblConfidence" runat="server"></asp:Label>
+                        </i>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="cell" align="center">
+                        <i>Grade </i>
+                    </td>
+                    <td class="cell" align="center">
+                       <i><asp:Label ID="lblGrade" runat="server"></asp:Label>
+                        </i>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="cell" align="center">
+                        <i>ResultText </i>
+                    </td>
+                    <td class="cell" align="center">
+                        <i><asp:Label ID="lblResultText" runat="server"></asp:Label>
+                        </i>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="cell" align="center">
+                        <i>Words </i>
+                    </td>
+                    <td class="cell" align="center">
+                        <i><asp:Label ID="lblWords" runat="server"></asp:Label>
+                        </i>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="cell" align="center">
+                        <i>WordScores </i>
+                    </td>
+                    <td class="cell" align="center">
+                       <i><asp:Label ID="lblWordScores" runat="server"></asp:Label>
+                        </i>
+                    </td>
+                </tr>
+            </table>               
+        </asp:Panel>
         </div>
         <br clear="all" />
         <div id="footer">
             <div style="float: right; width: 20%; font-size: 9px; text-align: right">
-                Powered by AT&amp;T Virtual Mobile</div>
+                Powered by AT&amp;T Cloud Architecture</div>
             <p>
                 &#169; 2012 AT&amp;T Intellectual Property. All rights reserved. <a href="http://developer.att.com/"
                     target="_blank">http://developer.att.com</a>

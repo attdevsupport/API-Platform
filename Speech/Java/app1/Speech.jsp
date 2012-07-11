@@ -1,7 +1,8 @@
+
 <!-- 
-Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+Licensed by AT&T under 'Software Development Kit Tools Agreement.' September 2011
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
-Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+Copyright 2011 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 For more information contact developer.support@att.com
 -->
 
@@ -18,10 +19,7 @@ For more information contact developer.support@att.com
             <div id="header">
                 <div>
                     <div class="hcRight">
-                        <script language="JavaScript" type="text/javascript">
-                            var myDate = new Date();
-                            document.write(myDate);
-                        </script>
+                        <%=new java.util.Date()%>
                     </div>
                     <div class="hcLeft">
                         Server Time:</div>
@@ -58,14 +56,31 @@ For more information contact developer.support@att.com
             </div>
             <br />
             <br />
+            
             <form name="SpeechToText" enctype="multipart/form-data" action="Speech.jsp?SpeechToText=true" method="post">
                 <div class="navigation">
                     <table border="0" width="100%">
                         <tbody>
                             <tr>
                                 <td width="20%" valign="top" class="label">Audio File:</td>
+                    
                                 <td class="cell"><input name="f1" type="file"></td>
+                                 
                             </tr>
+                                  <tr>
+                                  <td />
+                                     <td>
+                                           <div id = "extraleft"> 
+                                            <div class="warning">
+                            <strong>Note:</strong><br />
+                            If no file is chosen, a  <a href="./bostonSeltics.wav">default .wav</a>will be loaded on submit.<br />
+                            <strong>Speech file format constraints:</strong> <br />
+                                *   16 bit PCM WAV, single channel, 8 kHz sampling<br />
+                                *	AMR (narrowband), 12.2 kbit/s, 8 kHz sampling<br />
+                        </div>
+                                        </div>
+                                        </div>
+                                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -74,6 +89,7 @@ For more information contact developer.support@att.com
                         <tbody>
                             <tr>
                                 <td><button type="submit" name="SpeechToText">Submit</button></td>
+                                   
                             </tr>
                         </tbody>
                     </table>
@@ -81,7 +97,7 @@ For more information contact developer.support@att.com
             </form>
             <br clear="all" />
         
-<%@ page contentType="text/html; charset=iso-8859-1" language="java" %>
+    <%@ page contentType="text/html; charset=iso-8859-1" language="java" %>
 <%@ page import="org.apache.commons.httpclient.*"%>
 <%@ page import="org.apache.commons.httpclient.methods.*"%>
 <%@ page import="com.sun.jersey.multipart.file.*" %>
@@ -122,9 +138,12 @@ For more information contact developer.support@att.com
 <%@ page import="org.apache.http.HttpEntity"%>
 <%@ page import="org.apache.http.HttpResponse"%>
 <%@ page import="org.apache.http.client.methods.HttpPost"%>
+
 <%@ page import="org.apache.http.client.ResponseHandler"%>
+
 <%@ page import="org.apache.http.client.methods.HttpGet"%>
 <%@ page import="org.apache.http.impl.client.BasicResponseHandler"%>
+
 <%@ page import="org.apache.commons.httpclient.HttpClient"%>
 <%@ page import="org.apache.commons.httpclient.HostConfiguration"%>
 <%@ page import="org.apache.commons.httpclient.methods.GetMethod"%>
@@ -140,7 +159,11 @@ String f1 = request.getParameter("f1");
 String fileTest = "";
  
 if(SpeechToText!=null){
-			
+            
+			boolean isMultipart = ServletFileUpload.isMultipartContent(request);
+ 
+			if (isMultipart)
+			{			
 					DiskFileUpload fu = new DiskFileUpload();
 					List fileItems = fu.parseRequest(request);
 					Iterator itr = fileItems.iterator();
@@ -154,7 +177,10 @@ if(SpeechToText!=null){
 								 fi.write((fNew));
 							  }		
 					  }
+					
 					}
+			}
+				
 				
 						File file = new File(application.getRealPath("/") + fileName);
 						if(!file.isFile())
@@ -168,12 +194,17 @@ if(SpeechToText!=null){
 						
 						
 						DefaultHttpClient httpclient = new DefaultHttpClient();
-						HttpPost httppost = new HttpPost(url);						
+						
+						HttpPost httppost = new HttpPost(url);
+
 						FileEntity reqEntity = new FileEntity(file, "binary/octet-stream");
+
 						httppost.setEntity(reqEntity);
 						reqEntity.setContentType("binary/octet-stream");
+
+					
 						httppost.addHeader("Authorization","Bearer " + accessToken);
-						
+
 						if (fileFormat.equals("amr")) {
 						httppost.addHeader("Content-Type","audio/amr");
 						}
@@ -183,14 +214,18 @@ if(SpeechToText!=null){
 						}
 						
 						httppost.addHeader("Accept","application/json");
+						
 						HttpResponse responze = httpclient.execute(httppost);
 						HttpEntity resEntity = responze.getEntity();
 						
 						System.out.println(responze.getStatusLine());
 						String result = EntityUtils.toString(resEntity);
 					
+					
 						int statusCode = responze.getStatusLine().getStatusCode();
+						
 						if(statusCode == 200 || statusCode == 201) {
+						
 						JSONObject jsonResponse = new JSONObject(result);
 						JSONArray parameters = jsonResponse.names();
 
@@ -215,6 +250,7 @@ if(SpeechToText!=null){
 									 JSONObject jsonObject = new JSONObject(result);
 									 JSONObject recognition = jsonObject.getJSONObject("Recognition");
 									 JSONArray nBest = recognition.getJSONArray("NBest");	
+							
 						
 						     for (int i=0; i<nBest.length(); ++i) { 
 							  JSONObject nBestjsonObject = (JSONObject)nBest.get(i);%>
@@ -260,7 +296,7 @@ if(SpeechToText!=null){
 							JSONObject jsonResponse = new JSONObject();
 						%>
 						<div class="errorWide">
-						<strong>FAIL: Only WAV and AMR file types.</strong><br />
+						<strong>ERROR: Invalid file specified. Valid file formats are .wav and .amr.</strong><br />
 						</div><br/>
 						<%
 					}
@@ -270,7 +306,7 @@ if(SpeechToText!=null){
             <br clear="all" />
             <div id="footer">
                 <div style="float: right; width: 20%; font-size: 9px; text-align: right">
-                    Powered by AT&amp;T Virtual Mobile</div>
+                    Powered by AT&amp;T Cloud Architecture</div>
                 <p>
                     &#169; 2012 AT&amp;T Intellectual Property. All rights reserved. <a href="http://developer.att.com/"
                         target="_blank">http://developer.att.com</a>
@@ -290,3 +326,4 @@ if(SpeechToText!=null){
             &nbsp;</p>
     </body>
 </html>
+

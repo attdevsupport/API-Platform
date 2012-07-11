@@ -17,9 +17,7 @@ For more information contact developer.support@att.com -->
             <div id="header">
                 <div>
                     <div class="hcRight">
-                        <script language="JavaScript" type="text/javascript">
-                            var myDate = new Date();
-                            document.write(myDate);
+                        <%= Time.now.utc.strftime("%a, %B %d, %Y %H:%M:%S UTC") %>  
                         </script>
                     </div>
                     <div class="hcLeft">
@@ -65,6 +63,20 @@ For more information contact developer.support@att.com -->
                                 <td width="20%" valign="top" class="label">Audio File:</td>
                                 <td class="cell"><input name="f1" type="file"></td>
                             </tr>
+			    <tr>
+			<td />
+			<td>
+			<div id="extraleft">
+                        <div class="warning">
+                            <strong>Note:</strong><br />
+                            If no file is chosen, a default.wav file will be loaded on submit.<br />
+                            <strong>Speech file format constraints:</strong> <br />
+                                .	16 bit PCM WAV, single channel, 8 kHz sampling<br />
+                                .	AMR (narrowband), 12.2 kbit/s, 8 kHz sampling<br />
+                        </div>
+                        </div>
+			        </td>
+			    </tr>
                         </tbody>
                     </table>
                 </div>
@@ -123,11 +135,11 @@ For more information contact developer.support@att.com -->
 							</tr>
 							<tr> 
 							    <td class="cell" align="center"><em>Words</em></td>
-								<td class="cell" align="center"><em><%= key['Words'].join(" ") %></em></td>
+								<td class="cell" align="center"><em><%= key['Words'].join(", ") %></em></td>
 							</tr>
 							<tr> 
 							    <td class="cell" align="center"><em>WordScores</em></td>
-								<td class="cell" align="center"><em><%= key['WordScores'] %></em></td>
+								<td class="cell" align="center"><em><%= key['WordScores'].join(", ") %></em></td>
 							</tr>
 							<% end %>
 						</tbody>
@@ -144,7 +156,7 @@ For more information contact developer.support@att.com -->
             <br clear="all" />
             <div id="footer">
                 <div style="float: right; width: 20%; font-size: 9px; text-align: right">
-                    Powered by AT&amp;T Virtual Mobile</div>
+                    Powered by AT&amp;T Cloud Architecture</div>
                 <p>
                     &#169; 2012 AT&amp;T Intellectual Property. All rights reserved. <a href="http://developer.att.com/"
                         target="_blank">http://developer.att.com</a>

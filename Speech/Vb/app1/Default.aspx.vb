@@ -1,4 +1,4 @@
-﻿' <copyright file="Default.aspx.vb" company="AT&amp;T">
+﻿' <copyright file="Default.aspx.cs" company="AT&amp;T">
 ' Licensed by AT&amp;T under 'Software Development Kit Tools Agreement.' 2012
 ' TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 ' Copyright 2012 AT&amp;T Intellectual Property. All rights reserved. http://developer.att.com
@@ -9,16 +9,11 @@
 
 Imports System.Collections.Generic
 Imports System.Configuration
-Imports System.Drawing
-Imports System.Globalization
 Imports System.IO
 Imports System.Net
 Imports System.Net.Security
-Imports System.Net.Sockets
 Imports System.Security.Cryptography.X509Certificates
 Imports System.Text
-Imports System.Text.RegularExpressions
-Imports System.Web
 Imports System.Web.Script.Serialization
 Imports System.Web.UI.WebControls
 
@@ -52,6 +47,11 @@ Partial Public Class Speech_App1
     Private deleteFile As Boolean
 
     ''' <summary>
+    ''' Gets or sets the value of refreshTokenExpiresIn
+    ''' </summary>
+    Private refreshTokenExpiresIn As Integer
+
+    ''' <summary>
     ''' Access Token Types
     ''' </summary>
     Public Enum AccessType
@@ -82,7 +82,7 @@ Partial Public Class Speech_App1
         End If
 
         Dim currentServerTime As DateTime = DateTime.UtcNow
-        lblServerTime.Text = [String].Format("{0:ddd, MMM dd, HH:mm:ss yyyy}", currentServerTime) & " UTC"
+        lblServerTime.Text = [String].Format("{0:ddd, MMM dd, yyyy HH:mm:ss}", currentServerTime) & " UTC"
 
         Me.ReadConfigFile()
 
@@ -171,6 +171,13 @@ Partial Public Class Speech_App1
             Me.scope = "SPEECH"
         End If
 
+        Dim refreshTokenExpires As String = ConfigurationManager.AppSettings("refreshTokenExpiresIn")
+        If Not String.IsNullOrEmpty(refreshTokenExpires) Then
+            Me.refreshTokenExpiresIn = Convert.ToInt32(refreshTokenExpires)
+        Else
+            Me.refreshTokenExpiresIn = 24
+        End If
+
         Return True
     End Function
 
@@ -221,14 +228,12 @@ Partial Public Class Speech_App1
     Private Function IsTokenValid() As String
         Try
             Dim currentServerTime As DateTime = DateTime.UtcNow.ToLocalTime()
-            Dim refreshTokenExpiryTime As DateTime = DateTime.Parse(Me.refreshTokenExpiryTime)
-            If currentServerTime >= refreshTokenExpiryTime Then
-                Return "INVALID_ACCESS_TOKEN"
-            End If
-
-            Dim accessTokenExpiryTime As DateTime = DateTime.Parse(Me.accessTokenExpiryTime)
-            If currentServerTime >= accessTokenExpiryTime Then
-                Return "REFRESH_ACCESS_TOKEN"
+            If currentServerTime >= DateTime.Parse(Me.accessTokenExpiryTime) Then
+                If currentServerTime >= DateTime.Parse(Me.refreshTokenExpiryTime) Then
+                    Return "INVALID_ACCESS_TOKEN"
+                Else
+                    Return "REFRESH_TOKEN"
+                End If
             Else
                 Return "VALID_ACCESS_TOKEN"
             End If
@@ -247,123 +252,87 @@ Partial Public Class Speech_App1
         Dim postStream As Stream = Nothing
         Dim streamWriter As StreamWriter = Nothing
 
-        ' This is client credential flow
-        If type = AccessType.ClientCredential Then
+
+        Try
+            Dim currentServerTime As DateTime = DateTime.UtcNow.ToLocalTime()
+
+            Dim accessTokenRequest As WebRequest = System.Net.HttpWebRequest.Create(String.Empty & Me.fqdn & "/oauth/token")
+            accessTokenRequest.Method = "POST"
+
+            Dim oauthParameters As String = String.Empty
+            If type = AccessType.ClientCredential Then
+                oauthParameters = "client_id=" & Me.apiKey & "&client_secret=" & Me.secretKey & "&grant_type=client_credentials&scope=" & Me.scope
+            Else
+                oauthParameters = "grant_type=refresh_token&client_id=" & Me.apiKey & "&client_secret=" & Me.secretKey & "&refresh_token=" & Me.refreshToken
+            End If
+            accessTokenRequest.ContentType = "application/x-www-form-urlencoded"
+
+            Dim encoding As New UTF8Encoding()
+            Dim postBytes As Byte() = encoding.GetBytes(oauthParameters)
+            accessTokenRequest.ContentLength = postBytes.Length
+
+            postStream = accessTokenRequest.GetRequestStream()
+            postStream.Write(postBytes, 0, postBytes.Length)
+
+            Dim accessTokenResponse As WebResponse = accessTokenRequest.GetResponse()
+            Using accessTokenResponseStream As New StreamReader(accessTokenResponse.GetResponseStream())
+                Dim jsonAccessToken As String = accessTokenResponseStream.ReadToEnd()
+                Dim deserializeJsonObject As New JavaScriptSerializer()
+
+                Dim deserializedJsonObj As AccessTokenResponse = DirectCast(deserializeJsonObject.Deserialize(jsonAccessToken, GetType(AccessTokenResponse)), AccessTokenResponse)
+                Me.accessToken = deserializedJsonObj.access_token
+                Me.accessTokenExpiryTime = currentServerTime.AddSeconds(Convert.ToDouble(deserializedJsonObj.expires_in)).ToString()
+                Me.refreshToken = deserializedJsonObj.refresh_token
+
+                Dim refreshExpiry As DateTime = currentServerTime.AddHours(Me.refreshTokenExpiresIn)
+
+                If deserializedJsonObj.expires_in.Equals("0") Then
+                    Dim defaultAccessTokenExpiresIn As Integer = 100
+                    ' In Years
+                    Me.accessTokenExpiryTime = currentServerTime.AddYears(defaultAccessTokenExpiresIn).ToLongDateString() & " " & currentServerTime.AddYears(defaultAccessTokenExpiresIn).ToLongTimeString()
+                End If
+
+                Me.refreshTokenExpiryTime = refreshExpiry.ToLongDateString() & " " & refreshExpiry.ToLongTimeString()
+
+                fileStream = New FileStream(Request.MapPath(Me.accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Write)
+                streamWriter = New StreamWriter(fileStream)
+                streamWriter.WriteLine(Me.accessToken)
+                streamWriter.WriteLine(Me.accessTokenExpiryTime)
+                streamWriter.WriteLine(Me.refreshToken)
+                streamWriter.WriteLine(Me.refreshTokenExpiryTime)
+
+                ' Close and clean up the StreamReader
+                accessTokenResponseStream.Close()
+                Return True
+            End Using
+        Catch we As WebException
+            Dim errorResponse As String = String.Empty
+
             Try
-                Dim currentServerTime As DateTime = DateTime.UtcNow.ToLocalTime()
-
-                Dim accessTokenRequest As WebRequest = System.Net.HttpWebRequest.Create(String.Empty & Me.fqdn & "/oauth/token")
-                accessTokenRequest.Method = "POST"
-
-                Dim oauthParameters As String = "client_id=" & Me.apiKey & "&client_secret=" & Me.secretKey & "&grant_type=client_credentials&scope=" & Me.scope
-                accessTokenRequest.ContentType = "application/x-www-form-urlencoded"
-
-                Dim encoding As New UTF8Encoding()
-                Dim postBytes As Byte() = encoding.GetBytes(oauthParameters)
-                accessTokenRequest.ContentLength = postBytes.Length
-
-                postStream = accessTokenRequest.GetRequestStream()
-                postStream.Write(postBytes, 0, postBytes.Length)
-
-                Dim accessTokenResponse As WebResponse = accessTokenRequest.GetResponse()
-                Using accessTokenResponseStream As New StreamReader(accessTokenResponse.GetResponseStream())
-                    Dim jsonAccessToken As String = accessTokenResponseStream.ReadToEnd().ToString()
-                    Dim deserializeJsonObject As New JavaScriptSerializer()
-
-                    Dim deserializedJsonObj As AccessTokenResponse = DirectCast(deserializeJsonObject.Deserialize(jsonAccessToken, GetType(AccessTokenResponse)), AccessTokenResponse)
-                    Me.accessToken = deserializedJsonObj.access_token.ToString()
-                    Dim accessTokenExpiryTime As DateTime = currentServerTime.AddMilliseconds(Convert.ToDouble(deserializedJsonObj.expires_in.ToString()))
-                    Me.refreshToken = deserializedJsonObj.refresh_token.ToString()
-
-                    fileStream = New FileStream(Request.MapPath(Me.accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Write)
-                    streamWriter = New StreamWriter(fileStream)
-                    streamWriter.WriteLine(Me.accessToken)
-                    streamWriter.WriteLine(Me.accessTokenExpiryTime)
-                    streamWriter.WriteLine(Me.refreshToken)
-
-                    ' Refresh token valids for 24 hours
-                    Dim refreshExpiry As DateTime = currentServerTime.AddHours(24)
-                    Me.refreshTokenExpiryTime = refreshExpiry.ToLongDateString() & " " & refreshExpiry.ToLongTimeString()
-                    streamWriter.WriteLine(refreshExpiry.ToLongDateString() & " " & refreshExpiry.ToLongTimeString())
-
-                    ' Close and clean up the StreamReader
-                    accessTokenResponseStream.Close()
-                    Return True
+                Using sr2 As New StreamReader(we.Response.GetResponseStream())
+                    errorResponse = sr2.ReadToEnd()
+                    sr2.Close()
                 End Using
-            Catch ex As Exception
-                Me.DrawPanelForFailure(statusPanel, ex.Message)
-                Return False
-            Finally
-                If postStream IsNot Nothing Then
-                    postStream.Close()
-                End If
-
-                If streamWriter IsNot Nothing Then
-                    streamWriter.Close()
-                End If
-
-                If fileStream IsNot Nothing Then
-                    fileStream.Close()
-                End If
+            Catch
+                errorResponse = "Unable to get response"
             End Try
-        ElseIf type = AccessType.RefreshToken Then
-            Try
-                Dim currentServerTime As DateTime = DateTime.UtcNow.ToLocalTime()
 
-                Dim accessTokenRequest As WebRequest = System.Net.HttpWebRequest.Create(String.Empty & Me.fqdn & "/oauth/token")
-                accessTokenRequest.Method = "POST"
+            Me.DrawPanelForFailure(statusPanel, errorResponse & Environment.NewLine & we.ToString())
+        Catch ex As Exception
+            Me.DrawPanelForFailure(statusPanel, ex.Message)
+        Finally
+            If postStream IsNot Nothing Then
+                postStream.Close()
+            End If
 
-                Dim oauthParameters As String = "grant_type=refresh_token&client_id=" & Me.apiKey & "&client_secret=" & Me.secretKey & "&refresh_token=" & Me.refreshToken
-                accessTokenRequest.ContentType = "application/x-www-form-urlencoded"
+            If streamWriter IsNot Nothing Then
+                streamWriter.Close()
+            End If
 
-                Dim encoding As New UTF8Encoding()
-                Dim postBytes As Byte() = encoding.GetBytes(oauthParameters)
-                accessTokenRequest.ContentLength = postBytes.Length
-
-                postStream = accessTokenRequest.GetRequestStream()
-                postStream.Write(postBytes, 0, postBytes.Length)
-
-                Dim accessTokenResponse As WebResponse = accessTokenRequest.GetResponse()
-                Using accessTokenResponseStream As New StreamReader(accessTokenResponse.GetResponseStream())
-                    Dim accessTokenJSon As String = accessTokenResponseStream.ReadToEnd().ToString()
-                    Dim deserializeJsonObject As New JavaScriptSerializer()
-
-                    Dim deserializedJsonObj As AccessTokenResponse = DirectCast(deserializeJsonObject.Deserialize(accessTokenJSon, GetType(AccessTokenResponse)), AccessTokenResponse)
-                    Me.accessToken = deserializedJsonObj.access_token.ToString()
-                    Dim accessTokenExpiryTime As DateTime = currentServerTime.AddMilliseconds(Convert.ToDouble(deserializedJsonObj.expires_in.ToString()))
-                    Me.refreshToken = deserializedJsonObj.refresh_token.ToString()
-
-                    fileStream = New FileStream(Request.MapPath(Me.accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Write)
-                    streamWriter = New StreamWriter(fileStream)
-                    streamWriter.WriteLine(Me.accessToken)
-                    streamWriter.WriteLine(Me.accessTokenExpiryTime)
-                    streamWriter.WriteLine(Me.refreshToken)
-
-                    ' Refresh token valids for 24 hours
-                    Dim refreshExpiry As DateTime = currentServerTime.AddHours(24)
-                    Me.refreshTokenExpiryTime = refreshExpiry.ToLongDateString() & " " & refreshExpiry.ToLongTimeString()
-                    streamWriter.WriteLine(refreshExpiry.ToLongDateString() & " " & refreshExpiry.ToLongTimeString())
-
-                    accessTokenResponseStream.Close()
-                    Return True
-                End Using
-            Catch ex As Exception
-                Me.DrawPanelForFailure(statusPanel, ex.Message)
-                Return False
-            Finally
-                If postStream IsNot Nothing Then
-                    postStream.Close()
-                End If
-
-                If streamWriter IsNot Nothing Then
-                    streamWriter.Close()
-                End If
-
-                If fileStream IsNot Nothing Then
-                    fileStream.Close()
-                End If
-            End Try
-        End If
+            If fileStream IsNot Nothing Then
+                fileStream.Close()
+            End If
+        End Try
 
         Return False
     End Function
@@ -371,9 +340,15 @@ Partial Public Class Speech_App1
     ''' <summary>
     ''' Neglect the ssl handshake error with authentication server 
     ''' </summary>
-    Private Sub BypassCertificateError()
-        ServicePointManager.ServerCertificateValidationCallback = DirectCast([Delegate].Combine(ServicePointManager.ServerCertificateValidationCallback, Function(sender1 As Object, certificate As X509Certificate, chain As X509Chain, sslPolicyErrors As SslPolicyErrors) True), RemoteCertificateValidationCallback)
-    End Sub
+    Function CertificateValidationCallBack( _
+    ByVal sender As Object, _
+    ByVal certificate As X509Certificate, _
+    ByVal chain As X509Chain, _
+    ByVal sslPolicyErrors As SslPolicyErrors _
+) As Boolean
+
+        Return True
+    End Function
 
     ''' <summary>
     ''' Read access token file and validate the access token
@@ -386,7 +361,7 @@ Partial Public Class Speech_App1
             result = Me.GetAccessToken(AccessType.ClientCredential)
         Else
             Dim tokenValidity As String = Me.IsTokenValid()
-            If tokenValidity = "REFRESH_ACCESS_TOKEN" Then
+            If tokenValidity = "REFRESH_TOKEN" Then
                 result = Me.GetAccessToken(AccessType.RefreshToken)
             ElseIf String.Compare(tokenValidity, "INVALID_ACCESS_TOKEN") = 0 Then
                 result = Me.GetAccessToken(AccessType.ClientCredential)
@@ -462,18 +437,6 @@ Partial Public Class Speech_App1
 
 #End Region
 
-#Region "SSLErrorHandling"
-    Function CertificateValidationCallBack( _
-    ByVal sender As Object, _
-    ByVal certificate As X509Certificate, _
-    ByVal chain As X509Chain, _
-    ByVal sslPolicyErrors As SslPolicyErrors _
-) As Boolean
-
-        Return True
-    End Function
-#End Region
-
 #Region "Speech Service Functions"
 
     ''' <summary>
@@ -486,7 +449,6 @@ Partial Public Class Speech_App1
 
         ' Verify File Extension
         Dim extension As String = System.IO.Path.GetExtension(file)
-        Dim fileName As String = System.IO.Path.GetFileNameWithoutExtension(file)
 
         If Not String.IsNullOrEmpty(extension) AndAlso (extension.Equals(".wav") OrElse extension.Equals(".amr")) Then
             isValid = True
@@ -592,6 +554,19 @@ Partial Public Class Speech_App1
             Else
                 Me.DrawPanelForFailure(statusPanel, "Empty speech to text response")
             End If
+        Catch we As WebException
+            Dim errorResponse As String = String.Empty
+
+            Try
+                Using sr2 As New StreamReader(we.Response.GetResponseStream())
+                    errorResponse = sr2.ReadToEnd()
+                    sr2.Close()
+                End Using
+            Catch
+                errorResponse = "Unable to get response"
+            End Try
+
+            Me.DrawPanelForFailure(statusPanel, errorResponse & Environment.NewLine & we.ToString())
         Catch ex As Exception
             Me.DrawPanelForFailure(statusPanel, ex.ToString())
         Finally
@@ -617,8 +592,17 @@ Partial Public Class Speech_App1
             lblResultText.Text = nbest.ResultText
             lblGrade.Text = nbest.Grade
             lblConfidence.Text = nbest.Confidence.ToString()
-            lblWords.Text = If(nbest.Words IsNot Nothing, String.Join(", ", nbest.Words.ToArray()), String.Empty)
-            lblWordScores.Text = String.Join(", ", nbest.WordScores.ToArray())
+
+            Dim strText As String = "["
+            For Each word As String In nbest.Words
+                strText += """" & word & """, "
+            Next
+            strText = strText.Substring(0, strText.LastIndexOf(","))
+            strText = strText & "]"
+
+            lblWords.Text = If(nbest.Words IsNot Nothing, strText, String.Empty)
+
+            lblWordScores.Text = "[" & String.Join(", ", nbest.WordScores.ToArray()) & "]"
         Next
     End Sub
 

@@ -47,6 +47,11 @@ public partial class Speech_App1 : System.Web.UI.Page
     private bool deleteFile;
 
     /// <summary>
+    /// Gets or sets the value of refreshTokenExpiresIn
+    /// </summary>
+    private int refreshTokenExpiresIn;
+
+    /// <summary>
     /// Access Token Types
     /// </summary>
     public enum AccessType
@@ -186,6 +191,16 @@ public partial class Speech_App1 : System.Web.UI.Page
             this.scope = "SPEECH";
         }
 
+        string refreshTokenExpires = ConfigurationManager.AppSettings["refreshTokenExpiresIn"];
+        if (!string.IsNullOrEmpty(refreshTokenExpires))
+        {
+            this.refreshTokenExpiresIn = Convert.ToInt32(refreshTokenExpires);
+        }
+        else
+        {
+            this.refreshTokenExpiresIn = 24;
+        }
+
         return true;
     }
 
@@ -247,16 +262,16 @@ public partial class Speech_App1 : System.Web.UI.Page
         try
         {
             DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
-            DateTime refreshTokenExpiryTime = DateTime.Parse(this.refreshTokenExpiryTime);
-            if (currentServerTime >= refreshTokenExpiryTime)
+            if (currentServerTime >= DateTime.Parse(this.accessTokenExpiryTime))
             {
-                return "INVALID_ACCESS_TOKEN";
-            }
-
-            DateTime accessTokenExpiryTime = DateTime.Parse(this.accessTokenExpiryTime);
-            if (currentServerTime >= accessTokenExpiryTime)
-            {
-                return "REFRESH_ACCESS_TOKEN";
+                if (currentServerTime >= DateTime.Parse(this.refreshTokenExpiryTime))
+                {
+                    return "INVALID_ACCESS_TOKEN";
+                }
+                else
+                {
+                    return "REFRESH_TOKEN";
+                }
             }
             else
             {
@@ -280,142 +295,103 @@ public partial class Speech_App1 : System.Web.UI.Page
         Stream postStream = null;
         StreamWriter streamWriter = null;
 
-        // This is client credential flow
-        if (type == AccessType.ClientCredential)
+
+        try
         {
-            try
+            DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
+
+            WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create(string.Empty + this.fqdn + "/oauth/token");
+            accessTokenRequest.Method = "POST";
+
+            string oauthParameters = string.Empty;
+            if (type == AccessType.ClientCredential)
             {
-                DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
-
-                WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create(string.Empty + this.fqdn + "/oauth/token");
-                accessTokenRequest.Method = "POST";
-
-                string oauthParameters = "client_id=" + this.apiKey + "&client_secret=" + this.secretKey + "&grant_type=client_credentials&scope=" + this.scope;
-                accessTokenRequest.ContentType = "application/x-www-form-urlencoded";
-
-                UTF8Encoding encoding = new UTF8Encoding();
-                byte[] postBytes = encoding.GetBytes(oauthParameters);
-                accessTokenRequest.ContentLength = postBytes.Length;
-
-                postStream = accessTokenRequest.GetRequestStream();
-                postStream.Write(postBytes, 0, postBytes.Length);
-
-                WebResponse accessTokenResponse = accessTokenRequest.GetResponse();
-                using (StreamReader accessTokenResponseStream = new StreamReader(accessTokenResponse.GetResponseStream()))
-                {
-                    string jsonAccessToken = accessTokenResponseStream.ReadToEnd().ToString();
-                    JavaScriptSerializer deserializeJsonObject = new JavaScriptSerializer();
-
-                    AccessTokenResponse deserializedJsonObj = (AccessTokenResponse)deserializeJsonObject.Deserialize(jsonAccessToken, typeof(AccessTokenResponse));
-                    this.accessToken = deserializedJsonObj.access_token.ToString();
-                    DateTime accessTokenExpiryTime = currentServerTime.AddMilliseconds(Convert.ToDouble(deserializedJsonObj.expires_in.ToString()));
-                    this.refreshToken = deserializedJsonObj.refresh_token.ToString();
-
-                    fileStream = new FileStream(Request.MapPath(this.accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Write);
-                    streamWriter = new StreamWriter(fileStream);
-                    streamWriter.WriteLine(this.accessToken);
-                    streamWriter.WriteLine(this.accessTokenExpiryTime);
-                    streamWriter.WriteLine(this.refreshToken);
-                    
-                    // Refresh token valids for 24 hours
-                    DateTime refreshExpiry = currentServerTime.AddHours(24);
-                    this.refreshTokenExpiryTime = refreshExpiry.ToLongDateString() + " " + refreshExpiry.ToLongTimeString();
-                    streamWriter.WriteLine(refreshExpiry.ToLongDateString() + " " + refreshExpiry.ToLongTimeString());
-                                        
-                    // Close and clean up the StreamReader
-                    accessTokenResponseStream.Close();
-                    return true;
-                }
+                oauthParameters = "client_id=" + this.apiKey + "&client_secret=" + this.secretKey + "&grant_type=client_credentials&scope=" + this.scope;
             }
-            catch (Exception ex)
+            else
             {
-                this.DrawPanelForFailure(statusPanel, ex.Message);
-                return false;
+                oauthParameters = "grant_type=refresh_token&client_id=" + this.apiKey + "&client_secret=" + this.secretKey + "&refresh_token=" + this.refreshToken;
             }
-            finally
+            accessTokenRequest.ContentType = "application/x-www-form-urlencoded";
+
+            UTF8Encoding encoding = new UTF8Encoding();
+            byte[] postBytes = encoding.GetBytes(oauthParameters);
+            accessTokenRequest.ContentLength = postBytes.Length;
+
+            postStream = accessTokenRequest.GetRequestStream();
+            postStream.Write(postBytes, 0, postBytes.Length);
+
+            WebResponse accessTokenResponse = accessTokenRequest.GetResponse();
+            using (StreamReader accessTokenResponseStream = new StreamReader(accessTokenResponse.GetResponseStream()))
             {
-                if (null != postStream)
+                string jsonAccessToken = accessTokenResponseStream.ReadToEnd();
+                JavaScriptSerializer deserializeJsonObject = new JavaScriptSerializer();
+
+                AccessTokenResponse deserializedJsonObj = (AccessTokenResponse)deserializeJsonObject.Deserialize(jsonAccessToken, typeof(AccessTokenResponse));
+                this.accessToken = deserializedJsonObj.access_token;
+                this.accessTokenExpiryTime = currentServerTime.AddSeconds(Convert.ToDouble(deserializedJsonObj.expires_in)).ToString();
+                this.refreshToken = deserializedJsonObj.refresh_token;
+
+                DateTime refreshExpiry = currentServerTime.AddHours(this.refreshTokenExpiresIn);
+
+                if (deserializedJsonObj.expires_in.Equals("0"))
                 {
-                    postStream.Close();
+                    int defaultAccessTokenExpiresIn = 100; // In Years
+                    this.accessTokenExpiryTime = currentServerTime.AddYears(defaultAccessTokenExpiresIn).ToLongDateString() + " " + currentServerTime.AddYears(defaultAccessTokenExpiresIn).ToLongTimeString();                    
                 }
 
-                if (null != streamWriter)
-                {
-                    streamWriter.Close();
-                }
+                this.refreshTokenExpiryTime = refreshExpiry.ToLongDateString() + " " + refreshExpiry.ToLongTimeString();
 
-                if (null != fileStream)
-                {
-                    fileStream.Close();
-                }
+                fileStream = new FileStream(Request.MapPath(this.accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Write);
+                streamWriter = new StreamWriter(fileStream);
+                streamWriter.WriteLine(this.accessToken);
+                streamWriter.WriteLine(this.accessTokenExpiryTime);
+                streamWriter.WriteLine(this.refreshToken);                
+                streamWriter.WriteLine(this.refreshTokenExpiryTime);
+
+                // Close and clean up the StreamReader
+                accessTokenResponseStream.Close();
+                return true;
             }
         }
-        else if (type == AccessType.RefreshToken)
+        catch (WebException we)
         {
+            string errorResponse = string.Empty;
+
             try
             {
-                DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
-
-                WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create(string.Empty + this.fqdn + "/oauth/token");
-                accessTokenRequest.Method = "POST";
-
-                string oauthParameters = "grant_type=refresh_token&client_id=" + this.apiKey + "&client_secret=" + this.secretKey + "&refresh_token=" + this.refreshToken;
-                accessTokenRequest.ContentType = "application/x-www-form-urlencoded";
-
-                UTF8Encoding encoding = new UTF8Encoding();
-                byte[] postBytes = encoding.GetBytes(oauthParameters);
-                accessTokenRequest.ContentLength = postBytes.Length;
-
-                postStream = accessTokenRequest.GetRequestStream();
-                postStream.Write(postBytes, 0, postBytes.Length);
-
-                WebResponse accessTokenResponse = accessTokenRequest.GetResponse();
-                using (StreamReader accessTokenResponseStream = new StreamReader(accessTokenResponse.GetResponseStream()))
+                using (StreamReader sr2 = new StreamReader(we.Response.GetResponseStream()))
                 {
-                    string accessTokenJSon = accessTokenResponseStream.ReadToEnd().ToString();
-                    JavaScriptSerializer deserializeJsonObject = new JavaScriptSerializer();
-
-                    AccessTokenResponse deserializedJsonObj = (AccessTokenResponse)deserializeJsonObject.Deserialize(accessTokenJSon, typeof(AccessTokenResponse));
-                    this.accessToken = deserializedJsonObj.access_token.ToString();
-                    DateTime accessTokenExpiryTime = currentServerTime.AddMilliseconds(Convert.ToDouble(deserializedJsonObj.expires_in.ToString()));
-                    this.refreshToken = deserializedJsonObj.refresh_token.ToString();
-
-                    fileStream = new FileStream(Request.MapPath(this.accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Write);
-                    streamWriter = new StreamWriter(fileStream);
-                    streamWriter.WriteLine(this.accessToken);
-                    streamWriter.WriteLine(this.accessTokenExpiryTime);
-                    streamWriter.WriteLine(this.refreshToken);
-
-                    // Refresh token valids for 24 hours
-                    DateTime refreshExpiry = currentServerTime.AddHours(24);
-                    this.refreshTokenExpiryTime = refreshExpiry.ToLongDateString() + " " + refreshExpiry.ToLongTimeString();
-                    streamWriter.WriteLine(refreshExpiry.ToLongDateString() + " " + refreshExpiry.ToLongTimeString());
-
-                    accessTokenResponseStream.Close();
-                    return true;
+                    errorResponse = sr2.ReadToEnd();
+                    sr2.Close();
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                this.DrawPanelForFailure(statusPanel, ex.Message);
-                return false;
+                errorResponse = "Unable to get response";
             }
-            finally
+
+            this.DrawPanelForFailure(statusPanel, errorResponse + Environment.NewLine + we.ToString());
+        }
+        catch (Exception ex)
+        {
+            this.DrawPanelForFailure(statusPanel, ex.Message);
+        }
+        finally
+        {
+            if (null != postStream)
             {
-                if (null != postStream)
-                {
-                    postStream.Close();
-                }
+                postStream.Close();
+            }
 
-                if (null != streamWriter)
-                {
-                    streamWriter.Close();
-                }
+            if (null != streamWriter)
+            {
+                streamWriter.Close();
+            }
 
-                if (null != fileStream)
-                {
-                    fileStream.Close();
-                }
+            if (null != fileStream)
+            {
+                fileStream.Close();
             }
         }
 
@@ -449,7 +425,7 @@ public partial class Speech_App1 : System.Web.UI.Page
         else
         {
             string tokenValidity = this.IsTokenValid();
-            if (tokenValidity == "REFRESH_ACCESS_TOKEN")
+            if (tokenValidity == "REFRESH_TOKEN")
             {
                 result = this.GetAccessToken(AccessType.RefreshToken);
             }
@@ -653,6 +629,25 @@ public partial class Speech_App1 : System.Web.UI.Page
                 this.DrawPanelForFailure(statusPanel, "Empty speech to text response");
             }
         }
+        catch (WebException we)
+        {
+            string errorResponse = string.Empty;
+
+            try
+            {
+                using (StreamReader sr2 = new StreamReader(we.Response.GetResponseStream()))
+                {
+                    errorResponse = sr2.ReadToEnd();
+                    sr2.Close();
+                }
+            }
+            catch
+            {
+                errorResponse = "Unable to get response";
+            }
+
+            this.DrawPanelForFailure(statusPanel, errorResponse + Environment.NewLine + we.ToString());
+        }
         catch (Exception ex)
         {
             this.DrawPanelForFailure(statusPanel, ex.ToString());
@@ -685,10 +680,20 @@ public partial class Speech_App1 : System.Web.UI.Page
             lblResultText.Text = nbest.ResultText;
             lblGrade.Text = nbest.Grade;
             lblConfidence.Text = nbest.Confidence.ToString();
-            lblWords.Text = nbest.Words != null ? string.Join(", ", nbest.Words.ToArray()) : string.Empty;
-            lblWordScores.Text = string.Join(", ", nbest.WordScores.ToArray());
+
+            string strText = "[";
+            foreach (string word in nbest.Words)
+            {
+                strText += "\"" + word + "\", ";
+            }
+            strText = strText.Substring(0, strText.LastIndexOf(","));
+            strText = strText + "]";
+
+            lblWords.Text = nbest.Words != null ? strText : string.Empty;
+
+            lblWordScores.Text = "[" + string.Join(", ", nbest.WordScores.ToArray()) + "]";
         }
-    }   
+    }
 
     #endregion
 }
