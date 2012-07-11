@@ -42,11 +42,9 @@ that you will get a different API key and secret,
 
   Depending on the kind of authentication used, an application may be based on
 either the Autonomous Client or the Web-Server 
-  Client OAuth flow (see
-https://devconnect-api.att.com/docs/oauth20/autonomous-client-application-oauth-flow
-or
-  https://devconnect-api.att.com/docs/oauth20/web-server-client-application-oauth-flow
-respectively).
+  Client OAuth flow (see https://devconnect-api.att.com/docs/oauth20/autonomous-client-application-oauth-flow or
+  https://devconnect-api.att.com/docs/oauth20/web-server-client-application-oauth-flow 
+  respectively).
 
 2. Installation
 ** Requirements
@@ -59,15 +57,15 @@ Copy the sample application folder to Apache web root folder, for example
 /var/www/html.
  
 3. Parameters
-Each sample application contains a config.web file. It holds configurable 
+Each sample application contains a config.php file. It holds configurable 
 parameters described in an easy to read format. 
-Please populate the following parameters in config.web as specified 
+Please populate the following parameters in config.php as specified 
 below: 
 1) api_key : {set the value as per your registered application 
 'API key' field value} 
 2) secret_key : {set the value as per your registered application 
 'Secret key' field value} 
-3) endPoint : https://api.att.com 
+3) FQDN : https://api.att.com 
 
 Note: You must update parameters 1-2 after you promote your application 
 from 'Sandbox' environment to 'Production' environment. 
