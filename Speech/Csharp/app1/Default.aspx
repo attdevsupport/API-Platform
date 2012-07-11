@@ -78,7 +78,7 @@ For more information contact developer.support@att.com
                     <div id="extraleft">
                         <div class="warning">
                             <strong>Note:</strong><br />
-                            If no is file chosen, a <a href="./default.wav">default.wav</a> file will be loaded on submit.<br />
+                            If no file is chosen, a <a href="./default.wav">default.wav</a> file will be loaded on submit.<br />
                             <strong>Speech file format constraints:</strong> <br />
                                 •	16 bit PCM WAV, single channel, 8 kHz sampling<br />
                                 •	AMR (narrowband), 12.2 kbit/s, 8 kHz sampling<br />

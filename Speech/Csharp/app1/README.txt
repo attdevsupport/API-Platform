@@ -77,7 +77,7 @@ web.config as specified below:
 2) secret_key     	: This is mandatory parameter, set the value as per your 
                           registered appliaction 'Secret key' field value.
 
-3) endPoint		: This is mandatory parameter, set it to the end point URI 
+3) FQDN			: This is mandatory parameter, set it to the end point URI 
                           of AT&T Service.
 
 4) scope		: SPEECH (Scope of the ATT service that will be invoked by 
