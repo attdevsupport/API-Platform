@@ -1,16 +1,15 @@
-<!-- 
-Licensed by AT&T under 'Software Development Kit Tools Agreement.' September 2011
+<!--Licensed by AT&T under 'Software Development Kit Tools Agreement.' June 2012
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
-Copyright 2011 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 For more information contact developer.support@att.com
 -->
 <?php
 header("Content-Type: text/html; charset=ISO-8859-1");
 include ("config.php");
 include ($oauth_file);
+error_reporting(0);
 
 session_start();
-putenv('TZ=PST');
 
 if (!empty($_REQUEST["sendSms"])) {
   $_SESSION["sms1_smsMsg"] = $_POST['message'];
@@ -46,7 +45,7 @@ function RefreshToken($FQDN,$api_key,$secret_key,$scope,$fullToken){
   curl_setopt($accessTok, CURLOPT_HTTPGET, 1);
   curl_setopt($accessTok, CURLOPT_HEADER, 0);
   curl_setopt($accessTok, CURLINFO_HEADER_OUT, 0);
-  //curl_setopt($accessTok, CURLOPT_HTTPHEADER, $accessTok_headers);
+  curl_setopt($accessTok, CURLOPT_HTTPHEADER, $accessTok_headers);
   curl_setopt($accessTok, CURLOPT_RETURNTRANSFER, 1);
   curl_setopt($accessTok, CURLOPT_SSL_VERIFYPEER, false);
   curl_setopt($accessTok, CURLOPT_POST, 1);
@@ -60,6 +59,11 @@ function RefreshToken($FQDN,$api_key,$secret_key,$scope,$fullToken){
     $accessToken = $jsonObj->{'access_token'};//fetch the access token from the response.
     $refreshToken = $jsonObj->{'refresh_token'};
     $expiresIn = $jsonObj->{'expires_in'};
+    
+     if($expiresIn == 0) {
+	  $expiresIn = 24*60*60;
+	 
+	  }
 	      
     $refreshTime=$currentTime+(int)($expiresIn); // Time for token refresh
     $updateTime=$currentTime + ( 24*60*60); // Time to get for a new token update, current time + 24h 
@@ -97,12 +101,13 @@ function GetAccessToken($FQDN,$api_key,$secret_key,$scope){
   curl_setopt($accessTok, CURLOPT_HTTPGET, 1);
   curl_setopt($accessTok, CURLOPT_HEADER, 0);
   curl_setopt($accessTok, CURLINFO_HEADER_OUT, 0);
-  //  curl_setopt($accessTok, CURLOPT_HTTPHEADER, $accessTok_headers);
+  curl_setopt($accessTok, CURLOPT_HTTPHEADER, $accessTok_headers);
   curl_setopt($accessTok, CURLOPT_RETURNTRANSFER, 1);
   curl_setopt($accessTok, CURLOPT_SSL_VERIFYPEER, false);
   curl_setopt($accessTok, CURLOPT_POST, 1);
   curl_setopt($accessTok, CURLOPT_POSTFIELDS,$post_data);
   $accessTok_response = curl_exec($accessTok);
+   
   
   $responseCode=curl_getinfo($accessTok,CURLINFO_HTTP_CODE);
   $currentTime=time();
@@ -116,7 +121,11 @@ function GetAccessToken($FQDN,$api_key,$secret_key,$scope){
       $accessToken = $jsonObj->{'access_token'};//fetch the access token from the response.
       $refreshToken = $jsonObj->{'refresh_token'};
       $expiresIn = $jsonObj->{'expires_in'};
-
+       
+       if($expiresIn == 0) {
+	  $expiresIn = 24*60*60*365*100;
+	 
+	  }
       $refreshTime=$currentTime+(int)($expiresIn); // Time for token refresh
       $updateTime=$currentTime + ( 24*60*60); // Time to get a new token update, current time + 24h
 
@@ -275,21 +284,24 @@ document.write("" + navigator.userAgent);
 	
 	// Form the URL to send SMS 
       $sendSMS_RequestBody = '{"Address":"'.$address.'","Message":"'.$smsMsg.'"}';//post data
-      $sendSMS_Url = "$FQDN/rest/sms/2/messaging/outbox?access_token=".$accessToken;
-      $sendSMS_headers = array(
-			       'Content-Type: application/json'
-	);
+      $sendSMS_Url = "$FQDN/rest/sms/2/messaging/outbox?";
+	  $authorization = 'Authorization: Bearer '.$accessToken;
+	 $content = "Content-Type: application/json";
+      
 
 	//Invoke the URL
 	$sendSMS = curl_init();
+	
 	curl_setopt($sendSMS, CURLOPT_URL, $sendSMS_Url);
 	curl_setopt($sendSMS, CURLOPT_POST, 1);
 	curl_setopt($sendSMS, CURLOPT_HEADER, 0);
 	curl_setopt($sendSMS, CURLINFO_HEADER_OUT, 0);
-	curl_setopt($sendSMS, CURLOPT_HTTPHEADER, $sendSMS_headers);
+	curl_setopt($sendSMS, CURLOPT_HTTPHEADER, array($authorization, $content));
 	curl_setopt($sendSMS, CURLOPT_POSTFIELDS, $sendSMS_RequestBody);
 	curl_setopt($sendSMS, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($sendSMS, CURLOPT_SSL_VERIFYPEER, false);
+	
+	
 	$sendSMS_response = curl_exec($sendSMS);
 	
 	$responseCode=curl_getinfo($sendSMS,CURLINFO_HTTP_CODE);
@@ -308,7 +320,7 @@ document.write("" + navigator.userAgent);
 
 		<div class="success">
                 <strong>SUCCESS:</strong><br />
-                Message ID <?php echo $msgdata; ?>
+               <strong> Message ID</strong> <?php echo $msgdata; ?>
                 </div>
 
 	<?php } 
@@ -320,6 +332,7 @@ document.write("" + navigator.userAgent);
 
                 <div class="errorWide">
                 <strong>ERROR:</strong><br />
+			
                 <?php echo $errormsg  ?>
                 </div>
 
@@ -383,10 +396,9 @@ Feature 2: Get Delivery Status</h2>
 	// Form the URL to get Sms Delivery Status
       $getSMSDelStatus_Url = "$FQDN/rest/sms/2/messaging/outbox/";
       $getSMSDelStatus_Url .= $smsID;
-      $getSMSDelStatus_Url .= "?access_token=".$accessToken;
-      $getSMSDelStatus_headers = array(
-		    'Content-Type: application/x-www-form-urlencoded'
-		    );
+    
+	 $authorization = 'Authorization: Bearer '.$accessToken;
+	 $content = "Content-Type: application/json";
 	
 	//Invoke the URL
 	$getSMSDelStatus = curl_init();	
@@ -394,9 +406,10 @@ Feature 2: Get Delivery Status</h2>
 	curl_setopt($getSMSDelStatus, CURLOPT_HTTPGET, 1);
 	curl_setopt($getSMSDelStatus, CURLOPT_HEADER, 0);
 	curl_setopt($getSMSDelStatus, CURLINFO_HEADER_OUT, 0);
-	curl_setopt($getSMSDelStatus, CURLOPT_HTTPHEADER, $getSMSDelStatus_headers);
+	curl_setopt($getSMSDelStatus, CURLOPT_HTTPHEADER, array($authorization, $content));
 	curl_setopt($getSMSDelStatus, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($getSMSDelStatus, CURLOPT_SSL_VERIFYPEER, false);
+	
 
 	$getSMSDelStatus_response = curl_exec($getSMSDelStatus);
 	$responseCode=curl_getinfo($getSMSDelStatus,CURLINFO_HTTP_CODE);
@@ -410,13 +423,13 @@ Feature 2: Get Delivery Status</h2>
 		//decode the response and display it.
 	  $jsonObj = json_decode($getSMSDelStatus_response,true);
 	  $deliveryStatus=$jsonObj['DeliveryInfoList']['DeliveryInfo']['0']['DeliveryStatus'];
-	  $resourceURL=$jsonObj['DeliveryInfoList']['ResourceURL'];
+	  $resourceURL=$jsonObj['DeliveryInfoList']['ResourceUrl'];
 
 	  ?>
 	    <div class="successWide">
 	       <strong>SUCCESS:</strong><br />
-	       <strong>Status:</strong> <?php echo $deliveryStatus; ?><br />
-               <strong>Resource URL:<?php echo $resourceURL; ?></strong>
+	       <strong>Status:</strong><?php echo $deliveryStatus; ?><br />
+               <strong>Resource URL:</strong><?php echo $resourceURL; ?>
             </div>
           <?php
 	}
@@ -481,22 +494,26 @@ Feature 2: Get Delivery Status</h2>
 	// Form the URL for getting the inbox messages
 
       $shortCode = $_POST['receiveSms'];
-      $receiveSMS_Url = "$FQDN/rest/sms/2/messaging/inbox?access_token=".$accessToken."&RegistrationID=".$shortCode;
+      $receiveSMS_Url = "$FQDN/rest/sms/2/messaging/inbox?&RegistrationID=".$shortCode;
       
-	$receiveSMS_headers = array(
+	//$receiveSMS_headers = 
+	/*array(
 	//	'Content-Type: application/x-www-form-urlencoded'
 		'Accept: application/json'
-	);
-
+	);*/
+ $authorization = 'Authorization: Bearer '.$accessToken;
+	 $content = "Content-Type: application/json";
+	 
 	//Invoke the URL
 	$receiveSMS = curl_init();
 	curl_setopt($receiveSMS, CURLOPT_URL, $receiveSMS_Url);
 	curl_setopt($receiveSMS, CURLOPT_HTTPGET, 1);
 	curl_setopt($receiveSMS, CURLOPT_HEADER, 0);
 	curl_setopt($receiveSMS, CURLINFO_HEADER_OUT, 0);
-	curl_setopt($receiveSMS, CURLOPT_HTTPHEADER, $receiveSMS_headers);
+	curl_setopt($receiveSMS, CURLOPT_HTTPHEADER, array($authorization, $content));
 	curl_setopt($receiveSMS, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($receiveSMS, CURLOPT_SSL_VERIFYPEER, false);
+
 
 	$receiveSMS_response = curl_exec($receiveSMS);
 	$responseCode=curl_getinfo($receiveSMS,CURLINFO_HTTP_CODE);
@@ -558,8 +575,8 @@ Feature 2: Get Delivery Status</h2>
 ?>
 <div id="footer">
 
-	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
-    <p>� 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
+    <p> &#169; 2012 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
 <br>
 The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br>
@@ -573,3 +590,4 @@ For more information contact <a href="mailto:developer.support@att.com">develope
 
 </body>
 </html>
+

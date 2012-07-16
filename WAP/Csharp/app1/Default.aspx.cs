@@ -1,210 +1,81 @@
-﻿//Licensed by AT&T under 'Software Development Kit Tools Agreement.' September 2011
-//TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
-//Copyright 2011 AT&T Intellectual Property. All rights reserved. http://developer.att.com
-//For more information contact developer.support@att.com
+﻿// <copyright file="Default.aspx.cs" company="AT&amp;T">
+// Licensed by AT&amp;T under 'Software Development Kit Tools Agreement.' 2012
+// TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+// Copyright 2012 AT&amp;T Intellectual Property. All rights reserved. http://developer.att.com
+// For more information contact developer.support@att.com
+// </copyright>
+
+#region References
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using System.Net;
-using System.IO;
-using System.Web.Services;
-using System.Text;
 using System.Configuration;
-using System.Web.Script.Serialization;
-using System.Net.Sockets;
-using System.Security.Cryptography.X509Certificates;
-using System.Net.Security;
-using System.Collections.Specialized;
 using System.Drawing;
+using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using System.Net.Mail;
-using System.IO;
+using System.Text;
+using System.Web.Script.Serialization;
+using System.Web.UI.WebControls;
 
-public partial class Default : System.Web.UI.Page
+#endregion
+
+/// <summary>
+/// Access Token Types
+/// </summary>
+public enum AccessTokenType
 {
-    string shortCode, FQDN, accessTokenFilePath, oauthFlow;
-    string api_key, secret_key, auth_code, access_token, authorize_redirect_uri, scope, expiryMilliSeconds, refresh_token, lastTokenTakenTime, refreshTokenExpiryTime;
-    string[] shortCodes;
-    string wapFilePath;
-    public bool readAccessTokenFile()
-    {
-        try
-        {
-            FileStream file = new FileStream(Request.MapPath(accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Read);
-            StreamReader sr = new StreamReader(file);
-            access_token = sr.ReadLine();
-            expiryMilliSeconds = sr.ReadLine();
-            refresh_token = sr.ReadLine();
-            lastTokenTakenTime = sr.ReadLine();
-            refreshTokenExpiryTime = sr.ReadLine();
-            sr.Close();
-            file.Close();
-        }
-        catch (Exception ex)
-        {
-            return false;
-        }
-        if ((access_token == null) || (expiryMilliSeconds == null) || (refresh_token == null) || (lastTokenTakenTime == null) || (refreshTokenExpiryTime == null))
-        {
-            return false;
-        }
-        return true;
-    }
+    /// <summary>
+    /// Access Token Type is based on Client Credential Mode
+    /// </summary>
+    Client_Credential,
 
-    /* This function validates the expiry of the access token and refresh token,
-     * function compares the current time with the refresh token taken time, if current time is greater then 
-     * returns INVALID_REFRESH_TOKEN
-     * function compares the difference of last access token taken time and the current time with the expiry seconds, if its more,
-     * funciton returns INVALID_ACCESS_TOKEN
-     * otherwise returns VALID_ACCESS_TOKEN
-    */
-    public string isTokenValid()
-    {
-        try
-        {
+    /// <summary>
+    /// Access Token Type is based on Authorization Code
+    /// </summary>
+    Authorization_Code,
 
-            DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
-            DateTime lastRefreshTokenTime = DateTime.Parse(refreshTokenExpiryTime);
-            TimeSpan refreshSpan = currentServerTime.Subtract(lastRefreshTokenTime);
-            if (currentServerTime >= lastRefreshTokenTime)
-            {
-                return "INVALID_ACCESS_TOKEN";
-            }
-            DateTime lastTokenTime = DateTime.Parse(lastTokenTakenTime);
-            TimeSpan tokenSpan = currentServerTime.Subtract(lastTokenTime);
-            if (((tokenSpan.TotalSeconds)) > Convert.ToInt32(expiryMilliSeconds))
-            {
-                return "REFRESH_ACCESS_TOKEN";
-            }
-            else
-            {
-                return "VALID_ACCESS_TOKEN";
-            }
-        }
-        catch (Exception ex)
-        {
-            return "INVALID_ACCESS_TOKEN";
-        }
-    }
+    /// <summary>
+    /// Access Token Type is based on Refresh Token
+    /// </summary>
+    Refresh_Token
+}
 
+/// <summary>
+/// WapPush_App1 application
+/// </summary>
+/// <remarks>
+/// This application allows a user to send a WAP Push message to a mobile device, by entering the address, alert text, and URL to be sent.
+/// This application uses Autonomous Client Credentials consumption model to send messages. The user enters the alert text and URL, 
+/// but the application in the background must build the push.txt file to attach with the requested values.
+/// </remarks>
+public partial class WapPush_App1 : System.Web.UI.Page
+{
+    /// <summary>
+    /// Instance variables for local processing
+    /// </summary>
+    private string endPoint, accessTokenFilePath, wapFilePath;
 
-    /* This function get the access token based on the type parameter type values.
-     * If type value is 1, access token is fetch for client credential flow
-     * If type value is 2, access token is fetch for client credential flow based on the exisiting refresh token
-     */
-    public bool getAccessToken(int type, Panel panelParam)
-    {
-        /*  This is client credential flow: */
-        if (type == 1)
-        {
-            try
-            {
-                DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
-                WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create("" + FQDN + "/oauth/token");
-                accessTokenRequest.Method = "POST";
-                string oauthParameters = "client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString() + "&grant_type=client_credentials&scope=WAP";
-                accessTokenRequest.ContentType = "application/x-www-form-urlencoded";
-                //sendSmsRequestObject.Accept = "application/json";
-                UTF8Encoding encoding = new UTF8Encoding();
-                byte[] postBytes = encoding.GetBytes(oauthParameters);
-                accessTokenRequest.ContentLength = postBytes.Length;
-                Stream postStream = accessTokenRequest.GetRequestStream();
-                postStream.Write(postBytes, 0, postBytes.Length);
-                postStream.Close();
+    /// <summary>
+    /// Instance variables for local processing
+    /// </summary>
+    private string apiKey, secretKey, accessToken, scope, expirySeconds, refreshToken, refreshTokenExpiryTime;
 
-                WebResponse accessTokenResponse = accessTokenRequest.GetResponse();
-                using (StreamReader accessTokenResponseStream = new StreamReader(accessTokenResponse.GetResponseStream()))
-                {
-                    string jsonAccessToken = accessTokenResponseStream.ReadToEnd().ToString();
-                    JavaScriptSerializer deserializeJsonObject = new JavaScriptSerializer();
-                    AccessTokenResponse deserializedJsonObj = (AccessTokenResponse)deserializeJsonObject.Deserialize(jsonAccessToken, typeof(AccessTokenResponse));
-                    access_token = deserializedJsonObj.access_token.ToString();
-                    expiryMilliSeconds = deserializedJsonObj.expires_in.ToString();
-                    refresh_token = deserializedJsonObj.refresh_token.ToString();
-                    FileStream file = new FileStream(Request.MapPath(accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Write);
-                    StreamWriter sw = new StreamWriter(file);
-                    sw.WriteLine(access_token);
-                    sw.WriteLine(expiryMilliSeconds);
-                    sw.WriteLine(refresh_token);
-                    sw.WriteLine(currentServerTime.ToLongDateString() + " " + currentServerTime.ToLongTimeString());
-                    lastTokenTakenTime = currentServerTime.ToLongDateString() + " " + currentServerTime.ToLongTimeString();
-                    //Refresh token valids for 24 hours
-                    DateTime refreshExpiry = currentServerTime.AddHours(24);
-                    refreshTokenExpiryTime = refreshExpiry.ToLongDateString() + " " + refreshExpiry.ToLongTimeString();
-                    sw.WriteLine(refreshExpiry.ToLongDateString() + " " + refreshExpiry.ToLongTimeString());
-                    sw.Close();
-                    file.Close();
-                    // Close and clean up the StreamReader
-                    accessTokenResponseStream.Close();
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                drawPanelForFailure(panelParam, ex.ToString());
-                return false;
-            }
-        }
-        else if (type == 2)
-        {
-            try
-            {
-                DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
-                WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create("" + FQDN + "/oauth/token");
-                accessTokenRequest.Method = "POST";
-                string oauthParameters = "grant_type=refresh_token&client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString() + "&refresh_token=" + refresh_token.ToString();
-                accessTokenRequest.ContentType = "application/x-www-form-urlencoded";
-                //sendSmsRequestObject.Accept = "application/json";
-                UTF8Encoding encoding = new UTF8Encoding();
-                byte[] postBytes = encoding.GetBytes(oauthParameters);
-                accessTokenRequest.ContentLength = postBytes.Length;
-                Stream postStream = accessTokenRequest.GetRequestStream();
-                postStream.Write(postBytes, 0, postBytes.Length);
-                postStream.Close();
+    /// <summary>
+    /// Gets or sets the value of refreshTokenExpiresIn
+    /// </summary>
+    private int refreshTokenExpiresIn;
 
-                WebResponse accessTokenResponse = accessTokenRequest.GetResponse();
-                using (StreamReader accessTokenResponseStream = new StreamReader(accessTokenResponse.GetResponseStream()))
-                {
-                    string access_token_json = accessTokenResponseStream.ReadToEnd().ToString();
-                    JavaScriptSerializer deserializeJsonObject = new JavaScriptSerializer();
-                    AccessTokenResponse deserializedJsonObj = (AccessTokenResponse)deserializeJsonObject.Deserialize(access_token_json, typeof(AccessTokenResponse));
-                    access_token = deserializedJsonObj.access_token.ToString();
-                    expiryMilliSeconds = deserializedJsonObj.expires_in.ToString();
-                    refresh_token = deserializedJsonObj.refresh_token.ToString();
-                    FileStream file = new FileStream(Request.MapPath(accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Write);
-                    StreamWriter sw = new StreamWriter(file);
-                    sw.WriteLine(access_token);
-                    sw.WriteLine(expiryMilliSeconds);
-                    sw.WriteLine(refresh_token);
-                    sw.WriteLine(currentServerTime.ToLongDateString() + " " + currentServerTime.ToLongTimeString());
-                    lastTokenTakenTime = currentServerTime.ToLongDateString() + " " + currentServerTime.ToLongTimeString();
-                    //Refresh token valids for 24 hours
-                    DateTime refreshExpiry = currentServerTime.AddHours(24);
-                    refreshTokenExpiryTime = refreshExpiry.ToLongDateString() + " " + refreshExpiry.ToLongTimeString();
-                    sw.WriteLine(refreshExpiry.ToLongDateString() + " " + refreshExpiry.ToLongTimeString());
-                    sw.Close();
-                    file.Close();
-                    accessTokenResponseStream.Close();
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                drawPanelForFailure(panelParam, ex.ToString());
-                return false;
-            }
-        }
-        return false;
-    }
+    /// <summary>
+    /// Instance variables for local processing
+    /// </summary>
+    private DateTime accessTokenExpiryTime;
 
-    /* This function is used to neglect the ssl handshake error with authentication server */
+    #region Bypass SSL Certificate Error
 
+    /// <summary>
+    /// This method neglects the ssl handshake error with authentication server
+    /// </summary>
     public static void BypassCertificateError()
     {
         ServicePointManager.ServerCertificateValidationCallback +=
@@ -213,190 +84,439 @@ public partial class Default : System.Web.UI.Page
                 return true;
             };
     }
-    /* This function is used to read access token file and validate the access token
-     * this function returns true if access token is valid, or else false is returned
-     */
-    public bool readAndGetAccessToken(Panel panelParam)
-    {
-        bool result = true;
-        if (readAccessTokenFile() == false)
-        {
-            result = getAccessToken(1, panelParam);
-        }
-        else
-        {
-            string tokenValidity = isTokenValid();
-            if (tokenValidity.CompareTo("REFRESH_ACCESS_TOKEN") == 0)
-            {
-                result = getAccessToken(2, panelParam);
-            }
-            else if (string.Compare(isTokenValid(), "INVALID_ACCESS_TOKEN") == 0)
-            {
-                result = getAccessToken(1, panelParam);
-            }
-        }
-        return result;
-    }
-    /*
-     * On page load if query string 'code' is present, invoke get_access_token
-     */
+
+    #endregion
+
+    /// <summary>
+    /// Event, that triggers when the applicaiton page is loaded into the browser, reads the web.config and gets the values of the attributes
+    /// </summary>
+    /// <param name="sender">object, that caused this event</param>
+    /// <param name="e">Event that invoked this function</param>
     public void Page_Load(object sender, EventArgs e)
     {
         try
         {
             BypassCertificateError();
+
             DateTime currentServerTime = DateTime.UtcNow;
             serverTimeLabel.Text = String.Format("{0:ddd, MMM dd, yyyy HH:mm:ss}", currentServerTime) + " UTC";
-            if (ConfigurationManager.AppSettings["WAPFilePath"] != null)
-            {
-                wapFilePath = ConfigurationManager.AppSettings["WAPFilePath"];
-            }
-            else
-            {
-                wapFilePath = "~\\R2-csharp-dotnet\\wap\\app1\\WAPText.txt";
-            }
-            wapFilePath = Request.MapPath(wapFilePath);
-            if (ConfigurationManager.AppSettings["AccessTokenFilePath"] != null)
-            {
-                accessTokenFilePath = ConfigurationManager.AppSettings["AccessTokenFilePath"];
-            }
-            else
-            {
-                accessTokenFilePath = "~\\WAPApp1AccessToken.txt";
-            }
-            if (ConfigurationManager.AppSettings["FQDN"] == null)
-            {
-                drawPanelForFailure(wapPanel, "FQDN is not defined in configuration file");
-                return;
-            }
-            FQDN = ConfigurationManager.AppSettings["FQDN"].ToString();
-            if (ConfigurationManager.AppSettings["api_key"] == null)
-            {
-                drawPanelForFailure(wapPanel, "api_key is not defined in configuration file");
-                return;
-            }
-            api_key = ConfigurationManager.AppSettings["api_key"].ToString();
-            if (ConfigurationManager.AppSettings["secret_key"] == null)
-            {
-                drawPanelForFailure(wapPanel, "secret_key is not defined in configuration file");
-                return;
-            }
-            secret_key = ConfigurationManager.AppSettings["secret_key"].ToString();
-            if (ConfigurationManager.AppSettings["scope"] != null)
-            {
 
-                scope = ConfigurationManager.AppSettings["scope"].ToString();
-            }
-            else
+            this.ReadConfigFile();
+        }
+        catch (Exception ex)
+        {
+            this.DrawPanelForFailure(wapPanel, ex.ToString());
+        }
+    }
+
+    /// <summary>
+    /// This function is called when user clicks on send wap message button. This funciton calls send wap message API to send the wap message
+    /// </summary>
+    /// <param name="sender">object, that caused this event</param>
+    /// <param name="e">Event that invoked this function</param>
+    protected void SendWAPButton_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(txtAddressWAPPush.Text))
             {
-                scope = "WAP";
+                this.DrawPanelForFailure(wapPanel, "Specify phone number");
+            }
+
+            if (string.IsNullOrEmpty(txtAlert.Text))
+            {
+                this.DrawPanelForFailure(wapPanel, "Specify alert text");
+            }
+
+            if (string.IsNullOrEmpty(txtUrl.Text))
+            {
+                this.DrawPanelForFailure(wapPanel, "Specify Url");
+            }
+
+            if (this.ReadAndGetAccessToken() == true)
+            {
+                this.SendWapPush();
             }
         }
         catch (Exception ex)
         {
-            drawPanelForFailure(wapPanel, ex.ToString());
-            Response.Write(ex.ToString());
+            this.DrawPanelForFailure(wapPanel, ex.ToString());
         }
-
     }
 
-    /* This function is called to draw the table in the panelParam panel for success response */
-    private void drawPanelForSuccess(Panel panelParam, string message)
+    #region Display Status message methods
+    /// <summary>
+    /// Display success message
+    /// </summary>
+    /// <param name="panelParam">Panel to draw success message</param>
+    /// <param name="message">Message to display</param>
+    private void DrawPanelForSuccess(Panel panelParam, string message)
     {
+        if (panelParam.HasControls())
+        {
+            panelParam.Controls.Clear();
+        }
+
         Table table = new Table();
+        table.CssClass = "successWide";
         table.Font.Name = "Sans-serif";
         table.Font.Size = 9;
-        table.BorderStyle = BorderStyle.Outset;
-        table.Width = Unit.Pixel(650);
         TableRow rowOne = new TableRow();
         TableCell rowOneCellOne = new TableCell();
         rowOneCellOne.Font.Bold = true;
         rowOneCellOne.Text = "SUCCESS:";
-        //rowOneCellOne.BorderWidth = 1;
         rowOne.Controls.Add(rowOneCellOne);
         table.Controls.Add(rowOne);
+
         TableRow rowTwo = new TableRow();
         TableCell rowTwoCellOne = new TableCell();
-        rowTwoCellOne.Font.Bold = true;
-        rowTwoCellOne.Text = "Message ID:";
-        rowTwoCellOne.Width = Unit.Pixel(70);
-        //rowOneCellOne.BorderWidth = 1;
+        rowTwoCellOne.Text = "Message ID: " + message;
         rowTwo.Controls.Add(rowTwoCellOne);
-        TableCell rowTwoCellTwo = new TableCell();
-        rowTwoCellTwo.Text = message.ToString();
-        //rowTwoCellOne.BorderWidth = 1;
-        rowTwo.Controls.Add(rowTwoCellTwo);
         table.Controls.Add(rowTwo);
-        table.BorderWidth = 2;
-        table.BorderColor = Color.DarkGreen;
-        table.BackColor = System.Drawing.ColorTranslator.FromHtml("#cfc");
         panelParam.Controls.Add(table);
     }
 
-    /* This function draws table for failed response in the panalParam panel */
-    private void drawPanelForFailure(Panel panelParam, string message)
+    /// <summary>
+    /// Displays error message
+    /// </summary>
+    /// <param name="panelParam">Panel to draw success message</param>
+    /// <param name="message">Message to display</param>
+    private void DrawPanelForFailure(Panel panelParam, string message)
     {
+        if (panelParam.HasControls())
+        {
+            panelParam.Controls.Clear();
+        }
+
         Table table = new Table();
+        table.CssClass = "errorWide";
         table.Font.Name = "Sans-serif";
         table.Font.Size = 9;
-        table.BorderStyle = BorderStyle.Outset;
-        table.Width = Unit.Pixel(650);
         TableRow rowOne = new TableRow();
         TableCell rowOneCellOne = new TableCell();
         rowOneCellOne.Font.Bold = true;
         rowOneCellOne.Text = "ERROR:";
         rowOne.Controls.Add(rowOneCellOne);
-        //rowOneCellOne.BorderWidth = 1;
         table.Controls.Add(rowOne);
         TableRow rowTwo = new TableRow();
         TableCell rowTwoCellOne = new TableCell();
-        //rowTwoCellOne.BorderWidth = 1;
         rowTwoCellOne.Text = message.ToString();
         rowTwo.Controls.Add(rowTwoCellOne);
         table.Controls.Add(rowTwo);
-        table.BorderWidth = 2;
-        table.BorderColor = Color.Red;
-        table.BackColor = System.Drawing.ColorTranslator.FromHtml("#fcc");
         panelParam.Controls.Add(table);
     }
 
-    /* 
- * This function is called when user clicks on send wap message button.
- * this funciton calls send wap message API to send the wap message.
- */
-    protected void btnSendWAP_Click(object sender, EventArgs e)
+    #endregion
+
+    #region WAP Push Related methods
+
+    /// <summary>
+    /// This function reads the Access Token File and stores the values of access token, expiry seconds, refresh token, 
+    /// last access token time and refresh token expiry time. 
+    /// </summary>
+    /// <returns>true, if access token file and all others attributes read successfully otherwise returns false</returns>
+    private bool ReadAccessTokenFile()
     {
+        FileStream fileStream = null;
+        StreamReader streamReader = null;
+        bool ableToRead = true;
         try
         {
-            if (readAndGetAccessToken(wapPanel) == true)
-            {
-                if (access_token == null || access_token.Length <= 0)
-                {
-                    return;
-                }
-                sendWapPush();
-            }
+            fileStream = new FileStream(Request.MapPath(this.accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Read);
+            streamReader = new StreamReader(fileStream);
+            this.accessToken = streamReader.ReadLine();
+            this.expirySeconds = streamReader.ReadLine();
+            this.refreshToken = streamReader.ReadLine();
+            this.accessTokenExpiryTime = Convert.ToDateTime(streamReader.ReadLine());
+            this.refreshTokenExpiryTime = streamReader.ReadLine();
         }
         catch (Exception ex)
         {
-            drawPanelForFailure(wapPanel, ex.ToString());
+            this.DrawPanelForFailure(wapPanel, ex.ToString());
+            ableToRead = false;
+        }
+        finally
+        {
+            if (null != streamReader)
+            {
+                streamReader.Close();
+            }
+
+            if (null != fileStream)
+            {
+                fileStream.Close();
+            }
+        }
+
+        if (this.accessToken == null || this.expirySeconds == null || this.refreshToken == null || this.accessTokenExpiryTime == null || this.refreshTokenExpiryTime == null)
+        {
+            ableToRead = false;
+        }
+
+        return ableToRead;
+    }
+
+    /// <summary>
+    /// Validates he expiry of the access token and refresh token
+    /// </summary>
+    /// <returns>string, returns VALID_ACCESS_TOKEN if its valid
+    /// otherwise, returns INVALID_ACCESS_TOKEN if refresh token expired or not able to read session variables
+    /// return REFRESH_TOKEN, if access token in expired and refresh token is valid</returns>
+    private string IsTokenValid()
+    {
+
+        if (this.accessToken == null)
+        {
+            return "INVALID_ACCESS_TOKEN";
+        }
+
+        try
+        {
+            DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
+
+            if (currentServerTime >= this.accessTokenExpiryTime)
+            {
+                if (currentServerTime >= DateTime.Parse(this.refreshTokenExpiryTime))
+                {
+                    return "INVALID_ACCESS_TOKEN";
+                }
+                else
+                {
+                    return "REFRESH_TOKEN";
+                }
+            }
+            else
+            {
+                return "VALID_ACCESS_TOKEN";
+            }
+        }
+        catch
+        {
+            return "INVALID_ACCESS_TOKEN";
         }
     }
 
-    /*this function validates string against the valid msisdn */
-    private Boolean isValidMISDN(string number)
+    /// <summary>
+    /// This method gets access token based on either client credentials mode or refresh token.
+    /// </summary>
+    /// <param name="type">AccessTokenType; either Client_Credential or Refresh_Token</param>
+    /// <returns>true/false; true if able to get access token, else false</returns>
+    private bool GetAccessToken(AccessTokenType type)
+    {
+        Stream postStream = null;
+        StreamWriter streamWriter = null;
+        FileStream fileStream = null;
+        try
+        {
+
+            DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
+
+            WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create(string.Empty + this.endPoint + "/oauth/token");
+            accessTokenRequest.Method = "POST";
+
+            string oauthParameters = string.Empty;
+            if (type == AccessTokenType.Client_Credential)
+            {
+                oauthParameters = "client_id=" + this.apiKey + "&client_secret=" + this.secretKey + "&grant_type=client_credentials&scope=WAP";
+            }
+            else
+            {
+                oauthParameters = "grant_type=refresh_token&client_id=" + this.apiKey + "&client_secret=" + this.secretKey + "&refresh_token=" + this.refreshToken;
+            }
+
+            accessTokenRequest.ContentType = "application/x-www-form-urlencoded";
+
+            UTF8Encoding encoding = new UTF8Encoding();
+            byte[] postBytes = encoding.GetBytes(oauthParameters);
+            accessTokenRequest.ContentLength = postBytes.Length;
+            postStream = accessTokenRequest.GetRequestStream();
+            postStream.Write(postBytes, 0, postBytes.Length);
+
+            WebResponse accessTokenResponse = accessTokenRequest.GetResponse();
+            using (StreamReader accessTokenResponseStream = new StreamReader(accessTokenResponse.GetResponseStream()))
+            {
+                string jsonAccessToken = accessTokenResponseStream.ReadToEnd().ToString();
+                JavaScriptSerializer deserializeJsonObject = new JavaScriptSerializer();
+                AccessTokenResponse deserializedJsonObj = (AccessTokenResponse)deserializeJsonObject.Deserialize(jsonAccessToken, typeof(AccessTokenResponse));
+
+                this.accessToken = deserializedJsonObj.access_token;
+                this.expirySeconds = deserializedJsonObj.expires_in;
+                this.refreshToken = deserializedJsonObj.refresh_token;
+                this.accessTokenExpiryTime = currentServerTime.AddSeconds(Convert.ToDouble(deserializedJsonObj.expires_in));
+                
+                DateTime refreshExpiry = currentServerTime.AddHours(this.refreshTokenExpiresIn);
+
+                if (deserializedJsonObj.expires_in.Equals("0"))
+                {
+                    int defaultAccessTokenExpiresIn = 100; // In Years
+                    this.accessTokenExpiryTime = currentServerTime.AddYears(defaultAccessTokenExpiresIn);
+                }
+
+                this.refreshTokenExpiryTime = refreshExpiry.ToLongDateString() + " " + refreshExpiry.ToLongTimeString();
+
+                fileStream = new FileStream(Request.MapPath(this.accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Write);
+                streamWriter = new StreamWriter(fileStream);
+
+                streamWriter.WriteLine(this.accessToken);
+                streamWriter.WriteLine(this.expirySeconds);
+                streamWriter.WriteLine(this.refreshToken);
+                streamWriter.WriteLine(this.accessTokenExpiryTime.ToString());
+                streamWriter.WriteLine(this.refreshTokenExpiryTime);
+
+                // Close and clean up the StreamReader
+                accessTokenResponseStream.Close();
+                return true;
+            }
+        }
+        catch (WebException we)
+        {
+            string errorResponse = string.Empty;
+
+            try
+            {
+                using (StreamReader sr2 = new StreamReader(we.Response.GetResponseStream()))
+                {
+                    errorResponse = sr2.ReadToEnd();
+                    sr2.Close();
+                }
+            }
+            catch
+            {
+                errorResponse = "Unable to get response";
+            }
+            this.DrawPanelForFailure(wapPanel, errorResponse + Environment.NewLine + we.Message);
+        }
+        catch (Exception ex)
+        {
+            this.DrawPanelForFailure(wapPanel, ex.ToString());
+        }
+        finally
+        {
+            if (null != postStream)
+            {
+                postStream.Close();
+            }
+
+            if (null != streamWriter)
+            {
+                streamWriter.Close();
+            }
+
+            if (null != fileStream)
+            {
+                fileStream.Close();
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// This function reads access token file, validates the access token and gets a new access token
+    /// </summary>
+    /// <returns>true if access token is valid, or else false is returned</returns>
+    private bool ReadAndGetAccessToken()
+    {
+        bool ableToGetToken = true;
+
+        if (this.ReadAccessTokenFile() == false)
+        {
+            ableToGetToken = this.GetAccessToken(AccessTokenType.Client_Credential);
+        }
+        else
+        {
+            string tokenValidity = this.IsTokenValid();
+
+            if (tokenValidity.Equals("REFRESH_TOKEN"))
+            {
+                ableToGetToken = this.GetAccessToken(AccessTokenType.Refresh_Token);
+            }
+            else if (tokenValidity.Equals("INVALID_ACCESS_TOKEN"))
+            {
+                ableToGetToken = this.GetAccessToken(AccessTokenType.Client_Credential);
+            }
+        }
+
+        return ableToGetToken;
+    }
+
+    /// <summary>
+    /// This method reads config file and assigns values to local variables
+    /// </summary>
+    /// <returns>true/false, true- if able to read from config file</returns>
+    private bool ReadConfigFile()
+    {
+        this.apiKey = ConfigurationManager.AppSettings["api_key"];
+        if (string.IsNullOrEmpty(this.apiKey))
+        {
+            this.DrawPanelForFailure(wapPanel, "api_key is not defined in configuration file");
+            return false;
+        }
+
+        this.secretKey = ConfigurationManager.AppSettings["secret_key"];
+        if (string.IsNullOrEmpty(this.secretKey))
+        {
+            this.DrawPanelForFailure(wapPanel, "secret_key is not defined in configuration file");
+            return false;
+        }
+
+        this.endPoint = ConfigurationManager.AppSettings["endPoint"];
+        if (string.IsNullOrEmpty(this.endPoint))
+        {
+            this.DrawPanelForFailure(wapPanel, "endPoint is not defined in configuration file");
+            return false;
+        }
+
+        this.scope = ConfigurationManager.AppSettings["scope"];
+        if (string.IsNullOrEmpty(this.scope))
+        {
+            this.scope = "WAP";
+        }
+
+        this.accessTokenFilePath = ConfigurationManager.AppSettings["AccessTokenFilePath"];
+        if (string.IsNullOrEmpty(this.accessTokenFilePath))
+        {
+            this.accessTokenFilePath = "WAPApp1AccessToken.txt";
+        }
+
+        this.wapFilePath = ConfigurationManager.AppSettings["WAPFilePath"];
+        if (string.IsNullOrEmpty(this.wapFilePath))
+        {
+            this.accessTokenFilePath = "WAPText.txt";
+        }
+
+        string refreshTokenExpires = ConfigurationManager.AppSettings["refreshTokenExpiresIn"];
+        if (!string.IsNullOrEmpty(refreshTokenExpires))
+        {
+            this.refreshTokenExpiresIn = Convert.ToInt32(refreshTokenExpires);
+        }
+        else
+        {
+            this.refreshTokenExpiresIn = 24;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// This function validates string against the valid msisdn
+    /// </summary>
+    /// <param name="number">string, destination number</param>
+    /// <returns>true/false; true if valid MSISDN, else false</returns>
+    private bool IsValidMISDN(string number)
     {
         string smsAddressInput = number;
         string smsAddressFormatted;
         string phoneStringPattern = "^\\d{3}-\\d{3}-\\d{4}$";
         if (System.Text.RegularExpressions.Regex.IsMatch(smsAddressInput, phoneStringPattern))
         {
-            smsAddressFormatted = smsAddressInput.Replace("-", "");
+            smsAddressFormatted = smsAddressInput.Replace("-", string.Empty);
         }
         else
         {
             smsAddressFormatted = smsAddressInput;
         }
+
         long tryParseResult = 0;
         if (smsAddressFormatted.Length == 16 && smsAddressFormatted.StartsWith("tel:+1"))
         {
@@ -418,71 +538,71 @@ public partial class Default : System.Web.UI.Page
         {
             smsAddressFormatted = smsAddressFormatted.Substring(1, 10);
         }
+
         if ((smsAddressFormatted.Length != 10) || (!long.TryParse(smsAddressFormatted, out tryParseResult)))
         {
             return false;
         }
+
         return true;
     }
 
-    /* This function calls send wap message api to send wap messsage */
-    private void sendWapPush()
+    /// <summary>
+    /// This function calls send wap message api to send wap messsage
+    /// </summary>
+    private void SendWapPush()
     {
+        StreamWriter wapFileWriter = null;
+        StreamReader streamReader = null;
         try
         {
-            if (isValidMISDN(txtAddressWAPPush.Text.ToString()) == false)
+            if (this.IsValidMISDN(txtAddressWAPPush.Text.ToString()) == false)
             {
-                drawPanelForFailure(wapPanel, "Invalid Number: " + txtAddressWAPPush.Text.ToString());
+                this.DrawPanelForFailure(wapPanel, "Invalid Number: " + txtAddressWAPPush.Text.ToString());
                 return;
             }
-            string wapAddress = txtAddressWAPPush.Text.ToString().Replace("tel:+1", "");
-            wapAddress = wapAddress.ToString().Replace("tel:+", "");
-            wapAddress = wapAddress.ToString().Replace("tel:1", "");
-            wapAddress = wapAddress.ToString().Replace("tel:", "");
-            wapAddress = wapAddress.ToString().Replace("tel:", "");
-            wapAddress = wapAddress.ToString().Replace("-", "");
 
-            string wapMessage = txtAlert.Text.ToString();
-            string wapUrl = txtUrl.Text.ToString();
+            string wapAddress = txtAddressWAPPush.Text.ToString().Replace("tel:+1", string.Empty);
+            wapAddress = wapAddress.ToString().Replace("tel:+", string.Empty);
+            wapAddress = wapAddress.ToString().Replace("tel:1", string.Empty);
+            wapAddress = wapAddress.ToString().Replace("tel:", string.Empty);
+            wapAddress = wapAddress.ToString().Replace("tel:", string.Empty);
+            wapAddress = wapAddress.ToString().Replace("-", string.Empty);
+
+            string wapMessage = txtAlert.Text;
+            string wapUrl = txtUrl.Text;
 
             string boundary = "----------------------------" + DateTime.Now.Ticks.ToString("x");
 
-            string wapData = "";
+            string wapData = string.Empty;
             wapData += "Content-Disposition: form-data; name=\"PushContent\"\n";
             wapData += "Content-Type: text/vnd.wap.si\n";
             wapData += "Content-Length: 20\n";
             wapData += "X-Wap-Application-Id: x-wap-application:wml.ua\n\n";
             wapData += "<?xml version='1.0'?>\n";
-            wapData += "<!DOCTYPE si PUBLIC \"-//WAPFORUM//DTD SI 1.0//EN\" "+"\"http://www.wapforum.org/DTD/si.dtd\">\n";
+            wapData += "<!DOCTYPE si PUBLIC \"-//WAPFORUM//DTD SI 1.0//EN\" " + "\"http://www.wapforum.org/DTD/si.dtd\">\n";
             wapData += "<si>\n";
-            wapData += "<indication href=\"" + wapUrl.ToString() +"\" " + "action=\"signal-medium\" si-id=\"6532\">\n";
+            wapData += "<indication href=\"" + wapUrl.ToString() + "\" " + "action=\"signal-medium\" si-id=\"6532\">\n";
             wapData += wapMessage.ToString();
             wapData += "\n</indication>";
             wapData += "\n</si>";
 
-            StreamWriter wapFileWriter = File.CreateText(wapFilePath);
+            wapFileWriter = File.CreateText(Request.MapPath(this.wapFilePath));
             wapFileWriter.Write(wapData);
             wapFileWriter.Close();
 
-            //string filename = Path.GetFileName(wapFilePath);
-            //FileStream fs = new FileStream(wapFilePath, FileMode.Open, FileAccess.Read);
-            //BinaryReader br = new BinaryReader(fs);
-            //byte[] pushFile = br.ReadBytes((int)fs.Length);
-            //br.Close();
-            //fs.Close();
-            StreamReader sr = new StreamReader(wapFilePath);
-            string pushFile = sr.ReadToEnd();
-            sr.Close();
+            streamReader = new StreamReader(Request.MapPath(this.wapFilePath));
+            string pushFile = streamReader.ReadToEnd();
 
-            //string headerTemplate = "Content-Disposition: form-data; name=\"_attachments\"; filename=\"WAPPush.txt\"\r\n Content-Type: application/octet-stream\r\n\r\n";
-            HttpWebRequest wapRequestObject = (HttpWebRequest)WebRequest.Create("" + FQDN + "/1/messages/outbox/wapPush?access_token=" + access_token.ToString());
+            HttpWebRequest wapRequestObject = (HttpWebRequest)WebRequest.Create(string.Empty + this.endPoint + "/1/messages/outbox/wapPush");
+            wapRequestObject.Headers.Add("Authorization", "Bearer " + this.accessToken);
             wapRequestObject.ContentType = "multipart/form-data; type=\"application/x-www-form-urlencoded\"; start=\"\"; boundary=\"" + boundary + "\"\r\n";
             wapRequestObject.Method = "POST";
             wapRequestObject.KeepAlive = true;
 
             string sendWapData = "address=" + Server.UrlEncode("tel:" + wapAddress.ToString()) + "&subject=" + Server.UrlEncode("Wap Message") + "&priority=High&content-type=" + Server.UrlEncode("application/xml");
-            //Wap Push Data 
-            string data = "";
+
+            string data = string.Empty;
             data += "--" + boundary + "\r\n";
             data += "Content-type: application/x-www-form-urlencoded; charset=UTF-8\r\n";
             data += "Content-Transfer-Encoding: 8bit\r\n";
@@ -499,6 +619,7 @@ public partial class Default : System.Web.UI.Page
             UTF8Encoding encoding = new UTF8Encoding();
             byte[] postBytes = encoding.GetBytes(data);
             wapRequestObject.ContentLength = postBytes.Length;
+
             using (Stream writeStream = wapRequestObject.GetRequestStream())
             {
                 writeStream.Write(postBytes, 0, postBytes.Length);
@@ -511,38 +632,102 @@ public partial class Default : System.Web.UI.Page
                 string strResult = wapResponseStream.ReadToEnd();
                 JavaScriptSerializer deserializeJsonObject = new JavaScriptSerializer();
                 SendWapResponse deserializedJsonObj = (SendWapResponse)deserializeJsonObject.Deserialize(strResult, typeof(SendWapResponse));
-                drawPanelForSuccess(wapPanel, deserializedJsonObj.id.ToString());
+                this.DrawPanelForSuccess(wapPanel, deserializedJsonObj.id.ToString());
                 wapResponseStream.Close();
             }
-            wapRequestObject = null;
-            if (File.Exists(wapFilePath))
+        }
+        catch (WebException we)
+        {
+            string errorResponse = string.Empty;
+
+            try
             {
-                System.IO.FileInfo fileInfo = new System.IO.FileInfo(wapFilePath);
-                fileInfo.Delete();
+                using (StreamReader sr2 = new StreamReader(we.Response.GetResponseStream()))
+                {
+                    errorResponse = sr2.ReadToEnd();
+                    sr2.Close();
+                }
             }
+            catch
+            {
+                errorResponse = "Unable to get response";
+            }
+            this.DrawPanelForFailure(wapPanel, errorResponse + Environment.NewLine + we.Message);
         }
         catch (Exception ex)
         {
-            if (File.Exists(wapFilePath))
+            this.DrawPanelForFailure(wapPanel, ex.ToString());
+        }
+        finally
+        {
+            if (null != wapFileWriter)
             {
-                System.IO.FileInfo fileInfo = new System.IO.FileInfo(wapFilePath);
-                fileInfo.Delete();
+                wapFileWriter.Close();
             }
-            drawPanelForFailure(wapPanel, ex.ToString());
+
+            if (null != streamReader)
+            {
+                streamReader.Close();
+            }
+
+            if (File.Exists(Request.MapPath(this.wapFilePath)))
+            {
+                File.Delete(Request.MapPath(this.wapFilePath));
+            }
         }
     }
 
+    #endregion
 }
 
-/* Following are the data structures used for the applicaiton */
+#region Data Structures
+
+/// <summary>
+/// AccessTokenResponse Object
+/// </summary>
 public class AccessTokenResponse
 {
-    public string access_token;
-    public string refresh_token;
-    public string expires_in;
+    /// <summary>
+    /// Gets or sets the value of access_token
+    /// </summary>
+    public string access_token
+    {
+        get;
+        set;
+    }
 
+    /// <summary>
+    /// Gets or sets the value of refresh_token
+    /// </summary>
+    public string refresh_token
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// Gets or sets the value of expires_in
+    /// </summary>
+    public string expires_in
+    {
+        get;
+        set;
+    }
 }
+
+/// <summary>
+/// WAP Response Object
+/// </summary>
 public class SendWapResponse
 {
-    public string id;
+    /// <summary>
+    /// Gets or sets the value of id
+    /// </summary>
+    public string id
+    {
+        get;
+        set;
+    }
 }
+
+#endregion

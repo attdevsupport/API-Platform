@@ -6,13 +6,14 @@
 <%@ page import="java.io.*" %>
 <%@ include file="OauthStorage.jsp" %>
 <%@ include file="config.jsp" %>
+<%@ page import="java.lang.Math"%>
 
 <%
 //Initialize some variables here, check if relevant variables were passed in, if not then check session, otherwise set default.
 String scope = "MMS";
 String accessToken = "";
 String refreshToken = "";
-String expires_in = "";
+String expires_in = "null";
 Long date = System.currentTimeMillis();
 
             //This application uses the Autonomous Client OAuth consumption model
@@ -31,7 +32,12 @@ Long date = System.currentTimeMillis();
                 accessToken = rpcObject.getString("access_token");
                 refreshToken = rpcObject.getString("refresh_token");
                 expires_in = rpcObject.getString("expires_in");
-                savedAccessTokenExpiry = date + (Long.parseLong(expires_in)*1000);
+            	
+				if (expires_in.equals("0"))
+				{
+					savedAccessTokenExpiry = date + (Long.parseLong("3155692597470")); //100 years
+				}
+               //savedAccessTokenExpiry = date + (Long.parseLong(expires_in)*1000);
                 savedRefreshTokenExpiry = date + Long.parseLong("86400000");
                 method.releaseConnection();
                 PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/OauthStorage.jsp"))), false);
@@ -50,8 +56,13 @@ Long date = System.currentTimeMillis();
                 accessToken = rpcObject.getString("access_token");
             	refreshToken = rpcObject.getString("refresh_token");
                 expires_in = rpcObject.getString("expires_in");
+				
+				if (expires_in.equals("0"))
+				{
+					savedRefreshTokenExpiry = date + (Long.parseLong("86400000")); //24 hours
+				}
                 savedAccessTokenExpiry = date + (Long.parseLong(expires_in)*1000);
-                savedRefreshTokenExpiry = date + Long.parseLong("86400000");
+                //savedRefreshTokenExpiry = date + Long.parseLong("86400000");
                 method.releaseConnection();
                 PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/OauthStorage.jsp"))), false);
        	        String toSave = "\u003C\u0025\nString savedAccessToken = \"" + accessToken + "\";\nLong savedAccessTokenExpiry = Long.parseLong(\"" + savedAccessTokenExpiry + "\");\nString savedRefreshToken = \"" + refreshToken + "\";\nLong savedRefreshTokenExpiry = Long.parseLong(\"" + savedRefreshTokenExpiry + "\");\n\u0025\u003E";

@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
     <title>AT&amp;T Sample SMS Application - Basic SMS Service Application</title>
-	<meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
     <link rel="stylesheet" type="text/css" href="style/common.css"/ >
 </script>
 <body>
@@ -22,10 +22,10 @@
 <%
 
     String address = request.getParameter("address");
+    if(address==null || address.equalsIgnoreCase("null"))
+    	address = (String) session.getAttribute("addressSms");
 	if(address==null || address.equalsIgnoreCase("null"))
-		address = (String) session.getAttribute("addressSms");
-	if(address==null || address.equalsIgnoreCase("null"))
-		address = "425-802-8620";
+		address = "";
 	session.setAttribute("addressSms",address);
 	String message = request.getParameter("message");
 	if(message==null || message.equalsIgnoreCase("null"))
@@ -135,7 +135,8 @@ if(invalidAddress==null) {
 	rpcObject.put("Address", address);
 	method.setRequestBody(rpcObject.toString());
 	method.addRequestHeader("Content-Type","application/json; charset=UTF-8");
-	method.setQueryString("access_token=" + accessToken);
+	//method.setQueryString("access_token=" + accessToken);
+	method.addRequestHeader("Authorization","Bearer " + accessToken);
     method.addRequestHeader("Accept","application/json");
     //Send the request and parse based on HTTP status code
     int statusCode = client.executeMethod(method);
@@ -209,7 +210,8 @@ Feature 2: Get Delivery Status</h2>
            String url = FQDN + "/rest/sms/2/messaging/outbox/" + smsId;   
            HttpClient client = new HttpClient();
            GetMethod method = new GetMethod(url);  
-           method.setQueryString("access_token=" + accessToken);
+           //method.setQueryString("access_token=" + accessToken);
+		   method.addRequestHeader("Authorization","Bearer " + accessToken);
            method.addRequestHeader("Accept","application/json");
            //Send the request, parse based on HTTP status code
            int statusCode = client.executeMethod(method); 
@@ -220,15 +222,16 @@ Feature 2: Get Delivery Status</h2>
               	JSONObject deliveryInfo = new JSONObject(deliveryInfoArray.getString(0));
               	%>
                 <div class="successWide">
-                <strong>SUCCESS:</strong><br />
+                <strong>SUCCESS:</strong><br />			
                 <strong>Status:</strong> <%=deliveryInfo.getString("DeliveryStatus")%><br />
-                <strong>Resource URL:</strong> <%=deliveryInfoList.getString("ResourceURL")%>
+                <strong>Resource URL:</strong> <%=deliveryInfoList.getString("ResourceUrl")%>
                 </div><br/>
        		<%
            } else {
            	%>
                 <div class="errorWide">
                 <strong>ERROR:</strong><br />
+                <strong>Status:</strong> <%=statusCode%><br />    
                 <%=method.getResponseBodyAsString()%>
                 </div><br/>
        		<%
@@ -321,8 +324,8 @@ Feature 2: Get Delivery Status</h2>
 
 <div id="footer">
 
-	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
-    <p>&#169; 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
+    <p>&#169; 2012 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
 <br>
 The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br>
@@ -334,3 +337,4 @@ For more information contact <a href="mailto:developer.support@att.com">develope
 </div>
 
 </body></html>
+

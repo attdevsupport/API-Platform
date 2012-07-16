@@ -1,3 +1,8 @@
+# Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012 
+# TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+# Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com 
+# For more information contact developer.support@att.com
+
 #!/usr/bin/ruby
 require 'rubygems'
 require 'json'
@@ -55,7 +60,11 @@ def send_messages
   result += "\nContent-Disposition: form-data; name=\"root-fields\""
 
   result += "\n\n"
-  result += '{ "Address" : ['+"#{addresses}"+'], "Subject" : "' + session[:mms2_subject] + '", "Priority": "High" }'
+  if session[:mms2_address].length > 1
+    result += '{ "Address" : ['+"#{addresses}"+'], "Subject" : "' + session[:mms2_subject] + '", "Priority": "High" }'
+  else
+    result += '{ "Address" : "' + 'tel:' + session[:mms2_entered_address] + '", "Subject" : "' + session[:mms2_subject] + '", "Priority": "High" }'
+  end
   result += "\n"
   contents << result
 
@@ -71,10 +80,10 @@ def send_messages
   mimeContent = "--#{split}\n" + contents.join("--#{split}\n") + "--#{split}--\n"
 
   # send
-  RestClient.post "#{settings.FQDN}/rest/mms/2/messaging/outbox?access_token=#{@access_token}",
-    mimeContent, :Accept => 'application/json',
+  RestClient.post "#{settings.FQDN}/rest/mms/2/messaging/outbox?", "#{mimeContent}", :Authorization => "Bearer #{@access_token}",
+  :Accept => 'application/json',
     :Content_Type => 'multipart/form-data; type="application/json"; start=""; boundary="' + split + '"' do |response, request, result, &block|
-    @r = response
+  @r = response
   end
 
   if @r.code == 201
@@ -83,26 +92,17 @@ def send_messages
   else
     @error = @r
   end
-rescue => e
-  @error = e.message
-ensure
-  return erb :mms2
+ erb :mms2
 end
 
 def check_status
   if session[:mms2_id].nil?
-    @error2 = 'You need to send an MMS first'
-    return
+    redirect '/'
   end
   
   url = "#{settings.FQDN}/rest/mms/2/messaging/outbox/" + session[:mms2_id]
 
-  # access_token
-  url += "?access_token=#{@access_token}"
-  # mms id
-  url += "&Id=" + session[:mms2_id]
-
-  RestClient.get url do |response, request, result, &block|
+  RestClient.get url, :Authorization => "Bearer #{@access_token}" do |response, request, result, &block|
     @r = response
   end
 
@@ -112,10 +112,7 @@ def check_status
     @error2 = @r
   end
   
-rescue => e
-  @error2 = e.message
-ensure
-  return erb :mms2
+  erb :mms2
 end
 
 # -- methods --
@@ -139,8 +136,6 @@ post '/submit' do
   
   session[:mms2_address] = Array.new
   
-  @error = ''
-
   addresses.each do |address|
     a = parse_address(address)
     if a
@@ -160,3 +155,5 @@ end
 post '/checkStatus' do
   check_status
 end
+
+

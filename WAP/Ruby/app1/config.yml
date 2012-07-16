@@ -2,7 +2,7 @@ port:             4567
 api_key:
 secret_key:
 tokens_file:      tokens
-default_phone:    425-802-8620
+default_phone:
 default_url:      http://developer.att.com
 default_alert:    This is a sample WAP Push message. 
 FQDN:             https://api.att.com

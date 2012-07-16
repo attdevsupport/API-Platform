@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
     <title>AT&amp;T Sample MMS Application 1 - Basic SMS Service Application</title>
-	<meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
     <link rel="stylesheet" type="text/css" href="style/common.css"/ >
     <script type="text/javascript" src="js/helper.js">
 </script>
@@ -34,13 +34,13 @@ String getMmsDeliveryStatus = request.getParameter("getMmsDeliveryStatus");
 String mmsId = request.getParameter("mmsId");
 if (mmsId==null) mmsId = (String) session.getAttribute("mmsId");
 if (mmsId==null) mmsId = "";
-String sendMms = request.getParameter("sendMms");    	
-String contentBodyFormat = "FORM-ENCODED";		
+String sendMms = request.getParameter("sendMms");        
+String contentBodyFormat = "FORM-ENCODED";        
 String address = request.getParameter("address");
 if(address==null || address.equalsIgnoreCase("null"))
-	address = (String) session.getAttribute("addressSms2");
+    address = (String) session.getAttribute("addressSms2");
 if(address==null || address.equalsIgnoreCase("null"))
-	address = "425-802-8620";	
+	address = "";	
 String fileName = "";
 String subject = (String) session.getAttribute("subject");
 if(subject==null || subject.equalsIgnoreCase("null"))
@@ -84,6 +84,7 @@ try{
 <div>
     <div id="hcRight">
         <%=new java.util.Date()%>
+
     </div>
     <div id="hcLeft">Server Time:</div>
 </div>
@@ -300,6 +301,8 @@ Feature 2: Get Delivery Status</h2>
            GetMethod method = new GetMethod(url);  
            method.setQueryString("access_token=" + accessToken + "&id=" + mmsId);
            method.addRequestHeader("Accept","application/" + responseFormat);
+    method.addRequestHeader("Authorization","Bearer " + accessToken);        
+
            int statusCode = client.executeMethod(method); 
            if(statusCode==200) {
               	JSONObject jsonResponse = new JSONObject(method.getResponseBodyAsString());
@@ -310,7 +313,7 @@ Feature 2: Get Delivery Status</h2>
                     <div class="successWide">
                     <strong>SUCCESS:</strong><br />
                     <strong>Status:</strong> <%=deliveryInfo.getString("DeliveryStatus")%><br />
-                    <strong>Resource URL:</strong> <%=deliveryInfoList.getString("ResourceURL")%>
+                    <strong>Resource URL:</strong> <%=deliveryInfoList.getString("ResourceUrl")%><br />
                     </div><br/>
        		    <%
            } else {
@@ -327,8 +330,8 @@ Feature 2: Get Delivery Status</h2>
 
 <div id="footer">
 
-	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
-    <p>&#169; 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
+    <p>&#169; 2012 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
 <br>
 The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br>
@@ -340,3 +343,4 @@ For more information contact <a href="mailto:developer.support@att.com">develope
 </div>
 
 </body></html>
+

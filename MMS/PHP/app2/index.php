@@ -1,7 +1,5 @@
-<!-- 
-Licensed by AT&T under 'Software Development Kit Tools Agreement.' September 2011
-TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
-Copyright 2011 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+<!--- Licensed by AT&T under 'Software Development Kit Tools Agreement.'June 2012 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 For more information contact developer.support@att.com
 -->
 
@@ -10,7 +8,9 @@ header("Content-Type: text/html; charset=ISO-8859-1");
 include ("config.php");
 include ($oauth_file);
 session_start();
-    
+
+$_SESSION["mms2_mmsID"] = null;    
+
 if (!empty($_REQUEST["sendMMS"])) {
   $_SESSION["mms2_addresses"] = $_POST['addresses'];
  }
@@ -55,6 +55,11 @@ function RefreshToken($FQDN,$api_key,$secret_key,$scope,$fullToken){
     $accessToken = $jsonObj->{'access_token'};//fetch the access token from the response.
     $refreshToken = $jsonObj->{'refresh_token'};
     $expiresIn = $jsonObj->{'expires_in'};
+
+      if($expiresIn == 0) {
+	  $expiresIn = 24*60*60;
+
+	  }
 	      
     $refreshTime=$currentTime+(int)($expiresIn); // Time for token refresh
     $updateTime=$currentTime + ( 24*60*60); // Time to get for a new token update, current time + 24h 
@@ -111,6 +116,12 @@ function GetAccessToken($FQDN,$api_key,$secret_key,$scope){
       $accessToken = $jsonObj->{'access_token'};//fetch the access token from the response.
       $refreshToken = $jsonObj->{'refresh_token'};
       $expiresIn = $jsonObj->{'expires_in'};
+
+
+        if($expiresIn == 0) {
+	  $expiresIn = 24*60*60*365*100;
+
+	  }
 
       $refreshTime=$currentTime+(int)($expiresIn); // Time for token refresh
       $updateTime=$currentTime + ( 24*60*60); // Time to get for a new token update, current time + 24h
@@ -280,7 +291,7 @@ total size of all attachments cannot exceed 600 KB.
 	$clean_addres =  str_replace("+1","",$clean_addres);
 	if(preg_match("/\d{10}/",$clean_addres)){
 	     $addresses_url.="Address=tel:".urlencode($clean_addres)."&";
-	     echo $addresses_url;
+	     
 	   }else{
 	  array_push($invalid_addresses,$address);
 	}
@@ -320,7 +331,8 @@ total size of all attachments cannot exceed 600 KB.
       $data .= "--$boundary--\r\n";
 
 	// Form the HTTP headers
-	$header = "POST $FQDN/rest/mms/2/messaging/outbox?access_token=".$accessToken." HTTP/1.0\r\n";
+	$header = "POST $FQDN/rest/mms/2/messaging/outbox? HTTP/1.0\r\n";
+	$header .= "Authorization: BEARER ".$accessToken."\r\n";
 	$header .= "Content-type: multipart/form-data; type=\"application/x-www-form-urlencoded\"; start=\"<startpart>\"; boundary=\"$boundary\"\r\n";
 	$header .= "MIME-Version: 1.0\r\n";
 	$header .= "Host: $server\r\n";
@@ -355,7 +367,7 @@ total size of all attachments cannot exceed 600 KB.
 
 	      <div class="successWide">
 		 <strong>SUCCESS:</strong><br />
-		 Message ID <?php echo $mmsID; ?>
+		<strong> Message ID</strong> <?php echo $mmsID; ?>
 		 </div>
 
 	<?php } else {
@@ -399,8 +411,8 @@ Feature 2: Check Delivery Status for each Recipient</h2>
   <tbody>
   <tr>
     <td class="cell">
-  <button type="submit" name="getMmsDeliveryStatus" value="Get Status">Check Status</button>
-  <input type="hidden" name="mmsID" value="<?php echo $mmsID; ?>"/>
+   <button type="submit" name="getMmsDeliveryStatus" value="Get Status">Check Status</button>
+  <input type="hidden" name="mmsID" value="<?php echo $mmsID; ?>"><?php echo $_SESSION["mms2_mmsID"];?>
     </td>
   </tr>
   </tbody></table>
@@ -428,21 +440,22 @@ Feature 2: Check Delivery Status for each Recipient</h2>
         $_SESSION["mms2_mmsID"] = $_POST['mmsID'];
 
 	//Form URL to get the delivery status
-	$getMMSDelStatus_Url = "$FQDN/rest/mms/2/messaging/outbox/";
-	$getMMSDelStatus_Url .= $mmsID;
-	$getMMSDelStatus_Url .= "?access_token=".$accessToken;
+	          $getMMSDelStatus_Url = "$FQDN/rest/mms/2/messaging/outbox/";
+        $getMMSDelStatus_Url .= $mmsID;
 
-	//http header
-	$getMMSDelStatus_headers = array(
-		'Content-Type: application/x-www-form-urlencoded'
-	);
+        $authorization = "Authorization: BEARER ".$accessToken;
+        $content = "Content-Type: application/xml";
 
-	$getMMSDelStatus = curl_init();
-	curl_setopt($getMMSDelStatus, CURLOPT_URL, $getMMSDelStatus_Url);
-	curl_setopt($getMMSDelStatus, CURLOPT_HTTPGET, 1);
-	curl_setopt($getMMSDelStatus, CURLOPT_HEADER, 0);
-	curl_setopt($getMMSDelStatus, CURLINFO_HEADER_OUT, 0);
-	curl_setopt($getMMSDelStatus, CURLOPT_HTTPHEADER, $getMMSDelStatus_headers);
+
+
+
+
+ $getMMSDelStatus = curl_init();
+  curl_setopt($getMMSDelStatus, CURLOPT_URL, $getMMSDelStatus_Url);
+  curl_setopt($getMMSDelStatus, CURLOPT_HTTPGET, 1);
+  curl_setopt($getMMSDelStatus, CURLOPT_HEADER, 0);
+  curl_setopt($getMMSDelStatus, CURLINFO_HEADER_OUT, 1);
+  curl_setopt($getMMSDelStatus, CURLOPT_HTTPHEADER, array($authorization, $content));
 	curl_setopt($getMMSDelStatus, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($getMMSDelStatus, CURLOPT_SSL_VERIFYPEER, false);
 
@@ -507,8 +520,8 @@ Feature 2: Check Delivery Status for each Recipient</h2>
 
 <div id="footer">
 
-	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
-    <p>� 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
+    <p> &#169;  2012 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
 <br>
 The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br>
@@ -520,3 +533,4 @@ For more information contact <a href="mailto:developer.support@att.com">develope
 </div>
 
 </body></html>
+

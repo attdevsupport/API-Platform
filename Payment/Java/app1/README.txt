@@ -1,3 +1,9 @@
+<!-- 
+Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+For more information contact developer.support@att.com
+-->
 
   AT&T API Samples - Payment app 1
  ------------------------------
@@ -67,7 +73,9 @@ Please populate the following parameters in config.jsp as specified below:
 
 2) clientSecretAut                    : {set the value as per your registered appliaction 'Secret key' field value} 
 
-3) FQDN              	              : https://api.att.com
+3) FQDN              	          : https://api.att.com
+
+4) singlepayRedirect 		   : https://1.2.3.4:8080/SampleApp/singlepay.jsp
 
 Note: If your application is promoted from Sandbox environment to Production environment and you decide to use production 
 application settings, you must update parameters 1-2 as per production application details.

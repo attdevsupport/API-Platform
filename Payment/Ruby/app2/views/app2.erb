@@ -1,523 +1,417 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!-- Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012 
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com 
+For more information contact developer.support@att.com -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
-  <head>
-    <title>AT&amp;T Sample Payment Application - Subscription Application</title>
-    <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type"/>
-    <link rel="stylesheet" type="text/css" href="/css/common.css"/>
-    <script type="text/javascript" src="js/helper.js"></script>
-  </head>
-
-  <body>
+<head>
+    <title>AT&T Sample Payment Application - Subscription Application</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <link rel="stylesheet" type="text/css" href="css/common.css" />
+</head>
+<body>
     <div id="container">
-      <div id="header"> <!-- open HEADER -->
-        <div>
-          <div id="hcRight">
-            <%= Time.now.strftime("%B %d, %Y %H:%M") %>
-          </div>
-          <div id="hcLeft">Server Time:</div>
-        </div>
-        <div>
-          <div id="hcRight">
-            <script language="JavaScript" type="text/javascript">
-              var myDate = new Date();
-              document.write(myDate);
-            </script>
-          </div>
-	      <div id="hcLeft">Client Time:</div>
-        </div>
-        <div>
-	      <div id="hcRight">
-            <script language="JavaScript" type="text/javascript">
-              document.write("" + navigator.userAgent);
-            </script>
-          </div>
-	      <div id="hcLeft">User Agent:</div>
-        </div>
-        <br clear="all" />
-      </div> <!-- close HEADER -->
-
-      <div id="wrapper">
-        <div id="content">
-          <h1>AT&amp;T Sample Payment Application - Subscription Application</h1>
-          <h2>Feature 1: Create New Subscription</h2><br/>
-        </div>
-      </div>
-
-      <form method="post" action="/createSubscription">
-        <div id="navigation">
-          <table border="0" width="100%">
-            <tbody>
-              <tr>
-                <td width="50%" valign="top" class="label">Subscribe for $1.99 per month:</td>
-                <td class="cell"><input type="radio" name="product" value="1" checked="checked"/></td>
-              </tr>
-              <tr>
-                <td width="50%" valign="top" class="label">Subscribe for $3.99 per month:</td>
-                <td class="cell"><input type="radio" name="product" value="2"/></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div id="extra">
-          <table>
-            <tbody>
-              <tr>
-  	            <td>
-                  <br />
-                  <br />
-                  <button type="submit" name="newSubscription">Subscribe</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <br clear="all" />
-        <div align="center"></div>
-      </form>
-
-      <% unless @new_subscription.nil? %>
-        <div class="successWide">
-          <strong>SUCCESS:</strong>
-          <br/>
-          <strong>Merchant Subscription ID</strong> <%= @merchant_subscription_id %>
-          <br/>
-          <strong>Subscription Auth Code</strong> <%= @subscription_auth_code %>
-          <br />
-          <br />
-          <form name="getNotaryDetails" action="<%= settings.notary_app_view_payload_url %>">
-            <input type="submit" name="submit" value="View Notary Details"/>
-          </form>
-        </div>
-        <br/>
-      <% end %>
-
-
-      <div id="wrapper">
-        <div id="content">
-          <h2>
-            <br />
-            Feature 2: Get Subscription Status
-          </h2>
-        </div>
-      </div>
-
-      <form method="post" action="/getSubscriptionStatus">
-        <div id="navigation" align="center">
-          <table style="width: 750px" cellpadding="1" cellspacing="1" border="0">
-            <thead>
-              <tr>
-                <th style="width: 150px" class="cell" align="right"></th>
-                <th style="width: 100px" class="cell"></th>
-                <th style="width: 240px" class="cell" align="left"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="cell" align="right">
-                  <input type="radio" name="merchSubId" value='<%= @merchant_subscription_id %>' checked="checked" /> Merchant Sub. ID:
-                </td>
-                <td></td>
-                <td class="cell" align="left"><%= @merchant_subscription_id %></td>
-              </tr>
-              <tr>
-                <td class="cell" align="right">
-                  <input type="radio" name="authCode" value='<%= @subscription_auth_code %>' /> Auth Code:
-                </td>
-                <td></td>
-                <td class="cell" align="left"><%= @subscription_auth_code %></td>
-              </tr>
-
-              <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td class="cell">
-                  <button type="submit" name="getSubscriptionStatus">Get Subscription Status</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </form>
-
-      <br clear="all" />
-
-      <% unless @subscription_status.nil? %>
-        <div class="successWide">
-          <strong>SUCCESS:</strong>
-          <br />
-          <strong>Subscription ID</strong> <%= @subscription_status["SubscriptionId"] %>
-          <br />
-          <strong>Merchant Transaction ID</strong> <%= @subscription_status["MerchantTransactionId"] %>
-          <br />
-        </div>
-        <br />
-
-        <div align="center">
-          <table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
-            <thead>
-              <tr>
-                <th style="width: 100px" class="cell" align="right"><strong>Parameter</strong></th>
-                <th style="width: 100px" class="cell"><strong></strong></th>
-                <th style="width: 275px" class="cell" align="left"><strong>Value</strong></th>
-	          </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td align="right" class="cell">SubscriptionStatus</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_status["SubscriptionStatus"] %></td>
-              </tr>
-	          <tr>
-    	        <td align="right" class="cell">Amount</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell">
-                  <%= @subscription_status["Amount"] %>
-                </td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">Description</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_status["Description"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">SubscriptionType</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_status["SubscriptionType"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">IsSuccess</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_status["IsSuccess"] %></td>
-              </tr>
-	          <tr>
-    	        <td align="right" class="cell">Channel</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_status["Channel"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">ConsumerId</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_status["ConsumerId"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">MerchantSubscriptionId</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_status["MerchantTransactionId"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">PeriodAmount</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell">1</td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">IsAutoCommited</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell">false</td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">Recurrences</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell">99999</td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">MerchantIdentifier</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_status["MerchantIdentifier"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">MerchantProductId</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_status["MerchantProductId"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">SubscriptionId</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_status["SubscriptionId"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">ContentCategory</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_status["ContentCategory"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">SubscriptionPeriod</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell">MONTHLY</td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">Version</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_status["Version"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">Currency</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_status["Currency"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">OriginalTransactionId</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">MerchantApplicationId</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_status["MerchantApplicationId"] %></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      <% end %>
-
-      <div id="wrapper">
-        <div id="content">
-          <h2>
-          <br />
-          Feature 3: Get Subscription Details
-          </h2>
-        </div>
-      </div>
-      <br/>
-
-      <form method="post" action="/getSubscriptionDetails" >
-        <div id="navigation" align="center">
-          <table style="width: 900px" cellpadding="1" cellspacing="1" border="0">
-            <thead>
-              <tr>
-                <th style="width: 150px" class="cell" align="right"><strong>Consumer ID</strong></th>
-                <th style="width: 100px" class="cell"></th>
-                <th style="width: 240px" class="cell" align="left"><strong>Merchant Subscription ID</strong></th>
-                <td>
-                  <div class="warning">
-                    <strong>WARNING:</strong>
-                    <br />
-                    You must use Get Subscription Status to get the Consumer ID before you can get details.
-                  </div>
-                </td>
-	          </tr>
-            </thead>
-            <tbody>
-              <% @subscriptions.each do |s| %>
-                <tr>
-                  <td class="cell" align="right">
-                    <input type="radio" name="consumer_id" <%= @merchant_subscription_id == s[:merchant_subscription_id] ? 'checked' : '' %> value='<%= s[:consumer_id] %>' /> <%= s[:consumer_id] %>
-                  </td>
-                  <td></td>
-                  <td class="cell" align="left"> <%= s[:merchant_subscription_id] %> </td>
-                </tr>
-              <% end %>
-              <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td class="cell">
-                  <button  type="submit" name="getSubscriptionDetails">Get Subscription Details</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </form>
-
-      <br clear="all" />
-
-
-      <% unless @subscription_details.nil? %>
-        <div class="successWide">
-          <strong>SUCCESS:</strong>
-          <br />
-          <strong>ConsumerID</strong> <%= @consumer_id %>
-          <br />
-        </div>
-        <br />
-        <div align="center">
-          <table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
-            <thead>
-              <tr>
-                <th style="width: 100px" class="cell" align="right"><strong>Parameter</strong></th>
-                <th style="width: 100px" class="cell"><strong></strong></th>
-                <th style="width: 275px" class="cell" align="left"><strong>Value</strong></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td align="right" class="cell">Recurrences</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_details["Recurrences"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">CurrentStartDate</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_details["CurrentStartDate"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">IsSuccess</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_details["IsSuccess"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">IsActiveSubscription</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_details["IsActiveSubscription"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">RecurrencesLeft</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_details["RecurrencesLeft"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">GrossAmount</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_details["GrossAmount"] %></td>
-              </tr>
-	          <tr>
-    	        <td align="right" class="cell">creationDate</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_details["CreationDate"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">Version</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_details["Version"] %></td>
-              </tr>
-	          <tr>
-    	        <td align="right" class="cell">Currency</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_details["Currency"] %></td>
-              </tr>
-              <tr>
-                <td align="right" class="cell">CurrentEndDate</td>
-                <td align="center" class="cell"></td>
-                <td align="left" class="cell"><%= @subscription_details["CurrentEndDate"] %></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      <% end %>
-
-      <div id="wrapper">
-        <div id="content">
-          <h2>
-            <br />
-            Feature 4: Refund Subscription
-          </h2>
-        </div>
-      </div>
-      <form method="post" action="/refundSubscription">
-        <div id="navigation" align="center">
-          <table style="width: 900px" cellpadding="1" cellspacing="1" border="0">
-            <thead>
-              <tr>
-                <th style="width: 150px" class="cell" align="right"><strong>Subscription ID</strong></th>
-                <th style="width: 100px" class="cell"></th>
-                <th style="width: 240px" class="cell" align="left"><strong>Merchant Subscription ID</strong></th>
-                <td><div class="warning">
-                  <strong>WARNING:</strong><br />
-                  You must use Get Subscription Status to get the Subscription ID before you can refund it.
+        <!-- open HEADER -->
+        <div id="header">
+            <div>
+                <div class="hcRight">
+                    <%= Time.now.utc.strftime("%a, %B %d, %Y %H:%M:%S UTC") %>
                 </div>
-                </td>
-              </tr>
-            </thead>
-            <tbody>
-              <% @subscriptions.each do |s| %>
-                <tr>
-                  <td class="cell" align="right">
-                    <input type="radio" name="subscription_id" <%= @merchant_subscription_id == s[:merchant_subscription_id] ? 'checked' : '' %> value="<%= s[:subscription_id] %>" /> 
-                    <%= s[:subscription_id] %>
-                  </td>
-                  <td></td>
-                  <td class="cell" align="left">
-                    <%= s[:merchant_subscription_id] %>
-                  </td>
-                </tr>
-              <% end %>
-              <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td class="cell">
-                  <button  type="submit" name="refundSubscription">Refund Subscription</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                <div class="hcLeft">
+                    Server Time:</div>
+            </div>
+            <div>
+                <div class="hcRight">
+                    <script language="JavaScript" type="text/javascript">
+                        var myDate = new Date();
+                        document.write(myDate);
+                    </script>
+                </div>
+                <div class="hcLeft">
+                    Client Time:</div>
+            </div>
+            <div>
+                <div class="hcRight">
+                    <script language="JavaScript" type="text/javascript">
+                        document.write("" + navigator.userAgent);
+                    </script>
+                </div>
+                <div class="hcLeft">
+                    User Agent:</div>
+            </div>
+            <br clear="all" />
         </div>
-      </form>
-
-      <br clear="all" />
-
-      <% unless @refund_details.nil? %>
-        <% if @refund_details["IsSuccess"] == "true" %>
-          <div class="successWide">
-            <strong>SUCCESS:</strong>
-            <br />
-            <strong>Transaction ID</strong> <%= @trx_id %>
-            <br />
-            <strong>Merchant Transaction ID</strong> user573transaction1377
-            <br />
-          </div>
-        <% else %>
-          <div class="errorWide">
-            <strong>ERROR:</strong><br>
-            <%= @refund_details %>            
-          </div>
-        <% end %>
-        <br />
-      <% end %>
-
-      <div id="wrapper">
-        <div id="content">
-          <h2>
-            <br />
-            Feature 5: Notifications
-          </h2>
+        <!-- close HEADER -->
+        <div>
+            <div class="content">
+                <h1>
+                    AT&T Sample Payment Application - Subscription Application</h1>
+                <h2>
+                    Feature 1: Create New Subscription</h2>
+                <br />
+            </div>
         </div>
-      </div>
-      <form method="post" action="/refreshNotifications">
-        <div id="navigation">
-          <br/>
-          <div align="center">
-            <table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
-              <thead>
-                <tr>
-    	          <th style="width: 100px" class="cell"><strong>Notification ID</strong></th>
-                  <th style="width: 100px" class="cell"><strong>Notification Type</strong></th>
-                  <th style="width: 125px" class="cell"><strong>Subscription ID</strong></th>
-                  <th style="width: 175px" class="cell"><strong>Merchant Subscription ID</strong></th>
-	            </tr>
-              </thead>
-              <tbody>
-              </tbody>
-            </table>
-          </div>
-          <div id="extra">
-            <br/>
+        <form method="post" name="newSubscription" action="/newSubscription">
+        <div class="navigation">
             <table border="0" width="100%">
-              <tbody>
-                <tr>
-                  <td class="cell"><button type="submit" name="refreshNotifications">Refresh</button>
-                  </td>
-                </tr>
-              </tbody>
+                <tbody>
+                    <tr>
+                        <td class="cell">
+                            <input type="radio" name="product" value="1" checked="checked" />Subscribe for $1.99
+                            per month
+                        </td>
+                        <td>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="cell">
+                            <input type="radio" name="product" value="2" />Subscribe for $3.99 per month
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                            <button type="submit" name="newSubscription">
+                                Subscribe</button>
+                        </td>
+                    </tr>
+                </tbody>
             </table>
-          </div>
-          <br clear="all" />
         </div>
-      </form>
-
-      <div id="footer">
-	    <div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
-        <p>
-          &#169; 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
-          <br/>
-          The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
-          <br/>
-          For download of tools and documentation, please go to <a href="https://devconnect-api.att.com/" target="_blank">https://devconnect-api.att.com</a>
-          <br/>
-          For more information contact <a href="mailto:developer.support@att.com">developer.support@att.com</a>
-        </p>
-      </div>
+    	</form>
+		<br clear="all" />
+		<div align="center"></div>
+			<% unless @new_subscription.nil? %>
+				<div class="successWide">
+					<strong>SUCCESS:</strong>
+					<br />
+							<strong>Merchant Transaction ID:</strong> <%= @new_subscription[:merchant_transaction_id] %>
+						<br/>
+							<strong>Subscription Auth Code:</strong> <%= params['SubscriptionAuthCode'] %>
+						<br />
+					<br/>
+			</div>
+		<br/>
+		<% end %>
+			<% if @new_transaction_error %>
+				<div class="errorWide">
+					<strong>ERROR:</strong><br />
+					<%= @new_transaction_error %>
+				</div>
+			<br/>
+		<% end %>
+        <div class="wrapper">
+            <div class="content">
+                <h2>
+                    <br />
+                    Feature 2: Get Subscription Status</h2>
+            </div>
+        </div>
+        <form method="post" name="getSubscriptionStatus" action="/getSubscriptionStatus">
+        <div class="navigation" align="center">
+            <table border="0" width="100%">
+                <tbody>
+                    <% if @subscriptions.last %>
+						<tr>
+							<td class="cell">
+								<input type="radio" name="getSubscriptionType" value="1" checked="checked" />
+								Merchant Transaction ID: <%= @subscriptions.last ? @subscriptions.last[:merchant_subscription_id] : '' %></td>
+						</tr>
+						<tr>
+							<td class="cell">
+								<input type="radio" name="getSubscriptionType" value="2" />
+								Auth Code: <%= @subscriptions.last ? @subscriptions.last[:subscription_auth_code] : '' %></td>
+						</tr>
+							<tr>
+								<td class="cell">
+									<input type="radio" name="getSubscriptionType" value="3" /> Subscription ID:
+									<% if @subscriptions.last[:subscription_id] %> <%= @subscriptions.last[:subscription_id] %></td>
+								</td>
+							</tr>
+						<% end %>
+					<% end %>
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td class="cell">
+						  <button type="submit" name="getSubscriptionStatus">Get Subscription Status</button>
+						</td>
+					</tr>
+                </tbody>
+            </table>
+        </div>
+		</form>
+		<br clear="all" />
+		<% if @subscription_status %>
+			<div class="successWide">
+				<strong>SUCCESS</strong>
+				<br />
+			</div>
+			<br />
+			<div align="center">
+				<table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
+					<thead>
+						<tr>
+							<th style="width: 100px" class="cell" align="right"><strong>Parameter</strong></th>
+							<th style="width: 100px" class="cell"><strong></strong></th>
+							<th style="width: 275px" class="cell" align="left"><strong>Value</strong></th>
+						</tr>
+					</thead>
+					<tbody>
+						<% @subscription_status[:status].sort.each do |key, value| %>
+							<tr>
+								<td align="right" class="cell"><%= key %></td>
+								<td align="center" class="cell"></td>
+								<td align="left" class="cell"><%= value %></td>
+							</tr>
+						<% end %>
+					</tbody>
+				</table>
+			</div>
+		<% end %>
+		<% if @subscription_status_error %>
+			<div class="errorWide">
+				<strong>ERROR:</strong><br />
+				<%= @subscription_status_error %>
+			</div><br/>
+		<% end %>
+        <div class="wrapper">
+            <div class="content">
+                <h2>
+                    <br />
+                    Feature 3: Get Subscription Details</h2>
+            </div>
+        </div>
+		<form method="post" name="getSubscriptionDetails" action="/getSubscriptionDetails">
+        <div class="navigation" align="center">
+            <table style="width: 750px" cellpadding="1" cellspacing="1" border="0">
+                <thead>
+                    <tr>
+                        <th style="width: 200px" class="cell" align="left">
+                            <strong>Merchant Subscription ID</strong>
+                        </th>
+                        <th style="width: 100px" class="cell">
+                        </th>
+                        <th style="width: 240px" class="cell" align="left">
+                            <strong>Consumer ID</strong>
+                        </th>
+                        <td>
+                            <div class="warning">
+                                <strong>WARNING:</strong><br />
+                                You must use Get Subscription Status to get the Consumer ID before you can get details.
+                            </div>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+				<% @subscriptions.each do |t| %>    
+					<tr>
+						<td class="cell" align="left">
+							<input type="radio" name="consumer_id" value="<%= t[:merchant_subscription_id] %>" checked="checked" />
+								<%= t[:merchant_subscription_id] %></td>
+                                <td></td>
+						<td class="cell" align="left"><%= t[:consumer_id] %></td>
+					</tr>
+				<% end %>
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td class="cell">
+                            <button type="submit" name="getSubscriptionDetails">
+                                Get Subscription Details</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+		</form>
+		<br clear="all" />
+		<% if @subscription_details %>
+			<div class="successWide">
+				<strong>SUCCESS</strong>
+				<br />
+			</div>
+			<br />
+			<div align="center">
+				<table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
+					<thead>
+						<tr>
+							<th style="width: 100px" class="cell" align="right"><strong>Parameter</strong></th>
+							<th style="width: 100px" class="cell"><strong></strong></th>
+							<th style="width: 275px" class="cell" align="left"><strong>Value</strong></th>
+						</tr>
+					</thead>
+					<tbody>
+						<% @subscription_details[:status].sort.each do |key, value| %>
+							<tr>
+								<td align="right" class="cell"><%= key %></td>
+								<td align="center" class="cell"></td>
+								<td align="left" class="cell"><%= value %></td>
+							</tr>
+						<% end %>
+					</tbody>
+				</table>
+			</div>
+		<% end %>
+		<% if @details_error %>
+			<div class="errorWide">
+				<strong>ERROR:</strong><br />
+				<%= @details_error %>
+			</div><br/>
+		<% end %>
+        <div class="wrapper">
+            <div class="content">
+                <h2>
+                    <br />
+                    Feature 4: Refund Subscription</h2>
+            </div>
+        </div>
+        <form method="post" name="refundSubscription" action="/refundSubscription">
+        <div class="navigation" align="center">
+            <table style="width: 750px" cellpadding="1" cellspacing="1" border="0">
+                <thead>
+                    <tr>
+                        <th style="width: 150px" class="cell" align="left">
+                            <strong>Subscription ID</strong>
+                        </th>
+                        <th style="width: 100px" class="cell">
+                        </th>
+                        <th style="width: 240px" class="cell" align="left">
+                            <strong>Merchant Subscription ID</strong>
+                        </th>
+                        <td>
+                            <div class="warning">
+                                <strong>WARNING:</strong><br />
+                                You must use Get Subscription Status to get the Subscription ID before you can refund
+                                it.
+                            </div>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+				<% @subscriptions.each do |t| %>                       
+					<tr>
+						<td class="cell" align="left">
+							<input type="radio" name="trxId" value="<%= t[:subscription_id] %>" checked="checked" />
+								<%= t[:subscription_id] %></td>
+							<td></td>
+						<td class="cell" align="left"><%= t[:merchant_subscription_id] %></td>
+					</tr>
+				<% end %>
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td class="cell">
+							<button  type="submit" name="refundSubscription">
+								Refund Subscription
+						</button></td>
+					</tr>
+				</tbody>
+            </table>
+        </div>
+		</form>
+		<br clear="all" />
+		<% if @subscription_refund %>
+			<div class="successWide">
+    			<strong>SUCCESS</strong>
+				<br />
+			</div>
+			<br/>
+            <div align="center">
+        		<table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
+					<thead>
+						<tr>
+							<th style="width: 100px" class="cell" align="right"><strong>Parameter</strong></th>
+							<th style="width: 100px" class="cell"><strong></strong></th>
+							<th style="width: 275px" class="cell" align="left"><strong>Value</strong></th>
+						</tr>
+					</thead>
+					<tbody>
+						<% @subscription_refund[:status].sort.each do |key, value| %>
+							<tr>
+								<td align="right" class="cell"><%= key %></td>
+								<td align="center" class="cell"></td>
+								<td align="left" class="cell"><%= value %></td>
+							</tr>
+						<% end %>
+					</tbody>
+				</table>
+			</div>
+		<% end %>
+		<% if @refund_error %>
+			<div class="errorWide">
+				<strong>ERROR:</strong><br />
+				<%= @refund_error %>
+			</div><br/>
+		<% end %>
+        <div class="wrapper">
+            <div class="content">
+                <h2>
+                    <br />
+                    Feature 5: Notifications</h2>
+            </div>
+        </div>
+        <div class="navigation">
+		<form method="get" name="refreshNotifications" action="/refreshNotifications">
+            <br />
+            <div align="center">
+                <table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
+                    <thead>
+                        <tr>
+                            <th style="width: 100px" class="cell">
+                                <strong>Notification ID</strong>
+                            </th>
+                            <th style="width: 100px" class="cell">
+                                <strong>Notification Type</strong>
+                            </th>
+                            <th style="width: 125px" class="cell">
+                                <strong>Subscription ID</strong>
+                            </th>
+                            </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="cell">
+                                <button type="submit" name="refreshNotifications">
+                                    Refresh</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <br clear="all" />
+		</form>
+        </div>
+        <div id="footer">
+            <div style="float: right; width: 20%; font-size: 9px; text-align: right">
+                Powered by AT&amp;T Cloud Architecture</div>
+            <p>
+                &#169; 2012 AT&amp;T Intellectual Property. All rights reserved. <a href="http://developer.att.com/"
+                    target="_blank">http://developer.att.com</a>
+                <br />
+                The Application hosted on this site are working examples intended to be used for
+                reference in creating products to consume AT&amp;T Services and not meant to be
+                used as part of your product. The data in these pages is for test purposes only
+                and intended only for use as a reference in how the services perform.
+                <br />
+                For download of tools and documentation, please go to <a href="https://devconnect-api.att.com/"
+                    target="_blank">https://devconnect-api.att.com</a>
+                <br />
+                For more information contact <a href="mailto:developer.support@att.com">developer.support@att.com</a>
+        </div>
     </div>
-  </body>
+</body>
 </html>
+
+

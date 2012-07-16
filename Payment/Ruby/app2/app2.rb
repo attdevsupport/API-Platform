@@ -1,3 +1,9 @@
+
+# Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+# TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+# Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+# For more information contact developer.support@att.com
+
 #!/usr/bin/ruby
 require 'rubygems'
 require 'json'
@@ -14,21 +20,9 @@ set :port, settings.port
 
 SCOPE = 'PAYMENT'
 
-
-# setup filter fired before reaching our urls
-# this is to ensure we are o-authenticated before actual action
-
-# autonomous version
-
-['/','/createSubscription','/getSubscriptionStatus','/getSubscriptionDetails','/refundSubscription','/refreshNotifications', '/callbackSubscription'].each do |path|
+['/','/newSubscription','/getSubscriptionStatus','/getSubscriptionDetails','/refundSubscription','/refreshNotifications', '/callbackSubscription'].each do |path|
   before path do
-    @subscriptions = []
-
-    @merchant_subscription_id ||= session[:merchant_subscription_id]
-    @subscription_auth_code   ||= session[:subscription_auth_code]
-    @consumer_id              ||= session[:consumer_id]
-
-    read_recent_items(settings.subscriptions_file).map {|item| a,b,c=item.split; @subscriptions.push({:merchant_subscription_id => a, :subscription_id => b, :consumer_id => c}) }
+    read_recent_items
     obtain_tokens(settings.FQDN, settings.api_key, settings.secret_key, SCOPE, settings.tokens_file)
   end
 end
@@ -37,8 +31,8 @@ get '/' do
   erb :app2
 end
 
-post '/createSubscription' do
-  create_subscription
+post '/newSubscription' do
+  new_subscription
 end
 
 get '/callbackSubscription' do
@@ -57,110 +51,174 @@ post '/refundSubscription' do
   refund_subscription
 end
 
-post '/refreshNotifications' do
+get '/refreshNotifications' do
   refresh_notifications
 end
 
 # URL handlers go here
 
-def create_subscription
-  session[:merchant_subscription_id] = 'User' + sprintf('%03d', rand(1000)) + 'Subscription' + sprintf('%04d', rand(10000))
+def read_recent_items
+  @subscriptions = Array.new
+  File.open settings.subscriptions_file, 'r' do |f| 
+    while (line = f.gets)
+      a = line.split
+      t = Hash.new
+      t[:merchant_subscription_id] = a[0]
+      t[:subscription_id] = a[1]
+      #t[:subscription_auth_code] = a[1] 
+      t[:consumer_id] = a[2]
+      @subscriptions.push t
+    end 
+  end
+  @subscriptions = @subscriptions.drop(@subscriptions.length - settings.recent_subscriptions_stored) if @subscriptions.length > settings.recent_subscriptions_stored
+rescue
+  return
+end
 
+def write_recent_items
+  File.open settings.subscriptions_file, 'w+' do |f|
+    @subscriptions.each do |t|
+      f.puts t[:merchant_subscription_id] + ' ' + (t[:subscription_id] ? ' ' + t[:subscription_id] : '') + (t[:consumer_id] ? ' ' + t[:consumer_id] : '')
+    end
+  end
+end
+
+def new_subscription
+  
+  session[:merchant_transaction_id] = 'User' + sprintf('%03d', rand(1000)) + 'Subscription' + sprintf('%04d', rand(10000))
+  session[:merchant_subscription_id_list] = 'MSList' + sprintf('%04d', rand(10000))
+  
   # prepare payload
   data = {
-    :Amount => params[:product] == '1' ? 1.99 : 3.99,
+    :Amount => params[:product] == "1" ? 1.99 : 3.99,
     :Category => 1,
     :Channel => 'MOBILE_WEB',
     :Description => 'Word game 1',
-    :MerchantTransactionId => session[:merchant_subscription_id],
+    :MerchantTransactionId => session[:merchant_transaction_id],
     :MerchantProductId => 'wordGame1',
     :MerchantPaymentRedirectUrl => settings.subscription_redirect_url,
-    :MerchantSubscriptionIdList => 'sampleSubscription1',
+    :MerchantSubscriptionIdList => session[:merchant_subscription_id_list],
     :IsPurchaseOnNoActiveSubscription => 'false',
-    :SubscriptionRecurringNumber => '99999',
-    :SubscriptionRecurringPeriod => 'MONTHLY',
-    :SubscriptionRecurringPeriodAmount => 1
+    :SubscriptionRecurrences => '99999',
+    :SubscriptionPeriod => 'MONTHLY',
+    :SubscriptionPeriodAmount => '1'
   }
 
   response = RestClient.post settings.notary_app_sign_url, :payload => data.to_json
   from_json = JSON.parse response
 
-  redirect settings.FQDN + "/Commerce/Payment/Rest/2/Subscriptions?clientid=#{settings.api_key}&SignedPaymentDetail=#{from_json['signed_payload']}&Signature=#{from_json['signature']}"
+  u = settings.FQDN + "/rest/3/Commerce/Payment/Subscriptions?Signature=#{from_json['signature']}&SignedPaymentDetail=#{from_json['signed_payload']}&clientid=#{settings.api_key}"
+  
+  redirect u
 end
 
 def callback_subscription
-  @subscription_auth_code = session[:subscription_auth_code] = params['SubscriptionAuthCode']
+  @new_subscription = Hash.new
 
-  @new_subscription = {
-    :merchant_subscription_id => session[:merchant_subscription_id],
-    :subscription_auth_code => @subscription_auth_code
-  }  
-  items = @subscriptions.unshift(@new_subscription).map {|s| s[:merchant_subscription_id] + " " + (s[:subscription_id] || "") + " " + (s[:consumer_id] || "")}
-  write_recent_items(settings.subscriptions_file, settings.recent_subscriptions_stored, items);
+  @new_subscription[:merchant_transaction_id] = session[:merchant_transaction_id]
+  @new_subscription[:subscription_auth_code] = params['SubscriptionAuthCode']
+  params['SubscriptionAuthCode'] = session[:subscription_auth_code]
+  @subscriptions.push @new_subscription
 
-rescue => e
-  @create_error = true
+  @subscriptions.delete_at 0 if @subscriptions.length > settings.recent_subscriptions_stored
+  write_recent_items
+
 ensure
   return erb :app2
 end
 
 
 def get_subscription_status
-  u = settings.FQDN + "/Commerce/Payment/Rest/2/Subscriptions/SubscriptionAuthCode/#{@subscription_auth_code}?access_token=#{@access_token}"
-  response = RestClient.get u
+  if params['getSubscriptionType'] == '1'
+    u = settings.FQDN + "/rest/3/Commerce/Payment/Subscriptions/MerchantTransactionId/" + session[:merchant_transaction_id]
+  elsif params['getSubscriptionType'] == '2'
+    u = settings.FQDN + "/rest/3/Commerce/Payment/Subscriptions/SubscriptionAuthCode/" + @subscriptions.last[:subscription_auth_code]
+  elsif params['getSubscriptionType'] == '3'
+    u = settings.FQDN + "/rest/3/Commerce/Payment/Subscriptions/SubscriptionId/" + @subscriptions.last[:subscription_id]
+  end
+  
+  RestClient.get u, :Authorization => "Bearer #{@access_token}", :Content_Type => 'application/json', :Accept => 'application/json' do |response, request, code, &block|
+    @r = response
+  end
+  
+  if @r.code == 200 
 
-  @subscription_status = JSON.parse response
-  @subscriptions.first[:subscription_id] = @subscription_status["SubscriptionId"]
-  @subscriptions.first[:consumer_id] = @subscription_status["ConsumerId"]
-
-  items = @subscriptions.map {|s| s[:merchant_subscription_id] + " " + (s[:subscription_id] || "") + " " + (s[:consumer_id] || "")}
-  write_recent_items(settings.subscriptions_file, settings.recent_subscriptions_stored, items);
-
-rescue => e
-  @status_error = true
-ensure
-  return erb :app2
+  @subscription_status = @subscriptions.last
+  @subscription_status[:status] = JSON.parse @r
+  
+  @subscriptions.last[:subscription_id] = @subscription_status[:status]['SubscriptionId']
+  session[:subscription_id] = @subscriptions.last[:subscription_id]
+  @subscriptions.last[:merchant_subscription_id] = @subscription_status[:status]['MerchantSubscriptionId']
+  @subscriptions.last[:consumer_id] = @subscription_status[:status]['ConsumerId']
+  
+  write_recent_items
+  else
+    @subscription_status_error = @r
+  end
+  
+  erb :app2
 end
 
 
 def get_subscription_details
-  redirect '/' if params[:consumer_id].nil? || params[:consumer_id].empty?
+  
+  if params['consumer_id'].nil? || params['consumer_id'].empty?
+    redirect '/'
+  end
 
-  u = settings.FQDN + "/Commerce/Payment/Rest/2/Subscriptions/sampleSubscription1/Detail/#{params[:consumer_id]}?access_token=#{@access_token}"
-  response = RestClient.get u
-
-  @consumer_id = session[:consumer_id] = params[:consumer_id]
-  @subscription_details = JSON.parse response
-
-rescue => e
-  @details_error = true
-ensure
-  return erb :app2
+  url = settings.FQDN + "/rest/3/Commerce/Payment/Subscriptions/" + session[:merchant_subscription_id_list] + "/Detail/" + @subscriptions.last[:consumer_id]
+  
+  RestClient.get url, :Authorization => "Bearer #{@access_token}", :Content_Type => 'application/json', :Accept => 'application/json' do |response, request, code, &block|
+    @r = response
+  end
+  
+  if @r.code == 200
+  
+   @subscription_details = @subscriptions.last
+   @subscription_details[:status] = JSON.parse @r
+   session[:consumer_id] = params[:consumer_id]
+   
+else
+    @details_error = @r
+  end
+  erb :app2
 end
 
 
 def refund_subscription
-  redirect '/' if params[:subscription_id].nil? || params[:subscription_id].empty?
-
-  u = settings.FQDN + "/Commerce/Payment/Rest/2/Transactions/#{params[:subscription_id]}?Action=refund&access_token=#{@access_token}"
-  payload = { :RefundReasonCode => 1, :RefundReasonText => 'User did not like product'}
- 
-  RestClient.put u, payload.to_json, :content_type => 'application/json', :accept => 'application/json' do |response, request, code, &block|
-    @refund_details = JSON.parse response
+  if params['trxId'].nil? || params['trxId'].empty?
+    redirect '/'
   end
 
-rescue => e
-  @refund_error = true
-ensure
-  return erb :app2
+  url = settings.FQDN + "/rest/3/Commerce/Payment/Transactions/" + params['trxId']
+  
+  payload = Hash.new
+  payload['TransactionOperationStatus'] = 'Refunded'
+  payload['RefundReasonCode'] = 1
+  payload['RefundReasonText'] = 'User did not like product'
+ 
+  RestClient.put url, payload.to_json, :Authorization => "Bearer #{@access_token}", :Content_Type => 'application/json', :Accept => 'application/json' do |response, request, code, &block|
+    @r = response
+  end
+  
+  if @r.code == 200
+    @subscription_refund = @subscriptions.last
+    @subscription_refund[:status] = JSON.parse @r
+    @refund = Hash.new
+    @refund[:subscription_id] = params['trxId']
+  else
+    @refund_error = @r
+  end
+  erb :app2
 end
 
 
 def refresh_notifications
 
-rescue => e
-  @refresh_error = true
+
 ensure
   return erb :app2
 end
+
+
 

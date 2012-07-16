@@ -1,3 +1,10 @@
+<!-- 
+Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+For more information contact developer.support@att.com
+-->
+
 <%@ page contentType="text/html; charset=iso-8859-1" language="java" %>
 <%@ page import="org.apache.commons.httpclient.*"%>
 <%@ page import="org.apache.commons.httpclient.methods.*"%>
@@ -10,7 +17,7 @@
 <%
 //Initialize some variables here, check if relevant variables were passed in, if not then check session, otherwise set default.
 String scope = "PAYMENT";
-String accessToken = "";
+String accessToken = "a3149564fcf00e20ecb1095b1b5f278f";
 String refreshToken = "";
 String expires_in = "";
 Long date = System.currentTimeMillis();
@@ -31,8 +38,8 @@ Long date = System.currentTimeMillis();
                 accessToken = rpcObject.getString("access_token");
                 refreshToken = rpcObject.getString("refresh_token");
                 expires_in = rpcObject.getString("expires_in");
-                savedAccessTokenExpiry = date + (Long.parseLong(expires_in)*1000);
-                savedRefreshTokenExpiry = date + Long.parseLong("86400000");
+                //savedAccessTokenExpiry = date + (Long.parseLong(expires_in)*1000);
+                //savedRefreshTokenExpiry = date + Long.parseLong("86400000");
                 method.releaseConnection();
                 PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/OauthStorage.jsp"))), false);
                 String toSave = "\u003C\u0025\nString savedAccessToken = \"" + accessToken + "\";\nLong savedAccessTokenExpiry = Long.parseLong(\"" + savedAccessTokenExpiry + "\");\nString savedRefreshToken = \"" + refreshToken + "\";\nLong savedRefreshTokenExpiry = Long.parseLong(\"" + savedRefreshTokenExpiry + "\");\n\u0025\u003E";
@@ -48,10 +55,10 @@ Long date = System.currentTimeMillis();
                 int statusCode = client.executeMethod(method);
                 JSONObject rpcObject = new JSONObject(method.getResponseBodyAsString());
                 accessToken = rpcObject.getString("access_token");
-            	refreshToken = rpcObject.getString("refresh_token");
+                refreshToken = rpcObject.getString("refresh_token");
                 expires_in = rpcObject.getString("expires_in");
-                savedAccessTokenExpiry = date + (Long.parseLong(expires_in)*1000);
-                savedRefreshTokenExpiry = date + Long.parseLong("86400000");
+                //savedAccessTokenExpiry = date + (Long.parseLong(expires_in)*1000);
+                //savedRefreshTokenExpiry = date + Long.parseLong("86400000");
                 method.releaseConnection();
                 PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/OauthStorage.jsp"))), false);
        	        String toSave = "\u003C\u0025\nString savedAccessToken = \"" + accessToken + "\";\nLong savedAccessTokenExpiry = Long.parseLong(\"" + savedAccessTokenExpiry + "\");\nString savedRefreshToken = \"" + refreshToken + "\";\nLong savedRefreshTokenExpiry = Long.parseLong(\"" + savedRefreshTokenExpiry + "\");\n\u0025\u003E";

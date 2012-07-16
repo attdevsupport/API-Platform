@@ -1,6 +1,13 @@
+<!-- 
+Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+For more information contact developer.support@att.com
+-->
+
 <%
-String savedAccessToken = "ad13138f408bbdaabbdafa355b0b9ee8";
-Long savedAccessTokenExpiry = Long.parseLong("99");
-String savedRefreshToken = "eb039c57a6efa7216e06a5114cce4a7f6576f2f3";
-Long savedRefreshTokenExpiry = Long.parseLong("99");
+String savedAccessToken = "";
+Long savedAccessTokenExpiry = Long.parseLong("1");
+String savedRefreshToken = "";
+Long savedRefreshTokenExpiry = Long.parseLong("1");
 %>

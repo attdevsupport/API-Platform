@@ -1,3 +1,9 @@
+
+# Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+# TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+# Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+# For more information contact developer.support@att.com
+
 #!/usr/bin/ruby
 require 'rubygems'
 require 'json'
@@ -6,13 +12,14 @@ require 'sinatra'
 require 'sinatra/config_file'
 require File.join(File.dirname(__FILE__), 'common.rb')
 
+
 enable :sessions
 
 config_file 'config.yml'
 
 set :port, settings.port
 
-SCOPE = 'SMS,MMS'
+SCOPE = 'SMS'
 
 # setup filter fired before reaching our urls
 # this is to ensure we are o-authenticated before actual action (like sendSms)
@@ -52,11 +59,15 @@ end
 
 def send_sms
   if @address_valid = parse_address(session[:sms1_address])
-    address = 'tel:' + params[:address].gsub("-","")
-    response = RestClient.post "#{settings.FQDN}/rest/sms/2/messaging/outbox?access_token=#{@access_token}", :Address => address, :Message => params[:message]
-
+    address = 'tel:' + session[:sms1_address].gsub("-","")
+	
+    result = 'Address=' + "#{address}" + '&Message='+ "#{params[:message]}"
+	
+	response = RestClient.post "#{settings.FQDN}/rest/sms/2/messaging/outbox", "#{result}", :Authorization => "Bearer #{@access_token}"
+	
     @sms_id = session[:sms_id] = JSON.parse(response)['Id']
   end
+  
 rescue => e
   @send_error = e.response
 ensure
@@ -65,13 +76,13 @@ end
 
 
 def get_delivery_status
-  response = RestClient.get "#{settings.FQDN}/rest/sms/2/messaging/outbox/#{session[:sms_id]}?access_token=#{@access_token}"
+  response = RestClient.get "#{settings.FQDN}/rest/sms/2/messaging/outbox/#{session[:sms_id]}?", :Authorization => "Bearer #{@access_token}"
 
   delivery_info_list = JSON.parse(response).fetch 'DeliveryInfoList';
   delivery_info = delivery_info_list['DeliveryInfo'].first
 
   @delivery_status = delivery_info['DeliveryStatus']
-  @resource_URL = delivery_info_list['ResourceURL']
+  @resource_Url = delivery_info_list['ResourceUrl']
 
 rescue => e
   @delivery_error = e.response
@@ -81,7 +92,8 @@ end
 
 
 def get_received_sms
-  response = RestClient.get "#{settings.FQDN}/rest/sms/2/messaging/inbox?access_token=#{@access_token}&RegistrationID=#{params[:getReceivedSms]}"
+
+  response = RestClient.get "#{settings.FQDN}/rest/sms/2/messaging/inbox?RegistrationID=#{params[:getReceivedSms]}", :Authorization => "Bearer #{@access_token}"
 
   messageList = JSON.parse(response).fetch 'InboundSmsMessageList'
 

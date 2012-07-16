@@ -1,11 +1,30 @@
+<!-- 
+Licensed by AT&T under 'Software Development Kit Tools Agreement.' June 2012
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+For more information contact developer.support@att.com
+-->
+
 <?php
+$path_is = __FILE__;
+$folder = dirname($path_is);
+$folder = $folder. "/Notifications";
+if(!is_dir($folder))
+  {
+    echo "Notifications folder is missing ( $folder )";
+    exit();
+  }
+
+$db2_filename = $folder . "/". "singlepaylistener.txt";
+$db3_filename = $folder . "/". "notificationdetails.txt";
+$db4_filename = $folder . "/". "notificationack.txt";
 header("Content-Type: text/html; charset=ISO-8859-1");
 include ("config.php");
 include ($oauth_file);
-
+error_reporting(0);
 session_start();
 
-$db_filename = "transactionData.db";
+$db_filename = "transactionDatasinglepay.db";
 $scope = "PAYMENT";
 $newTransaction = $_REQUEST["newTransaction"];
 $getTransactionStatus = $_REQUEST["getTransactionStatus"];
@@ -61,7 +80,7 @@ function RefreshToken($FQDN,$api_key,$secret_key,$scope,$fullToken){
   curl_setopt($accessTok, CURLOPT_HTTPGET, 1);
   curl_setopt($accessTok, CURLOPT_HEADER, 0);
   curl_setopt($accessTok, CURLINFO_HEADER_OUT, 0);
-  //  curl_setopt($accessTok, CURLOPT_HTTPHEADER, $accessTok_headers);
+  curl_setopt($accessTok, CURLOPT_HTTPHEADER, $accessTok_headers);
   curl_setopt($accessTok, CURLOPT_RETURNTRANSFER, 1);
   curl_setopt($accessTok, CURLOPT_SSL_VERIFYPEER, false);
   curl_setopt($accessTok, CURLOPT_POST, 1);
@@ -75,6 +94,9 @@ function RefreshToken($FQDN,$api_key,$secret_key,$scope,$fullToken){
     $accessToken = $jsonObj->{'access_token'};//fetch the access token from the response.
     $refreshToken = $jsonObj->{'refresh_token'};
     $expiresIn = $jsonObj->{'expires_in'};
+ if($expiresIn == 0) {
+	  $expiresIn = 24*60*60;
+	  }
 	      
     $refreshTime=$currentTime+(int)($expiresIn); // Time for token refresh
     $updateTime=$currentTime + ( 24*60*60); // Time to get for a new token update, current time + 24h 
@@ -112,7 +134,7 @@ function GetAccessToken($FQDN,$api_key,$secret_key,$scope){
   curl_setopt($accessTok, CURLOPT_HTTPGET, 1);
   curl_setopt($accessTok, CURLOPT_HEADER, 0);
   curl_setopt($accessTok, CURLINFO_HEADER_OUT, 0);
-  //  curl_setopt($accessTok, CURLOPT_HTTPHEADER, $accessTok_headers);
+  curl_setopt($accessTok, CURLOPT_HTTPHEADER, $accessTok_headers);
   curl_setopt($accessTok, CURLOPT_RETURNTRANSFER, 1);
   curl_setopt($accessTok, CURLOPT_SSL_VERIFYPEER, false);
   curl_setopt($accessTok, CURLOPT_POST, 1);
@@ -131,6 +153,10 @@ function GetAccessToken($FQDN,$api_key,$secret_key,$scope){
       $accessToken = $jsonObj->{'access_token'};//fetch the access token from the response.
       $refreshToken = $jsonObj->{'refresh_token'};
       $expiresIn = $jsonObj->{'expires_in'};
+
+       if($expiresIn == 0) {
+	  $expiresIn = 24*60*60*365*100;
+	  }
       $refreshTime=$currentTime+(int)($expiresIn); // Time for token refresh
       $updateTime=$currentTime + ( 24*60*60); // Time to get a new token update, current time + 24h
 
@@ -241,17 +267,18 @@ document.write("" + navigator.userAgent);
 <table border="0" width="100%">
   <tbody>
   <tr>
-    <td width="50%" valign="top" class="label">Buy product 1 for $0.99:</td>
     <td class="cell"><input type="radio" name="product" value="1" checked>
+    <td valign="top" class="label">Buy product 1 for $0.99</td>
     </td>
   </tr>
   <tr>
-    <td width="50%" valign="top" class="label">Buy product 2 for $2.99:</td>
     <td class="cell"><input type="radio" name="product" value="2">
-	</td></tr>
+    <td valign="top" class="label">Buy product 2 for $2.99</td>
+    </td></tr>
   </tbody></table>
 
 </div>
+
 <div id="extra">
 
   <table>
@@ -260,8 +287,6 @@ document.write("" + navigator.userAgent);
   	<td><br /><br /><button type="submit" name="newTransaction" value="newTransaction">Buy Product</button></td>
   </tr>
   </tbody></table>
-
-
 </div>
 <br clear="all" />
 <div align="center"></div>
@@ -291,16 +316,16 @@ $_SESSION["pay1_authCode"] = $_REQUEST["TransactionAuthCode"] ;
 <div class="successWide">
 <strong>SUCCESS:</strong><br />
 <strong>Merchant Transaction ID</strong> <?php echo $_SESSION["pay1_merchantTrxId"] ?><br/>
-<strong>Transaction Auth Code</strong> <?php echo $authCode ?><br /><br/>
+<strong>Transaction Auth Code</strong> <?php echo $_SESSION["pay1_authCode"]?><br /><br/>
 <form name="getNotaryDetails" action="notary.php">
-    <input type="submit" name="getNotaryDetails" value="View Notary Details" />
+ <input type="submit" name="getNotaryDetails" value="View Notary Details" />
 </form>
 </div><br/>
 <?php } ?>
 
 <?php
 if( $_REQUEST["signedPayload"]!=null && $_REQUEST["signature"]!=null){
-    header("location:".$FQDN."/Commerce/Payment/Rest/2/Transactions?clientid=".$api_key."&SignedPaymentDetail=".$_REQUEST["signedPayload"]."&Signature=".$_REQUEST["signature"]);
+    header("location:".$FQDN."/rest/3/Commerce/Payment/Transactions?clientid=".$api_key."&SignedPaymentDetail=".$_REQUEST["signedPayload"]."&Signature=".$_REQUEST["signature"]);
 }
 ?>
 
@@ -326,23 +351,24 @@ if( $_REQUEST["signedPayload"]!=null && $_REQUEST["signature"]!=null){
   $getTransactionType = $_POST["getTransactionType"];
   $url = "";
   if($getTransactionType==1)
-    $url = $FQDN."/Commerce/Payment/Rest/2/Transactions/MerchantTransactionId/".$merchantTrxId;   
+    $url = $FQDN."/rest/3/Commerce/Payment/Transactions/MerchantTransactionId/".$merchantTrxId;   
   if($getTransactionType==2)
-    $url = $FQDN."/Commerce/Payment/Rest/2/Transactions/TransactionAuthCode/".$authCode;
+    $url = $FQDN."/rest/3/Commerce/Payment/Transactions/TransactionAuthCode/".$authCode;
   if($getTransactionType==3)
-    $url = $FQDN."/Commerce/Payment/Rest/2/Transactions/TransactionId/".$trxId;
+    $url = $FQDN."/rest/3/Commerce/Payment/Transactions/TransactionId/".$trxId;
 
-  $url=$url."?access_token=".$accessToken;
+  //$url=$url."?access_token=".$accessToken;
 
-  $headers = array(
-		'Accept: application/json'
-	);
+  $accept = "Accept: application/json";
+  $authorization = "Authorization: Bearer ".$accessToken;
+  $content = "Content-Type: application/json";
   $request = curl_init();
   curl_setopt($request, CURLOPT_URL, $url);
   curl_setopt($request, CURLOPT_HTTPGET, 1);
   curl_setopt($request, CURLOPT_HEADER, 0);
   curl_setopt($request, CURLINFO_HEADER_OUT, 0);
-  curl_setopt($request, CURLOPT_HTTPHEADER, $headers);
+  curl_setopt($request, CURLOPT_HTTPHEADER, array($authorization, $content, $accept));
+  curl_setopt($request, CURLOPT_SSL_VERIFYPEER, false);
   curl_setopt($request, CURLOPT_RETURNTRANSFER, 1);
   curl_setopt($request, CURLOPT_SSL_VERIFYPEER, false);
 
@@ -356,13 +382,11 @@ if( $_REQUEST["signedPayload"]!=null && $_REQUEST["signature"]!=null){
     $_SESSION["pay1_trxId"] = $trxId;
     $consumerId = $jsonResponse["ConsumerId"];
     $_SESSION["pay1_consumerId"] = $consumerId;
-    $merchantTrxId = $jsonResponse["MerchantTransactionId"];
-    $_SESSION["pay1_merchantTrxId"]=$merchantTrxId;
 
     If ( $trxId != null && $trxId != ""){
 
     $transaction["trxId"] = $trxId;
-    $transaction["merchantTrxId"] = $merchantTrxId;
+    $transaction["merchantTrxId"] = $_SESSION["pay1_merchantTrxId"];
     $transaction["authCode"] = $authCode;
     $transaction["consumerId"] = $consumerId;
 
@@ -370,7 +394,7 @@ if( $_REQUEST["signedPayload"]!=null && $_REQUEST["signature"]!=null){
 	$transactions = unserialize(file_get_contents($db_filename));
 	$transaction_exist = false;
 	foreach( $transactions as $tr){
-	  if($tr["merchantTrxId"] == $merchantTrxId){
+	  if($tr["merchantTrxId"] == $_SESSION["pay1_merchantTrxId"]){
 	    $transaction_exist = true;
 	  }
 	}
@@ -406,23 +430,23 @@ if( $_REQUEST["signedPayload"]!=null && $_REQUEST["signature"]!=null){
   <tbody>
   <tr>
     <td class="cell" align="left">
-        <input type="radio" name="getTransactionType" value="1" checked /> Merchant Trans. ID:
+        <input type="radio" name="getTransactionType" value="1" checked /> Merchant Transaction ID:
     </td>
     <td></td>
-    <td class="cell" align="left"><?php echo $merchantTrxId ?></td>
+    <td class="cell" align="left"><?php echo $_SESSION["pay1_merchantTrxId"];?></td>
   </tr>
   <tr>
     <td class="cell" align="left">
         <input type="radio" name="getTransactionType" value="2" /> Auth Code:
     <td></td>
-    <td class="cell" align="left"><?php echo $authCode ?></td>
+    <td class="cell" align="left"><?php echo $_SESSION["pay1_authCode"]; ?></td>
     </td>
   </tr>
   <tr>
     <td class="cell" align="left">
          <input type="radio" name="getTransactionType" value="3" /> Transaction ID:
     <td></td>
-    <td class="cell" align="left"><?php echo $trxId ?></td>
+    <td class="cell" align="left"><?php echo $_SESSION["pay1_trxId"]; ?></td>
     </td>
   </tr>
   <tr>
@@ -444,9 +468,7 @@ if($getTransactionStatus!=null) {
     ?>
 
         <div class="successWide">
-        <strong>SUCCESS:</strong><br />
-	   <strong>Transaction ID:</strong><?php echo $trxId; ?><br />
-	   <strong>Merchant Transaction ID:</strong><?php echo $merchantTrxId; ?><br/>
+        <strong>SUCCESS</strong><br />
         </div><br/>
         <div align="center"><table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
         <thead>
@@ -484,27 +506,28 @@ if($getTransactionStatus!=null) {
   //Check if there is a valid access token that has not expired
 	$fullToken=check_token($FQDN,$api_key,$secret_key,$scope,$fullToken,$oauth_file);
 	$accessToken=$fullToken["accessToken"];
-	$trxIdRefund =$_REQUEST["trxIdRefund"];
+	$trxIdGetRefund =$_REQUEST["trxIdGetRefund"];
+       //$trxIdRefund = $_GET["trxIdGetRefund"];
 
-	$url = $FQDN."/Commerce/Payment/Rest/2/Transactions/".$trxIdRefund;
-	$url = $url."?access_token=".$accessToken."&Action=refund";
+	$url = $FQDN."/rest/3/Commerce/Payment/Transactions/".$trxIdGetRefund;
 
-	$headers = array(
-			 'Content-Type: application/json',	 
-			 'Accept: application/json'
-	);
-	$payload = "{\"RefundReasonCode\":1,\n \"RefundReasonText\":\"".$refundReasonText."\"}";
+	
+	
+	$payload = "{\"TransactionOperationStatus\":Refunded,\n \"RefundReasonCode\":1,\n \"RefundReasonText\":\"".$refundReasonText."\"}";
 	$putData = tmpfile();
 	fwrite($putData, $payload);
 	fseek($putData, 0);
 
-
+$accept = "Accept: application/json";
+  $authorization = "Authorization: Bearer ".$accessToken;
+  $content = "Content-Type: application/json";
+	
 	$request = curl_init();
 	curl_setopt($request, CURLOPT_URL, $url);
 	curl_setopt($request, CURLOPT_HTTPGET, 1);
 	curl_setopt($request, CURLOPT_HEADER, 0);
 	curl_setopt($request, CURLINFO_HEADER_OUT, 0);
-	curl_setopt($request, CURLOPT_HTTPHEADER, $headers);
+	curl_setopt($request, CURLOPT_HTTPHEADER, array($authorization, $content, $accept));
 	curl_setopt($request, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($request, CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($request, CURLOPT_PUT, 1);
@@ -517,10 +540,12 @@ if($getTransactionStatus!=null) {
 	$responseCode=curl_getinfo($request,CURLINFO_HTTP_CODE);
 	
 	if($responseCode==200) {
+           $jsonResponse = json_decode($response,true);
 
+     
 	  if ( file_exists( $db_filename) ){
 	    $transactions = unserialize(file_get_contents($db_filename));
-	    foreach($transactions as $key=>&$transaction){
+	    foreach($transactions as $key=> $transaction){
 	      if($transaction["trxId"] == $trxIdRefund){
 		   unset($transactions[$key]);
 	      }
@@ -543,9 +568,9 @@ if($getTransactionStatus!=null) {
 <table style="width: 750px" cellpadding="1" cellspacing="1" border="0">
 <thead>
     <tr>
-<th style="width: 150px" class="cell" align="right"><strong>Transaction ID</strong></th>
+<th class="cell" align="right"><strong>Transaction ID</strong></th>
         <th style="width: 100px" class="cell"></th>
-<th style="width: 240px" class="cell" align="left"><strong>Merchant Transaction ID</strong></th>
+<th class="cell" align="left"><strong>Merchant Transaction ID</strong></th>
     <td><div class="warning">
 <strong>WARNING:</strong><br />
 You must use Get Transaction Status to get the Transaction ID before you can refund it.
@@ -556,18 +581,16 @@ You must use Get Transaction Status to get the Transaction ID before you can ref
 <?php 
 if(true) {
       $transactions = unserialize(file_get_contents($db_filename)); 
-      $checked = true;
       foreach ( $transactions as $transaction ){
 ?>
                       <tr>
                         <td class="cell" align="right">
-	                <?php 	if ( $checked ){
-	                          $checked = false;
-                        ?>
-				  <input type="radio" name="trxIdRefund" value="<?php echo $transaction["trxId"]; ?>" checked /><?php echo $transaction["trxId"];?>
-				  <?php } else { ?>
-                            <input type="radio" name="trxIdRefund" value="<?php echo $transaction["trxId"]; ?>" /><?php echo $transaction["trxId"]; ?>
-	    <?php } ?>
+	                <?php 	if ( $checked ){?>
+				  <input type="radio" name="trxIdGetRefund" value="<?php echo $transaction["trxId"]; ?>"/><?php echo $transaction["trxId"];?>
+				  <?php }else { ?>
+                            <input type="radio" name="trxIdGetRefund" value="<?php echo $transaction["trxId"]; ?>" /><?php echo $transaction["trxId"]; ?>
+	    <?php } $checked = false;
+ ?>
 
                         </td>
                         <td></td>
@@ -575,7 +598,6 @@ if(true) {
                       </tr>  
 <?php 
       } }?>
-
   <tr>
     <td></td>
     <td></td>
@@ -589,15 +611,36 @@ if(true) {
 </form>
 </div>
 <br clear="all" />
-<?php 
-     if($refundTransaction!=null) { 	
-	if($responseCode==200) {
+<?php
+     if($refundTransaction!=null) {
+        if($responseCode==200) {
 ?>
-            <div class="successWide">
-            <strong>SUCCESS:</strong><br />
-            <strong>Transaction ID:</strong> <?php echo $response ?><br />
-            </div><br/>
-	    <?php } else { ?>
+             <div class="successWide">
+        <strong>SUCCESS</strong><br />
+        </div><br/>
+        <div align="center"><table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
+        <thead>
+            <tr>
+                <th style="width: 100px" class="cell" align="right"><strong>Parameter</strong></th>
+                <th style="width: 100px" class="cell"><strong></strong></th>
+                <th style="width: 275px" class="cell" align="left"><strong>Value</strong></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+               foreach ( $jsonResponse  as $parameter => $value ){ ?>
+                <tr>
+                     <td align="right" class="cell"><?php echo $parameter; ?></td>
+                    <td align="center" class="cell"></td>
+                    <td align="left" class="cell"><?php echo $value; ?></td>
+                </tr>
+<?php }
+ ?>
+        </tbody>
+        </table>
+        </div><br/>
+            <?php } else { ?>
+
             <div class="errorWide">
             <strong>ERROR:</strong><br />
              <?php echo $response ?><br />
@@ -606,6 +649,7 @@ if(true) {
 
 <div id="wrapper">
 <div id="content">
+
 
 <h2><br />Feature 4: Notifications</h2>
 
@@ -624,19 +668,130 @@ if(true) {
 	</tr>
 </thead>
 <tbody>
-<?php 
-if(true) {
-      $transactions = unserialize(file_get_contents($db_filename)); 
-      foreach ( $notifications as $notification ){
-?>
+<?php
+$notificationdetails = unserialize(file_get_contents($db3_filename));
+   foreach ( $notificationdetails as $notificationdetail ){
+print_r(var_export($notificationdetails));
 
+?>
 	<tr>
-	  <td align="center" class="cell"><?php echo $notification["notificationId"]; ?></td>
-        <td align="center" class="cell"><?php echo $notification["notificationType"]; ?></td>
-        <td align="center" class="cell"><?php echo $notification["transactionId"]; ?></td>
-        <td align="center" class="cell"><?php echo $notification["merchantTransactionId"]; ?></td>
+	  <td align="center" class="cell"><?php echo $notificationdetail["notificationId"]; ?></td>
+        <td align="center" class="cell"><?php echo $notificationdetail["NotificationType"]; ?></td>
+        <td align="center" class="cell"><?php echo $notificationdetail["OriginalTransactionId"]; ?></td>
     </tr>
-<?php } } ?>
+<?php }
+$refreshNotifications = $_REQUEST["refreshNotifications"];
+if($refreshNotifications != null) {
+
+$fullToken=check_token($FQDN,$api_key,$secret_key,$scope,$fullToken,$oauth_file);
+  $accessToken=$fullToken["accessToken"];
+
+
+$notifications = unserialize(file_get_contents($db2_filename));
+foreach ( $notifications as $notification ){
+
+
+
+
+  
+
+  
+    $url = $FQDN."/rest/3/Commerce/Payment/Notifications/".$notification["notificationId"];
+
+  
+
+  $accept = "Accept: application/json";
+  $authorization = "Authorization: Bearer ".$accessToken;
+  $content = "Content-Type: application/json";
+  $request = curl_init();
+  curl_setopt($request, CURLOPT_URL, $url);
+  curl_setopt($request, CURLOPT_HTTPGET, 1);
+  curl_setopt($request, CURLOPT_HEADER, 0);
+  curl_setopt($request, CURLINFO_HEADER_OUT, 0);
+  curl_setopt($request, CURLOPT_HTTPHEADER, array($authorization, $content, $accept));
+  curl_setopt($request, CURLOPT_SSL_VERIFYPEER, false);
+  curl_setopt($request, CURLOPT_RETURNTRANSFER, 1);
+ 
+
+  $response = curl_exec($request);
+
+  $responseCode=curl_getinfo($request,CURLINFO_HTTP_CODE);
+
+  if($responseCode==200) {
+    $jsonResponse = json_decode($response,true);
+   $originalTrxId = $jsonResponse["OriginalTransactionId"];
+   $notificationType = $jsonResponse["NotificationType"];
+   $notificationId = $notification["notificationId"];
+   
+
+    
+    $notificationdetail["$originalTrxId"] = $originalTrxId;
+    $notificationdetail["notificationType"] = $notificationType;
+    $transaction["notificationId"] = $notificationId;
+    
+
+    if ( file_exists( $db3_filename) ){
+            $notificationdetails = unserialize(file_get_contents($db3_filename));
+            
+            $fp = fopen($db3_filename, 'w+') or die("I could not open $db3_filename.");
+            fwrite($fp,$response, $notificationId);
+            fclose($fp);
+   }
+}
+if($refreshNotifications != null) {
+        if($responseCode==200) {
+
+   $url = $FQDN."/rest/3/Commerce/Payment/Notifications/".$notification["notificationId"];
+
+  
+
+       $payload = "";
+	$putData = tmpfile();
+	fwrite($putData, $payload);
+	fseek($putData, 0);
+
+$accept = "Accept: application/json";
+  $authorization = "Authorization: Bearer ".$accessToken;
+  $content = "Content-Type: application/json";
+	
+	$request = curl_init();
+	curl_setopt($request, CURLOPT_URL, $url);
+	curl_setopt($request, CURLOPT_HTTPGET, 1);
+	curl_setopt($request, CURLOPT_HEADER, 0);
+	curl_setopt($request, CURLINFO_HEADER_OUT, 0);
+	curl_setopt($request, CURLOPT_HTTPHEADER, array($authorization, $content, $accept));
+	curl_setopt($request, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($request, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($request, CURLOPT_PUT, 1);
+	curl_setopt($request, CURLOPT_INFILE, $putData);
+	curl_setopt($request, CURLOPT_INFILESIZE, strlen($payload));
+	$response = curl_exec($request);
+	fclose($putData);
+
+  
+
+  $responseCode=curl_getinfo($request,CURLINFO_HTTP_CODE);
+
+  if($responseCode==200) {
+    $jsonResponse = json_decode($response,true);
+    //echo $response;
+
+    if ( file_exists( $db4_filename) ){
+            $notificationacks = unserialize(file_get_contents($db4_filename));
+            
+            $fp = fopen($db4_filename, 'w+') or die("I could not open $db4_filename.");
+            fwrite($fp,$response);
+            fclose($fp);
+   }
+}
+
+    
+
+} 
+
+} } 
+
+} ?>
 </tbody>
 </table>
 </div>
@@ -656,8 +811,8 @@ if(true) {
 
 <div id="footer">
 
-	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
-    <p>&#169; 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
+    <p>&#169; 2012 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
 <br>
 The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br>
@@ -669,3 +824,10 @@ For more information contact <a href="mailto:developer.support@att.com">develope
 </div>
 
 </body></html>
+
+
+
+
+
+
+

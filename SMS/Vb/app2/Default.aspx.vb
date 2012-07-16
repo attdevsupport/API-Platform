@@ -1,623 +1,331 @@
-﻿'Licensed by AT&T under 'Software Development Kit Tools Agreement.' September 2011
-'TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
-'Copyright 2011 AT&T Intellectual Property. All rights reserved. http://developer.att.com
-'For more information contact developer.support@att.com
+﻿' <copyright file="Default.aspx.cs" company="AT&amp;T">
+' Licensed by AT&amp;T under 'Software Development Kit Tools Agreement.' 2012
+' TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+' Copyright 2012 AT&amp;T Intellectual Property. All rights reserved. http://developer.att.com
+' For more information contact developer.support@att.com
+' </copyright>
 
-Imports System.Collections.Generic
-Imports System.Linq
-Imports System.Web
+#Region "References"
 Imports System.Web.UI
 Imports System.Web.UI.WebControls
 Imports System.Net
-Imports System.IO
 Imports System.Configuration
-Imports System.Web.Script.Serialization
-Imports System.Drawing
+Imports System.IO
 Imports System.Net.Security
 Imports System.Security.Cryptography.X509Certificates
-Imports System.Timers
-Imports System.Threading
-Imports System
+Imports System.Text.RegularExpressions
+#End Region
 
-
-Partial Public Class [Default]
+''' <summary>
+''' Class file for SMS_Apps application
+''' </summary>
+Partial Public Class SMS_App2
     Inherits System.Web.UI.Page
-    Private shortCode As String, FQDN As String, accessTokenFilePath As String, footballFilePath As String, baseballFilePath As String, basketballFilePath As String, _
-     oauthFlow As String
-    Private api_key As String, secret_key As String, auth_code As String, access_token As String, authorize_redirect_uri As String, scope As String, _
-     expiryMilliSeconds As String, refresh_token As String, lastTokenTakenTime As String, refreshTokenExpiryTime As String
-    Private statusTable As Table
-    Private Shared TheTimer As System.Timers.Timer
-    ' This function reads the Access Token File and stores the values of access token, expiry seconds
-    '    * refresh token, last access token time and refresh token expiry time
-    '    * This funciton returns true, if access token file and all others attributes read successfully otherwise returns false
-    '    
+#Region "Local Variables"
 
-    Public Function readAccessTokenFile() As Boolean
-        Try
-            Dim file As New FileStream(Request.MapPath(accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Read)
-            Dim sr As New StreamReader(file)
-            access_token = sr.ReadLine()
-            expiryMilliSeconds = sr.ReadLine()
-            refresh_token = sr.ReadLine()
-            lastTokenTakenTime = sr.ReadLine()
-            refreshTokenExpiryTime = sr.ReadLine()
-            sr.Close()
-            file.Close()
-        Catch ex As Exception
-            Return False
-        End Try
-        If (access_token Is Nothing) OrElse (expiryMilliSeconds Is Nothing) OrElse (refresh_token Is Nothing) OrElse (lastTokenTakenTime Is Nothing) OrElse (refreshTokenExpiryTime Is Nothing) Then
-            Return False
-        End If
+    ''' <summary>
+    ''' Gets or sets the value of shortCode
+    ''' </summary>
+    Private shortCode As String
+
+    ''' <summary>
+    ''' Gets or sets the value of football filepath
+    ''' </summary>
+    Private footballFilePath As String
+
+    ''' <summary>
+    ''' Gets or sets the value of baseball filepath
+    ''' </summary>
+    Private baseballFilePath As String
+
+    ''' <summary>
+    ''' Gets or sets the value of basketball filepath
+    ''' </summary>
+    Private basketballFilePath As String
+
+#End Region
+
+#Region "Bypass SSL Handshake Error Method"
+    ''' <summary>
+    ''' This function is used to neglect the ssl handshake error with authentication server
+    ''' </summary>
+    Function CertificateValidationCallBack( _
+    ByVal sender As Object, _
+    ByVal certificate As X509Certificate, _
+    ByVal chain As X509Chain, _
+    ByVal sslPolicyErrors As SslPolicyErrors _
+) As Boolean
+
         Return True
     End Function
-    ' This function validates the expiry of the access token and refresh token,
-    '     * function compares the current time with the refresh token taken time, if current time is greater then 
-    '     * returns INVALID_REFRESH_TOKEN
-    '     * function compares the difference of last access token taken time and the current time with the expiry seconds, if its more,
-    '     * funciton returns INVALID_ACCESS_TOKEN
-    '     * otherwise returns VALID_ACCESS_TOKEN
-    '    
+#End Region
 
-    Public Function isTokenValid() As String
+#Region "Events"
+
+    ''' <summary>
+    ''' This method called when the page is loaded into the browser. Reads the config values and sets the local variables
+    ''' </summary>
+    ''' <param name="sender">object, which invoked this method</param>
+    ''' <param name="e">EventArgs, which specifies arguments specific to this method</param>
+    Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs)
         Try
+            ServicePointManager.ServerCertificateValidationCallback = New RemoteCertificateValidationCallback(AddressOf CertificateValidationCallBack)
 
-            Dim currentServerTime As DateTime = DateTime.UtcNow.ToLocalTime()
-            Dim lastRefreshTokenTime As DateTime = DateTime.Parse(refreshTokenExpiryTime)
-            Dim refreshSpan As TimeSpan = currentServerTime.Subtract(lastRefreshTokenTime)
-            If currentServerTime >= lastRefreshTokenTime Then
-                Return "INVALID_ACCESS_TOKEN"
-            End If
-            Dim lastTokenTime As DateTime = DateTime.Parse(lastTokenTakenTime)
-            Dim tokenSpan As TimeSpan = currentServerTime.Subtract(lastTokenTime)
-            If ((tokenSpan.TotalSeconds)) > Convert.ToInt32(expiryMilliSeconds) Then
-                Return "REFRESH_ACCESS_TOKEN"
-            Else
-                Return "VALID_ACCESS_TOKEN"
+            Dim currentServerTime As DateTime = DateTime.UtcNow
+            serverTimeLabel.Text = [String].Format("{0:ddd, MMM dd, yyyy HH:mm:ss}", currentServerTime) & " UTC"
+            Me.ReadConfigFile()
+            If Not Page.IsPostBack Then
+                shortCodeLabel.Text = Me.shortCode
+                Me.UpdateVoteCount()
+                'Me.drawMessages()
             End If
         Catch ex As Exception
-            Return "INVALID_ACCESS_TOKEN"
+            Me.DrawPanelForFailure(statusPanel, ex.ToString())
         End Try
-    End Function
-
-
-    ' This function get the access token based on the type parameter type values.
-    '     * If type value is 1, access token is fetch for client credential flow
-    '     * If type value is 2, access token is fetch for client credential flow based on the exisiting refresh token
-    '     
-
-    Public Function getAccessToken(ByVal type As Integer, ByVal panelParam As Panel) As Boolean
-        '  This is client credential flow: 
-
-        If type = 1 Then
-            Try
-                Dim currentServerTime As DateTime = DateTime.UtcNow.ToLocalTime()
-                Dim accessTokenRequest As WebRequest = System.Net.HttpWebRequest.Create("" & FQDN & "/oauth/token")
-                accessTokenRequest.Method = "POST"
-                Dim oauthParameters As String = "client_id=" & api_key.ToString() & "&client_secret=" & secret_key.ToString() & "&grant_type=client_credentials&scope=SMS"
-                accessTokenRequest.ContentType = "application/x-www-form-urlencoded"
-                'sendSmsRequestObject.Accept = "application/json";
-                Dim encoding As New UTF8Encoding()
-                Dim postBytes As Byte() = encoding.GetBytes(oauthParameters)
-                accessTokenRequest.ContentLength = postBytes.Length
-                Dim postStream As Stream = accessTokenRequest.GetRequestStream()
-                postStream.Write(postBytes, 0, postBytes.Length)
-                postStream.Close()
-
-                Dim accessTokenResponse As WebResponse = accessTokenRequest.GetResponse()
-                Using accessTokenResponseStream As New StreamReader(accessTokenResponse.GetResponseStream())
-                    Dim jsonAccessToken As String = accessTokenResponseStream.ReadToEnd().ToString()
-                    Dim deserializeJsonObject As New JavaScriptSerializer()
-                    Dim deserializedJsonObj As AccessTokenResponse = DirectCast(deserializeJsonObject.Deserialize(jsonAccessToken, GetType(AccessTokenResponse)), AccessTokenResponse)
-                    access_token = deserializedJsonObj.access_token.ToString()
-                    expiryMilliSeconds = deserializedJsonObj.expires_in.ToString()
-                    refresh_token = deserializedJsonObj.refresh_token.ToString()
-                    Dim file As New FileStream(Request.MapPath(accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Write)
-                    Dim sw As New StreamWriter(file)
-                    sw.WriteLine(access_token)
-                    sw.WriteLine(expiryMilliSeconds)
-                    sw.WriteLine(refresh_token)
-                    sw.WriteLine(currentServerTime.ToLongDateString() & " " & currentServerTime.ToLongTimeString())
-                    lastTokenTakenTime = currentServerTime.ToLongDateString() & " " & currentServerTime.ToLongTimeString()
-                    'Refresh token valids for 24 hours
-                    Dim refreshExpiry As DateTime = currentServerTime.AddHours(24)
-                    refreshTokenExpiryTime = refreshExpiry.ToLongDateString() & " " & refreshExpiry.ToLongTimeString()
-                    sw.WriteLine(refreshExpiry.ToLongDateString() & " " & refreshExpiry.ToLongTimeString())
-                    sw.Close()
-                    file.Close()
-                    ' Close and clean up the StreamReader
-                    accessTokenResponseStream.Close()
-                    Return True
-                End Using
-            Catch ex As Exception
-                drawPanelForFailure(panelParam, ex.ToString())
-                Return False
-            End Try
-        ElseIf type = 2 Then
-            Try
-                Dim currentServerTime As DateTime = DateTime.UtcNow.ToLocalTime()
-                Dim accessTokenRequest As WebRequest = System.Net.HttpWebRequest.Create("" & FQDN & "/oauth/token")
-                accessTokenRequest.Method = "POST"
-                Dim oauthParameters As String = "grant_type=refresh_token&client_id=" & api_key.ToString() & "&client_secret=" & secret_key.ToString() & "&refresh_token=" & refresh_token.ToString()
-                accessTokenRequest.ContentType = "application/x-www-form-urlencoded"
-                'sendSmsRequestObject.Accept = "application/json";
-                Dim encoding As New UTF8Encoding()
-                Dim postBytes As Byte() = encoding.GetBytes(oauthParameters)
-                accessTokenRequest.ContentLength = postBytes.Length
-                Dim postStream As Stream = accessTokenRequest.GetRequestStream()
-                postStream.Write(postBytes, 0, postBytes.Length)
-                postStream.Close()
-                Dim accessTokenResponse As WebResponse = accessTokenRequest.GetResponse()
-                Using accessTokenResponseStream As New StreamReader(accessTokenResponse.GetResponseStream())
-                    Dim access_token_json As String = accessTokenResponseStream.ReadToEnd().ToString()
-                    Dim deserializeJsonObject As New JavaScriptSerializer()
-                    Dim deserializedJsonObj As AccessTokenResponse = DirectCast(deserializeJsonObject.Deserialize(access_token_json, GetType(AccessTokenResponse)), AccessTokenResponse)
-                    access_token = deserializedJsonObj.access_token.ToString()
-                    expiryMilliSeconds = deserializedJsonObj.expires_in.ToString()
-                    refresh_token = deserializedJsonObj.refresh_token.ToString()
-                    Dim file As New FileStream(Request.MapPath(accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Write)
-                    Dim sw As New StreamWriter(file)
-                    sw.WriteLine(access_token)
-                    sw.WriteLine(expiryMilliSeconds)
-                    sw.WriteLine(refresh_token)
-                    sw.WriteLine(currentServerTime.ToLongDateString() & " " & currentServerTime.ToLongTimeString())
-                    lastTokenTakenTime = currentServerTime.ToLongDateString() & " " & currentServerTime.ToLongTimeString()
-                    'Refresh token valids for 24 hours
-                    Dim refreshExpiry As DateTime = currentServerTime.AddHours(24)
-                    refreshTokenExpiryTime = refreshExpiry.ToLongDateString() & " " & refreshExpiry.ToLongTimeString()
-                    sw.WriteLine(refreshExpiry.ToLongDateString() & " " & refreshExpiry.ToLongTimeString())
-                    sw.Close()
-                    file.Close()
-                    accessTokenResponseStream.Close()
-                    Return True
-                End Using
-            Catch ex As Exception
-                drawPanelForFailure(panelParam, ex.ToString())
-                Return False
-            End Try
-        End If
-        Return False
-    End Function
-
-    ' This function is used to neglect the ssl handshake error with authentication server 
-
-
-    Public Shared Sub BypassCertificateError()
-        ServicePointManager.ServerCertificateValidationCallback = DirectCast([Delegate].Combine(ServicePointManager.ServerCertificateValidationCallback, Function(sender1 As [Object], certificate As X509Certificate, chain As X509Chain, sslPolicyErrors As SslPolicyErrors) True), RemoteCertificateValidationCallback)
     End Sub
-    ' This function is used to read access token file and validate the access token
-    '     * this function returns true if access token is valid, or else false is returned
-    '     
 
-    Public Function readAndGetAccessToken(ByVal panelParam As Panel) As Boolean
-        Dim result As Boolean = True
-        If readAccessTokenFile() = False Then
-            result = getAccessToken(1, panelParam)
-        Else
-            Dim tokenValidity As String = isTokenValid()
-            If tokenValidity.CompareTo("REFRESH_ACCESS_TOKEN") = 0 Then
-                result = getAccessToken(2, panelParam)
-            ElseIf String.Compare(isTokenValid(), "INVALID_ACCESS_TOKEN") = 0 Then
-                result = getAccessToken(1, panelParam)
-            End If
-        End If
-        Return result
-    End Function
 
-    ' This function is called to draw the table in the panelParam panel for success response 
+    ''' <summary>
+    ''' Method will be called when the user clicks on Update Votes Total button
+    ''' </summary>
+    ''' <param name="sender">object, that invoked this method</param>
+    ''' <param name="e">EventArgs, specific to this method</param>
+    Protected Sub UpdateButton_Click(ByVal sender As Object, ByVal e As EventArgs)
+        Try
+            Me.UpdateVoteCount()
+            Me.drawMessages()
+        Catch ex As Exception
+            Me.DrawPanelForFailure(statusPanel, ex.ToString())
+        End Try
+    End Sub
 
-    Private Sub drawPanelForSuccess(ByVal panelParam As Panel, ByVal message As String)
+#End Region
+
+#Region "Display Status Functions"
+
+    ''' <summary>
+    ''' Display success message
+    ''' </summary>
+    ''' <param name="panelParam">Panel to draw success message</param>
+    ''' <param name="message">Message to display</param>
+    Private Sub DrawPanelForSuccess(ByVal panelParam As Panel, ByVal message As String)
         If panelParam.HasControls() Then
-            panelParam.Controls.Remove(statusTable)
+            panelParam.Controls.Clear()
         End If
-        statusTable = New Table()
-        statusTable.Font.Name = "Sans-serif"
-        statusTable.Font.Size = 9
-        statusTable.BorderStyle = BorderStyle.Outset
-        statusTable.Width = Unit.Pixel(200)
+
+        Dim table As New Table()
+        table.CssClass = "success"
+        table.Font.Name = "Sans-serif"
+        table.Font.Size = 9
         Dim rowOne As New TableRow()
         Dim rowOneCellOne As New TableCell()
         rowOneCellOne.Font.Bold = True
         rowOneCellOne.Text = "SUCCESS:"
-        'rowOneCellOne.BorderWidth = 1;
         rowOne.Controls.Add(rowOneCellOne)
-        statusTable.Controls.Add(rowOne)
+        table.Controls.Add(rowOne)
+
         Dim rowTwo As New TableRow()
         Dim rowTwoCellOne As New TableCell()
-        rowTwoCellOne.Text = message.ToString()
-        'rowTwoCellOne.BorderWidth = 1;
+        rowTwoCellOne.Text = "<b>Total Votes:</b>" & message
         rowTwo.Controls.Add(rowTwoCellOne)
-        statusTable.Controls.Add(rowTwo)
-        statusTable.BorderWidth = 2
-        statusTable.BorderColor = Color.DarkGreen
-        statusTable.BackColor = System.Drawing.ColorTranslator.FromHtml("#cfc")
-        panelParam.Controls.Add(statusTable)
-    End Sub
-    ' This function draws table for failed response in the panalParam panel 
+        table.Controls.Add(rowTwo)
 
-    Private Sub drawPanelForFailure(ByVal panelParam As Panel, ByVal message As String)
+        panelParam.Controls.Add(table)
+    End Sub
+
+    ''' <summary>
+    ''' Displays error message
+    ''' </summary>
+    ''' <param name="panelParam">Panel to draw success message</param>
+    ''' <param name="message">Message to display</param>
+    Private Sub DrawPanelForFailure(ByVal panelParam As Panel, ByVal message As String)
         If panelParam.HasControls() Then
-            panelParam.Controls.Remove(statusTable)
+            panelParam.Controls.Clear()
         End If
-        statusTable = New Table()
-        statusTable.Font.Name = "Sans-serif"
-        statusTable.Font.Size = 9
-        statusTable.BorderStyle = BorderStyle.Outset
-        statusTable.Width = Unit.Pixel(650)
+
+        Dim table As New Table()
+        table.CssClass = "errorWide"
+        table.Font.Name = "Sans-serif"
+        table.Font.Size = 9
         Dim rowOne As New TableRow()
         Dim rowOneCellOne As New TableCell()
         rowOneCellOne.Font.Bold = True
         rowOneCellOne.Text = "ERROR:"
         rowOne.Controls.Add(rowOneCellOne)
-        'rowOneCellOne.BorderWidth = 1;
-        statusTable.Controls.Add(rowOne)
+        table.Controls.Add(rowOne)
         Dim rowTwo As New TableRow()
         Dim rowTwoCellOne As New TableCell()
-        'rowTwoCellOne.BorderWidth = 1;
         rowTwoCellOne.Text = message.ToString()
         rowTwo.Controls.Add(rowTwoCellOne)
-        statusTable.Controls.Add(rowTwo)
-        statusTable.BorderWidth = 2
-        statusTable.BorderColor = Color.Red
-        statusTable.BackColor = System.Drawing.ColorTranslator.FromHtml("#fcc")
-        panelParam.Controls.Add(statusTable)
+        table.Controls.Add(rowTwo)
+
+        panelParam.Controls.Add(table)
     End Sub
 
-    '
-    '     * This function is called when the applicaiton page is loaded into the browser.
-    '     * This fucntion reads the web.config and gets the values of the attributes
-    '     * 
-    '     
+#End Region
 
+#Region "SMS Specific Functions"
 
-    Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs)
-        Try
-            'BypassCertificateError()
-            Dim currentServerTime As DateTime = DateTime.UtcNow
-            serverTimeLabel.Text = [String].Format("{0:ddd, MMM dd, yyyy HH:mm:ss}", currentServerTime) & " UTC"
-            If ConfigurationManager.AppSettings("FootBallFilePath") Is Nothing Then
-                drawPanelForFailure(sendSMSPanel, "FootBallFilePath is not defined in configuration file")
-                Return
-            End If
-            footballFilePath = ConfigurationManager.AppSettings("FootBallFilePath").ToString()
-            If ConfigurationManager.AppSettings("BaseBallFilePath") Is Nothing Then
-                drawPanelForFailure(sendSMSPanel, "BaseBallFilePath is not defined in configuration file")
-                Return
-            End If
-            baseballFilePath = ConfigurationManager.AppSettings("BaseBallFilePath").ToString()
-            If ConfigurationManager.AppSettings("BasketBallFilePath") Is Nothing Then
-                drawPanelForFailure(sendSMSPanel, "BasketBallFilePath is not defined in configuration file")
-                Return
-            End If
-            basketballFilePath = ConfigurationManager.AppSettings("BasketBallFilePath").ToString()
-            If ConfigurationManager.AppSettings("AccessTokenFilePath") IsNot Nothing Then
-                accessTokenFilePath = ConfigurationManager.AppSettings("AccessTokenFilePath")
-            Else
-                accessTokenFilePath = "~\SMSApp2AccessToken.txt"
-            End If
-            If ConfigurationManager.AppSettings("FQDN") Is Nothing Then
-                drawPanelForFailure(sendSMSPanel, "FQDN is not defined in configuration file")
-                Return
-            End If
-            FQDN = ConfigurationManager.AppSettings("FQDN").ToString()
-            If ConfigurationManager.AppSettings("short_code") Is Nothing Then
-                drawPanelForFailure(sendSMSPanel, "short_code is not defined in configuration file")
-                Return
-            End If
-            shortCode = ConfigurationManager.AppSettings("short_code").ToString()
-            shortCodeLabel.Text = shortCode.ToString()
-            updateButton.Text = "Update votes for " & shortCode.ToString()
-            If ConfigurationManager.AppSettings("api_key") Is Nothing Then
-                drawPanelForFailure(sendSMSPanel, "api_key is not defined in configuration file")
-                Return
-            End If
-            api_key = ConfigurationManager.AppSettings("api_key").ToString()
-            If ConfigurationManager.AppSettings("secret_key") Is Nothing Then
-                drawPanelForFailure(sendSMSPanel, "secret_key is not defined in configuration file")
-                Return
-            End If
-            secret_key = ConfigurationManager.AppSettings("secret_key").ToString()
-            If ConfigurationManager.AppSettings("scope") Is Nothing Then
-                scope = "SMS"
-            Else
-                scope = ConfigurationManager.AppSettings("scope").ToString()
-            End If
+    ''' <summary>
+    ''' This method reads from config file and assign the values to local variables.
+    ''' Displays error message in case of ay mandatory value not specified
+    ''' </summary>
+    ''' <returns>true/false; true - if able to read all the mandatory values from config file; else false</returns>
+    Private Function ReadConfigFile() As Boolean
+        Me.footballFilePath = ConfigurationManager.AppSettings("FootBallFilePath")
 
+        If String.IsNullOrEmpty(Me.footballFilePath) Then
+            Me.DrawPanelForFailure(statusPanel, "FootBallFilePath is not defined in configuration file")
+            Return False
+        End If
 
-            If Not Page.IsPostBack Then
-                voteCount()
+        Me.baseballFilePath = ConfigurationManager.AppSettings("BaseBallFilePath")
+        If String.IsNullOrEmpty(Me.baseballFilePath) Then
+            Me.DrawPanelForFailure(statusPanel, "BaseBallFilePath is not defined in configuration file")
+            Return False
+        End If
 
-            End If
-        Catch ex As Exception
-            drawPanelForFailure(sendSMSPanel, ex.ToString())
-            Response.Write(ex.ToString())
-        End Try
-    End Sub
+        Me.basketballFilePath = ConfigurationManager.AppSettings("BasketBallFilePath")
+        If String.IsNullOrEmpty(Me.basketballFilePath) Then
+            Me.DrawPanelForFailure(statusPanel, "BasketBallFilePath is not defined in configuration file")
+            Return False
+        End If
 
+        Me.shortCode = ConfigurationManager.AppSettings("ShortCode")
+        If String.IsNullOrEmpty(Me.shortCode) Then
+            Me.DrawPanelForFailure(statusPanel, "ShortCode is not defined in configuration file")
+            Return False
+        End If
 
-    '  This function calls receive sms API and updates the GUI with the updated votes 
+        Return True
+    End Function
 
-    Public Sub voteCount()
-        Try
-            If readAndGetAccessToken(sendSMSPanel) = False Then
-                Return
-            End If
-            If access_token Is Nothing OrElse access_token.Length <= 0 Then
-                'drawPanelForFailure(sendSMSPanel, "Invalid access token");
-                Return
-            End If
-            Dim football_count_val As Integer = 0, baseball_count_val As Integer = 0, basketball_count_val As Integer = 0
-
-            Using str1 As StreamReader = File.OpenText(Request.MapPath(footballFilePath))
-                football_count_val = Convert.ToInt32(str1.ReadToEnd())
-                str1.Close()
-            End Using
-            Using str2 As StreamReader = File.OpenText(Request.MapPath(baseballFilePath))
-                baseball_count_val = Convert.ToInt32(str2.ReadToEnd())
-                str2.Close()
-            End Using
-            Using str3 As StreamReader = File.OpenText(Request.MapPath(basketballFilePath))
-                basketball_count_val = Convert.ToInt32(str3.ReadToEnd())
-                str3.Close()
-            End Using
-            Dim smsVoteCountOutput As [String]
-            Dim iTotalVotes As Integer = 0
-            Dim totalVotes As String
-            Dim smsVoteCountRequestObject As HttpWebRequest = DirectCast(System.Net.WebRequest.Create("" & FQDN & "/rest/sms/2/messaging/inbox?access_token=" & access_token.ToString() & "&RegistrationID=" & shortCode.ToString()), HttpWebRequest)
-            smsVoteCountRequestObject.Method = "GET"
-            Dim smsVoteCountResponseObject As HttpWebResponse = DirectCast(smsVoteCountRequestObject.GetResponse(), HttpWebResponse)
-            Using smsVoteCountResponseStream As New StreamReader(smsVoteCountResponseObject.GetResponseStream())
-                smsVoteCountOutput = smsVoteCountResponseStream.ReadToEnd()
-                Dim deserializeJsonObject As New JavaScriptSerializer()
-                Dim deserializedJsonObj As RecieveSmsResponse = DirectCast(deserializeJsonObject.Deserialize(smsVoteCountOutput, GetType(RecieveSmsResponse)), RecieveSmsResponse)
-                Dim numberOfMessagesInThisBatch As Integer = deserializedJsonObj.inboundSMSMessageList.numberOfMessagesInThisBatch
-                Dim resourceURL As String = deserializedJsonObj.inboundSMSMessageList.resourceURL.ToString()
-                Dim totalNumberOfPendingMessages As String = deserializedJsonObj.inboundSMSMessageList.totalNumberOfPendingMessages.ToString()
-                Dim parsedJson As String = "MessagesInThisBatch : " & numberOfMessagesInThisBatch.ToString() & "<br/>" & "MessagesPending : " & totalNumberOfPendingMessages.ToString() & "<br/>"
-                Dim table As New Table()
-
-                table.Font.Name = "Sans-serif"
-                table.Font.Size = 9
-                table.BorderStyle = BorderStyle.Outset
-                table.Width = Unit.Pixel(650)
-                Dim TableRow As New TableRow()
-                Dim TableCell As New TableCell()
-                TableCell.Width = Unit.Pixel(110)
-                TableCell.Text = "SUCCESS:"
-                TableCell.Font.Bold = True
-                TableRow.Cells.Add(TableCell)
-                table.Rows.Add(TableRow)
-                TableRow = New TableRow()
-                TableCell = New TableCell()
-                TableCell.Width = Unit.Pixel(150)
-                TableCell.Text = "Messages in this batch:"
-                TableCell.Font.Bold = True
-                'TableCell.BorderWidth = 1;
-                TableRow.Cells.Add(TableCell)
-                TableCell = New TableCell()
-                TableCell.HorizontalAlign = HorizontalAlign.Left
-                TableCell.Text = numberOfMessagesInThisBatch.ToString()
-                'TableCell.BorderWidth = 1;
-                TableRow.Cells.Add(TableCell)
-                table.Rows.Add(TableRow)
-                TableRow = New TableRow()
-                TableCell = New TableCell()
-                'TableCell.BorderWidth = 1;
-                TableCell.Width = Unit.Pixel(110)
-                TableCell.Text = "Messages pending:"
-                TableCell.Font.Bold = True
-                TableRow.Cells.Add(TableCell)
-                TableCell = New TableCell()
-                'TableCell.BorderWidth = 1;
-                TableCell.Text = totalNumberOfPendingMessages.ToString()
-                TableRow.Cells.Add(TableCell)
-                table.Rows.Add(TableRow)
-                TableRow = New TableRow()
-                table.Rows.Add(TableRow)
-                TableRow = New TableRow()
-                table.Rows.Add(TableRow)
-                Dim secondTable As New Table()
-                secondTable.Font.Name = "Sans-serif"
-                secondTable.Font.Size = 9
-                TableRow = New TableRow()
-                secondTable.Font.Size = 8
-                secondTable.Width = Unit.Pixel(600)
-                'secondTable.Width = Unit.Percentage(80);
-                TableCell = New TableCell()
-                TableCell.Width = Unit.Pixel(100)
-                'TableCell.BorderWidth = 1;
-                TableCell.Text = "Message Index"
-                TableCell.HorizontalAlign = HorizontalAlign.Center
-                TableCell.Font.Bold = True
-                TableRow.Cells.Add(TableCell)
-                TableCell = New TableCell()
-                'TableCell.BorderWidth = 1;
-                TableCell.Font.Bold = True
-                TableCell.Width = Unit.Pixel(350)
-                TableCell.Wrap = True
-                TableCell.Text = "Message Text"
-                TableCell.HorizontalAlign = HorizontalAlign.Center
-                TableRow.Cells.Add(TableCell)
-                TableCell = New TableCell()
-                'TableCell.BorderWidth = 1;
-                TableCell.Text = "Sender Address"
-                TableCell.HorizontalAlign = HorizontalAlign.Center
-                TableCell.Font.Bold = True
-                TableCell.Width = Unit.Pixel(175)
-                TableRow.Cells.Add(TableCell)
-                secondTable.Rows.Add(TableRow)
-                For Each prime As inboundSMSMessage In deserializedJsonObj.inboundSMSMessageList.inboundSMSMessage
+    ''' <summary>
+    ''' This method reads the messages file and draw the table.
+    ''' </summary>
+    Private Sub drawMessages()
+        Dim srcFile As String = Request.MapPath(ConfigurationManager.AppSettings("MessagesFilePath"))
+        Dim destFile As String = Request.MapPath(ConfigurationManager.AppSettings("MessagesTempFilePath"))
+        Dim messagesLine As String = [String].Empty
+        If File.Exists(srcFile) Then
+            File.Move(srcFile, destFile)
+            Dim secondTable As New Table()
+            secondTable.Font.Name = "Sans-serif"
+            secondTable.Font.Size = 9
+            Dim TableRow As New TableRow()
+            secondTable.Font.Size = 8
+            secondTable.Width = Unit.Pixel(1000)
+            Dim TableCell As New TableCell()
+            TableCell.Width = Unit.Pixel(200)
+            TableCell.Text = "DateTime"
+            TableCell.HorizontalAlign = HorizontalAlign.Center
+            TableCell.Font.Bold = True
+            TableRow.Cells.Add(TableCell)
+            TableCell = New TableCell()
+            TableCell.Font.Bold = True
+            TableCell.Width = Unit.Pixel(100)
+            TableCell.Wrap = True
+            TableCell.Text = "MessageId"
+            TableCell.HorizontalAlign = HorizontalAlign.Center
+            TableRow.Cells.Add(TableCell)
+            TableCell = New TableCell()
+            TableCell.Text = "Message"
+            TableCell.HorizontalAlign = HorizontalAlign.Center
+            TableCell.Font.Bold = True
+            TableCell.Width = Unit.Pixel(300)
+            TableRow.Cells.Add(TableCell)
+            TableCell = New TableCell()
+            TableCell.Text = "SenderAddress"
+            TableCell.HorizontalAlign = HorizontalAlign.Center
+            TableCell.Font.Bold = True
+            TableCell.Width = Unit.Pixel(150)
+            TableRow.Cells.Add(TableCell)
+            TableCell = New TableCell()
+            TableCell.Text = "DestinationAddress"
+            TableCell.HorizontalAlign = HorizontalAlign.Center
+            TableCell.Font.Bold = True
+            TableCell.Width = Unit.Pixel(150)
+            TableRow.Cells.Add(TableCell)
+            secondTable.Rows.Add(TableRow)
+            receiveMessagePanel.Controls.Add(secondTable)
+            Using sr As New StreamReader(destFile)
+                While sr.Peek() >= 0
+                    messagesLine = sr.ReadLine()
+                    Dim messageValues As String() = Regex.Split(messagesLine, "_-_-")
                     TableRow = New TableRow()
-                    Dim TableCellmessageId As New TableCell()
-                    TableCellmessageId.Width = Unit.Pixel(75)
-                    TableCellmessageId.Text = prime.messageId.ToString()
-                    TableCellmessageId.HorizontalAlign = HorizontalAlign.Center
-                    Dim TableCellmessage As New TableCell()
-                    TableCellmessage.Width = Unit.Pixel(350)
-                    TableCellmessage.Wrap = True
-                    TableCellmessage.Text = prime.message.ToString()
-                    TableCellmessage.HorizontalAlign = HorizontalAlign.Center
-                    Dim TableCellsenderAddress As New TableCell()
-                    TableCellsenderAddress.Width = Unit.Pixel(175)
-                    TableCellsenderAddress.Text = prime.senderAddress.ToString()
-                    TableCellsenderAddress.HorizontalAlign = HorizontalAlign.Center
-                    TableRow.Cells.Add(TableCellmessageId)
-                    TableRow.Cells.Add(TableCellmessage)
-                    TableRow.Cells.Add(TableCellsenderAddress)
+                    Dim TableCellDateTime As New TableCell()
+                    TableCellDateTime.Width = Unit.Pixel(200)
+                    TableCellDateTime.Text = messageValues(0)
+                    TableCellDateTime.HorizontalAlign = HorizontalAlign.Center
+                    Dim TableCellMessageId As New TableCell()
+                    TableCellMessageId.Width = Unit.Pixel(100)
+                    TableCellMessageId.Wrap = True
+                    TableCellMessageId.Text = messageValues(1)
+                    TableCellMessageId.HorizontalAlign = HorizontalAlign.Center
+                    Dim TableCellMessage As New TableCell()
+                    TableCellMessage.Width = Unit.Pixel(300)
+                    TableCellMessage.Text = messageValues(2)
+                    TableCellMessage.HorizontalAlign = HorizontalAlign.Center
+                    Dim TableCellSenderAddress As New TableCell()
+                    TableCellSenderAddress.Width = Unit.Pixel(150)
+                    TableCellSenderAddress.Text = messageValues(3)
+                    TableCellSenderAddress.HorizontalAlign = HorizontalAlign.Center
+                    Dim TableCellDestinationAddress As New TableCell()
+                    TableCellDestinationAddress.Width = Unit.Pixel(150)
+                    TableCellDestinationAddress.Text = messageValues(4)
+                    TableCellDestinationAddress.HorizontalAlign = HorizontalAlign.Center
+                    TableRow.Cells.Add(TableCellDateTime)
+                    TableRow.Cells.Add(TableCellMessageId)
+                    TableRow.Cells.Add(TableCellMessage)
+                    TableRow.Cells.Add(TableCellSenderAddress)
+                    TableRow.Cells.Add(TableCellDestinationAddress)
                     secondTable.Rows.Add(TableRow)
-                    Dim msgtxt As String = TableCellmessage.Text.ToString()
-                    If msgtxt.Equals("football", StringComparison.CurrentCultureIgnoreCase) Then
-                        football_count_val = football_count_val + 1
-                    ElseIf msgtxt.Equals("baseball", StringComparison.CurrentCultureIgnoreCase) Then
-                        baseball_count_val = baseball_count_val + 1
-                    ElseIf msgtxt.Equals("basketball", StringComparison.CurrentCultureIgnoreCase) Then
-                        basketball_count_val = basketball_count_val + 1
+                    Dim msgtxt As String = TableCellMessage.Text.ToString()
+                    If msgtxt.Equals("football", StringComparison.CurrentCultureIgnoreCase) OrElse msgtxt.Equals("baseball", StringComparison.CurrentCultureIgnoreCase) OrElse msgtxt.Equals("basketball", StringComparison.CurrentCultureIgnoreCase) Then
                     Else
-                        TableCellmessageId.BackColor = System.Drawing.ColorTranslator.FromHtml("#fcc")
-                        TableCellmessage.BackColor = System.Drawing.ColorTranslator.FromHtml("#fcc")
-                        TableCellsenderAddress.BackColor = System.Drawing.ColorTranslator.FromHtml("#fcc")
-
+                        TableCellDateTime.BackColor = System.Drawing.ColorTranslator.FromHtml("#fcc")
+                        TableCellMessageId.BackColor = System.Drawing.ColorTranslator.FromHtml("#fcc")
+                        TableCellMessage.BackColor = System.Drawing.ColorTranslator.FromHtml("#fcc")
+                        TableCellSenderAddress.BackColor = System.Drawing.ColorTranslator.FromHtml("#fcc")
+                        TableCellDestinationAddress.BackColor = System.Drawing.ColorTranslator.FromHtml("#fcc")
                     End If
-                Next
-                iTotalVotes = football_count_val + baseball_count_val + basketball_count_val
-                totalVotes = "Total Votes: " & iTotalVotes.ToString()
-                table.BorderColor = Color.DarkGreen
-                table.BackColor = System.Drawing.ColorTranslator.FromHtml("#cfc")
-                table.BorderWidth = 2
-                receiveMessagePanel.Controls.Add(table)
-                If numberOfMessagesInThisBatch > 0 Then
-                    receiveMessagePanel.Controls.Add(secondTable)
-                End If
-                smsVoteCountResponseStream.Close()
+                End While
+                sr.Close()
+                File.Delete(destFile)
+
             End Using
-            footballLabel.Text = football_count_val.ToString()
-            baseballLabel.Text = baseball_count_val.ToString()
-            basketballLabel.Text = basketball_count_val.ToString()
-            Using str1 As StreamWriter = File.CreateText(Request.MapPath(footballFilePath))
-                str1.Write(footballLabel.Text.ToString())
-                str1.Close()
-            End Using
-            Using str2 As StreamWriter = File.CreateText(Request.MapPath(baseballFilePath))
-                str2.Write(baseballLabel.Text.ToString())
-                str2.Close()
-            End Using
-            Using str3 As StreamWriter = File.CreateText(Request.MapPath(basketballFilePath))
-                str3.Write(basketballLabel.Text.ToString())
-                str3.Close()
-            End Using
-            drawPanelForSuccess(sendSMSPanel, totalVotes)
+        End If
+    End Sub
+
+    ''' <summary>
+    ''' This method updates the vote counts by reading from the files
+    ''' </summary>
+    Private Sub UpdateVoteCount()
+        Try
+            footballLabel.Text = Me.GetCountFromFile(Me.footballFilePath).ToString()
+            baseballLabel.Text = Me.GetCountFromFile(Me.baseballFilePath).ToString()
+            basketballLabel.Text = Me.GetCountFromFile(Me.basketballFilePath).ToString()
+
+            Dim totalCount As Integer = Convert.ToInt32(footballLabel.Text) + Convert.ToInt32(baseballLabel.Text) + Convert.ToInt32(basketballLabel.Text)
+            Me.DrawPanelForSuccess(statusPanel, totalCount.ToString())
         Catch ex As Exception
-            drawPanelForFailure(sendSMSPanel, ex.ToString())
+            Throw ex
         End Try
     End Sub
 
-    ' This method is called when user clicks update votes button 
+    ''' <summary>
+    ''' This method reads from files and returns the number of messages.
+    ''' </summary>
+    ''' <param name="filePath">string, Name of the file to read from</param>
+    ''' <returns>int, count of messages</returns>
+    Private Function GetCountFromFile(ByVal filePath As String) As Integer
+        Dim count As Integer = 0
+        Using streamReader As StreamReader = File.OpenText(Request.MapPath(filePath))
+            count = Convert.ToInt32(streamReader.ReadToEnd())
+            streamReader.Close()
+        End Using
 
-    Protected Sub updateButton_Click(ByVal sender As Object, ByVal e As EventArgs)
-        voteCount()
-    End Sub
-End Class
-
-' following are the data structures used for this application 
-
-Public Class RecieveSmsResponse
-    Public inboundSMSMessageList As New inboundSMSMessageList()
-End Class
-
-Public Class inboundSMSMessageList
-
-    Public Property inboundSMSMessage() As List(Of inboundSMSMessage)
-        Get
-            Return m_inboundSMSMessage
-        End Get
-        Set(ByVal value As List(Of inboundSMSMessage))
-            m_inboundSMSMessage = Value
-        End Set
-    End Property
-    Private m_inboundSMSMessage As List(Of inboundSMSMessage)
-    Public Property numberOfMessagesInThisBatch() As Integer
-        Get
-            Return m_numberOfMessagesInThisBatch
-        End Get
-        Set(ByVal value As Integer)
-            m_numberOfMessagesInThisBatch = Value
-        End Set
-    End Property
-    Private m_numberOfMessagesInThisBatch As Integer
-    Public Property resourceURL() As String
-        Get
-            Return m_resourceURL
-        End Get
-        Set(ByVal value As String)
-            m_resourceURL = Value
-        End Set
-    End Property
-    Private m_resourceURL As String
-
-    Public Property totalNumberOfPendingMessages() As Integer
-        Get
-            Return m_totalNumberOfPendingMessages
-        End Get
-        Set(ByVal value As Integer)
-            m_totalNumberOfPendingMessages = Value
-        End Set
-    End Property
-    Private m_totalNumberOfPendingMessages As Integer
-
-End Class
-
-Public Class inboundSMSMessage
-    Public Property dateTime() As String
-        Get
-            Return m_dateTime
-        End Get
-        Set(ByVal value As String)
-            m_dateTime = Value
-        End Set
-    End Property
-    Private m_dateTime As String
-    Public Property destinationAddress() As String
-        Get
-            Return m_destinationAddress
-        End Get
-        Set(ByVal value As String)
-            m_destinationAddress = Value
-        End Set
-    End Property
-    Private m_destinationAddress As String
-    Public Property messageId() As String
-        Get
-            Return m_messageId
-        End Get
-        Set(ByVal value As String)
-            m_messageId = Value
-        End Set
-    End Property
-    Private m_messageId As String
-    Public Property message() As String
-        Get
-            Return m_message
-        End Get
-        Set(ByVal value As String)
-            m_message = Value
-        End Set
-    End Property
-    Private m_message As String
-
-    Public Property senderAddress() As String
-        Get
-            Return m_senderAddress
-        End Get
-        Set(ByVal value As String)
-            m_senderAddress = Value
-        End Set
-    End Property
-    Private m_senderAddress As String
-End Class
-
-Public Class AccessTokenResponse
-    Public access_token As String
-    Public refresh_token As String
-    Public expires_in As String
+        Return count
+    End Function
+#End Region
 End Class

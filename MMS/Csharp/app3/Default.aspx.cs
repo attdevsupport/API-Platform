@@ -1,135 +1,194 @@
+// <copyright file="Default.aspx.cs" company="AT&amp;T">
+// Licensed by AT&amp;T under 'Software Development Kit Tools Agreement.' 2012
+// TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+// Copyright 2012 AT&amp;T Intellectual Property. All rights reserved. http://developer.att.com
+// For more information contact developer.support@att.com
+// </copyright>
+
+#region References
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using System.Net;
 using System.Configuration;
-using System.IO;
-using System.Xml;
-using System.Text;
-using System.Web.Script.Serialization;
 using System.Drawing;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates; 
+using System.IO;
+using System.Linq;
+using System.Web.UI.WebControls;
 
-public partial class _Default : System.Web.UI.Page
+#endregion
+
+/// <summary>
+/// MMS_App3 class
+/// </summary>
+public partial class MMS_App3 : System.Web.UI.Page
 {
-    string shortCode, directoryPath;
-    int numOfFilesToDisplay;
+    /// <summary>
+    /// Instance Variables for local processing
+    /// </summary>
+    private string shortCode, directoryPath;
+
+    /// <summary>
+    /// Instance Variables for local processing
+    /// </summary>
+    private int numOfFilesToDisplay;
+   
+    /// <summary>
+    /// Event, that triggers when the applicaiton page is loaded into the browser, reads the web.config and gets the values of the attributes
+    /// </summary>
+    /// <param name="sender">object, that caused this event</param>
+    /// <param name="e">Event that invoked this function</param>
     protected void Page_Load(object sender, EventArgs e)
     {
         DateTime currentServerTime = DateTime.UtcNow;
         lblServerTime.Text = String.Format("{0:ddd, MMM dd, yyyy HH:mm:ss}", currentServerTime) + " UTC";
-        if (ConfigurationManager.AppSettings["short_code"] == null)
-        {
-            drawPanelForFailure("short_code is not defined in configuration file");
-            return;
-        }
-        shortCode = ConfigurationManager.AppSettings["short_code"].ToString();
-        shortCodeLabel.Text = shortCode.ToString();
-        if (ConfigurationManager.AppSettings["ImageDirectory"] == null)
-        {
-            drawPanelForFailure("ImageDirectory is not defined in configuration file");
-            return;
-        }
-        directoryPath = ConfigurationManager.AppSettings["ImageDirectory"];
-        if (ConfigurationManager.AppSettings["NumOfFilesToDisplay"] == null)
-        {
-            numOfFilesToDisplay = 5;
-        }
-        else
-        {
-            numOfFilesToDisplay = Convert.ToInt32(ConfigurationManager.AppSettings["NumOfFilesToDisplay"]);
-        }
+        this.ReadConfigFile();
+        this.GetMmsFiles();
+    }
+
+    /// <summary>
+    /// Gets the list of files from directory and displays them in the page
+    /// </summary>
+    private void GetMmsFiles()
+    {
         int columnCount = 0;
-		TableRow TableRow = null;
-		TableRow tr = null;
-		int totalFiles = 0;
+
+        TableRow tableRow = null;
+        TableRow secondRow = null;
+
+        int totalFiles = 0;
         Table pictureTable = new Table();
-        Table tbControl = new Table();
-        DirectoryInfo _dir = new DirectoryInfo(Request.MapPath(directoryPath));
-        List<FileInfo> _imgs = _dir.GetFiles().OrderBy(f => f.CreationTime).ToList();
-        totalFiles = _imgs.Count;
-        //string fileShownMessage = "Displaying" + numOfFilesToDisplay.ToString() + "out of " + _imgs.Count.ToString();
-        string fileShownMessage =  _imgs.Count.ToString();
+        Table tableControl = new Table();
+        
+        DirectoryInfo directory = new DirectoryInfo(Request.MapPath(this.directoryPath));
+        List<FileInfo> imageList = null;
+        try
+        {
+            imageList = directory.GetFiles().OrderBy(f => f.CreationTime).ToList();
+        }
+        catch { }
+
+        if (imageList == null)
+        {
+            lbl_TotalCount.Text = "0";
+            return;
+        }
+
+        totalFiles = imageList.Count;
+
+        string fileShownMessage = imageList.Count.ToString();
         lbl_TotalCount.Text = fileShownMessage;
         int fileCountIndex = 0;
-        foreach (FileInfo file in _imgs)
+        foreach (FileInfo file in imageList)
         {
-            
-            if (fileCountIndex == numOfFilesToDisplay)
+            if (fileCountIndex == this.numOfFilesToDisplay)
             {
                 break;
             }
+
             if (columnCount == 0)
             {
-                TableRow = new TableRow();
-                tr = new TableRow();
-                TableCell TableCellImage = new TableCell();
-                System.Web.UI.WebControls.Image Image1 = new System.Web.UI.WebControls.Image();
-                Image1.ImageUrl = string.Format("{0}{1}", directoryPath, file.Name);
-                Image1.Width = 150;
-                Image1.Height = 150;
+                tableRow = new TableRow();
+                secondRow = new TableRow();
+                TableCell tableCellImage = new TableCell();
+                System.Web.UI.WebControls.Image image1 = new System.Web.UI.WebControls.Image();
+                image1.ImageUrl = string.Format("{0}{1}", this.directoryPath, file.Name);
+                image1.Width = 150;
+                image1.Height = 150;
+                tableCellImage.Controls.Add(image1);
+                tableRow.Controls.Add(tableCellImage);
 
-                TableCellImage.Controls.Add(Image1);
-                TableRow.Controls.Add(TableCellImage);
-                TableCell TableCellSubject = new TableCell();
-                TableCellSubject.Text = file.Name;
-                TableCellSubject.Width = 150;
-                tr.Controls.Add(TableCellSubject);
+                TableCell tableCellSubject = new TableCell();
+                tableCellSubject.Text = file.Name;
+                tableCellSubject.Width = 150;
+                secondRow.Controls.Add(tableCellSubject);
                 columnCount += 1;
             }
             else
             {
-                TableCell TableCellImage = new TableCell();
-                System.Web.UI.WebControls.Image Image1 = new System.Web.UI.WebControls.Image();
-                Image1.ImageUrl = string.Format("{0}{1}", directoryPath, file.Name);
-                Image1.Width = 150;
-                Image1.Height = 150;
-
-                TableCellImage.Controls.Add(Image1);
-                TableRow.Controls.Add(TableCellImage);
-                TableCell TableCellSubject = new TableCell();
-                TableCellSubject.Text = file.Name;
-                TableCellSubject.Width = 150;
-                tr.Controls.Add(TableCellSubject);
+                TableCell tableCellImage = new TableCell();
+                System.Web.UI.WebControls.Image image1 = new System.Web.UI.WebControls.Image();
+                image1.ImageUrl = string.Format("{0}{1}", this.directoryPath, file.Name);
+                image1.Width = 150;
+                image1.Height = 150;
+                tableCellImage.Controls.Add(image1);
+                tableRow.Controls.Add(tableCellImage);
+                TableCell tableCellSubject = new TableCell();
+                tableCellSubject.Text = file.Name;
+                tableCellSubject.Width = 150;
+                secondRow.Controls.Add(tableCellSubject);
                 columnCount += 1;
                 if (columnCount == 5)
                 {
                     columnCount = 0;
                 }
+
                 fileCountIndex++;
             }
-            pictureTable.Controls.Add(TableRow);
-            pictureTable.Controls.Add(tr);
+
+            pictureTable.Controls.Add(tableRow);
+            pictureTable.Controls.Add(secondRow);
         }
+
         messagePanel.Controls.Add(pictureTable);
     }
-    public void drawPanelForFailure(string message)
+
+    /// <summary>
+    /// This method reads config file and assigns values to local variables
+    /// </summary>
+    /// <returns>true/false, true- if able to read from config file</returns>
+    private bool ReadConfigFile()
+    {
+        this.shortCode = ConfigurationManager.AppSettings["short_code"];
+        if (string.IsNullOrEmpty(this.shortCode))
+        {
+           this.DrawPanelForFailure("short_code is not defined in configuration file");
+           return false;
+        }
+
+        shortCodeLabel.Text = this.shortCode;
+
+        this.directoryPath = ConfigurationManager.AppSettings["ImageDirectory"];
+        if (string.IsNullOrEmpty(this.directoryPath))
+        {
+            this.DrawPanelForFailure("ImageDirectory is not defined in configuration file");
+            return false;
+        }
+
+        if (ConfigurationManager.AppSettings["NumOfFilesToDisplay"] == null)
+        {
+            this.numOfFilesToDisplay = 5;
+        }
+        else
+        {
+            this.numOfFilesToDisplay = Convert.ToInt32(ConfigurationManager.AppSettings["NumOfFilesToDisplay"]);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Displays error message
+    /// </summary>
+    /// <param name="message">string, message to be displayed</param>
+    private void DrawPanelForFailure(string message)
     {
         Table table = new Table();
+        table.CssClass = "errorWide";
         table.Font.Name = "Sans-serif";
         table.Font.Size = 9;
-        table.BorderStyle = BorderStyle.Outset;
-        table.Width = Unit.Pixel(650);
         TableRow rowOne = new TableRow();
         TableCell rowOneCellOne = new TableCell();
         rowOneCellOne.Font.Bold = true;
         rowOneCellOne.Text = "ERROR:";
         rowOne.Controls.Add(rowOneCellOne);
-        //rowOneCellOne.BorderWidth = 1;
+        
         table.Controls.Add(rowOne);
         TableRow rowTwo = new TableRow();
-        TableCell rowTwoCellOne = new TableCell();
-        //rowTwoCellOne.BorderWidth = 1;
+        TableCell rowTwoCellOne = new TableCell();        
         rowTwoCellOne.Text = message.ToString();
         rowTwo.Controls.Add(rowTwoCellOne);
         table.Controls.Add(rowTwo);
-        table.BorderWidth = 2;
-        table.BorderColor = Color.Red;
-        table.BackColor = System.Drawing.ColorTranslator.FromHtml("#fcc"); ;
+        
         messagePanel.Controls.Add(table);
     }
 }

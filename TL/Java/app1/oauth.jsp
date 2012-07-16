@@ -1,10 +1,3 @@
-<!-- 
-Licensed by AT&T under 'Software Development Kit Tools Agreement.' September 2011
-TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
-Copyright 2011 AT&T Intellectual Property. All rights reserved. http://developer.att.com
-For more information contact developer.support@att.com
--->
-
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML lang=en xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"><HEAD><TITLE>Application 1</TITLE>
 <META content="text/html; charset=windows-1252" http-equiv=Content-Type>
@@ -41,7 +34,7 @@ document.write(myDate.format('l, F d, Y  H:i') + ' PDT');
 <%@ page import="org.json.JSONObject"%>
 <%@ include file="config.jsp" %>
 <%
-	String clientId = request.getParameter("clientId");
+    String clientId = request.getParameter("clientId");
 if(clientId!=null)
 if(clientId.equalsIgnoreCase("default"))
 	clientId = clientIdWeb;
@@ -57,16 +50,16 @@ if((clientSecret==null) || (clientSecret.equalsIgnoreCase("null")))
 	clientSecret = (String) session.getAttribute("clientSecret");
 if(clientSecret==null)
 	clientSecret = "";
-String redirectUri = request.getParameter("redirectUri");
-if(redirectUri==null)
-	redirectUri = (String) session.getAttribute("redirectUri");
-if(redirectUri==null)
-	redirectUri = "https://code-api-att.com/apigee-public/oauth.jsp";
+String redirectUriTemp = request.getParameter("redirectUri");
+if(redirectUriTemp==null)
+	redirectUriTemp = (String) session.getAttribute("redirectUri");
+if(redirectUriTemp==null)
+	redirectUriTemp = "http://ec2-107-21-89-8.compute-1.amazonaws.com:8080/TL/oauth.jsp";
 String scope = request.getParameter("scope");
 if(scope==null)
 	scope = (String) session.getAttribute("scope");
 if(scope==null)
-	scope = "SMS,MMS";
+	scope = "TL";
 session.setAttribute("scope", scope);
 String code = request.getParameter("code");
 if(code==null) code="";
@@ -86,7 +79,7 @@ API Key <input type="text" name="clientId" value="default" size=40 /><br>
 API Secret <input type="text" name="clientSecret" value="default" size=40 /><br>
 {FQDN} <input type="text" name="FQDN" value="<%=FQDN%>" size=60 /><br>
 Scope <input type="text" name="scope" value="<%=scope%>" size=40 /><br />
-Redirect URI <input type="text" name="redirectUri" value="<%=redirectUri%>" size=60 /><br />
+Redirect URI <input type="text" name="redirectUri" value="<%=redirectUriTemp%>" size=60 /><br />
 <input type="submit" name="getExtCode" value="Get Access Token" />
 </form><br><br>
 
@@ -95,7 +88,7 @@ Redirect URI <input type="text" name="redirectUri" value="<%=redirectUri%>" size
    		   session.setAttribute("clientId", clientId);
    		   session.setAttribute("clientSecret", clientSecret);
    		   session.setAttribute("FQDN", FQDN);
-   		   response.sendRedirect(FQDN + "/oauth/authorize?client_id=" + clientId + "&scope=" + scope + "&redirect_uri=" + redirectUri);
+   		   response.sendRedirect(FQDN + "/oauth/authorize?client_id=" + clientId + "&scope=" + scope + "&redirect_uri=" + redirectUriTemp);
    	   }
    
        if(!code.equalsIgnoreCase("")) {
@@ -138,7 +131,7 @@ Refresh Token <input type="text" name="refreshToken" value="<%=refreshToken%>" s
             String url = FQDN + "/oauth/token";   
             HttpClient client = new HttpClient();
             PostMethod method = new PostMethod(url); 
-            String b = "client_id=" + clientIdAut + "&client_secret=" + clientSecretAut + "&grant_type=refresh_token&refresh_token=" + refreshToken;
+            String b = "client_id=" + clientIdWeb + "&client_secret=" + clientSecretWeb + "&grant_type=refresh_token&refresh_token=" + refreshToken;
             method.addRequestHeader("Content-Type","application/x-www-form-urlencoded");
             method.setRequestBody(b);
            int statusCode = client.executeMethod(method);    
@@ -160,7 +153,7 @@ Refresh Token <input type="text" name="refreshToken" value="<%=refreshToken%>" s
 <br><br><html><body><%=print%></body></html>
 
 <div style="position:absolute;bottom:0px;left:30%;width:40%;font-size:9px;" align="center" >
-� 2011 AT&T Intellectual Property. All rights reserved.  <a href="http://developer.att.com" target="_blank">http://developer.att.com</a>
+? 2011 AT&T Intellectual Property. All rights reserved.  <a href="http://developer.att.com" target="_blank">http://developer.att.com</a>
 <br/>
 The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&T Services and not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br/>
@@ -169,4 +162,3 @@ For download of tools and documentation, please go to <a href="https://devconnec
 For more information contact <a href="mailto:developer.support@att.com">developer.support@att.com</a>
 <br/><br/>
 </div>
-

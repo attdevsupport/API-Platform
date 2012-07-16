@@ -1,8 +1,13 @@
+******************************************************************************
+* Licensed Under “License Agreement for AT&T Developer Website APIs and SDKs”
+* at http://developer.att.com/sdk/licenses.
+* Copyright AT&T, 2011. All Rights Reserved.
+******************************************************************************
 
   AT&T API Samples - Payment app 1
  ------------------------------
 
-This file describes how to set up, configure and run the C# Applications of the AT&T RESTFul sample applications. 
+This file describes how to set up, configure and run the C# Applications of the AT&T HTML5 Program sample applications. 
 It covers all steps required to register the application on DevConnect and, based on the generated API keys and secrets, 
 create and run one's own full-fledged sample applications.
 
@@ -25,7 +30,7 @@ create and run one's own full-fledged sample applications.
   Be careful while filling in the "OAuth Redirect URL" field. It should contain the URL that the oAuth provider will redirect
   users to when he/she successfully authenticates and authorizes your application.
 
-NOTE: You MUST select PAYMENT in the list of services under field 'Services' in order to use this sample application code. 
+NOTE: You MUST select Payment in the list of services under field 'Services' in order to use this sample application code. 
 
   Having your application registered, you will get back an important pair of data: an API key and Secret key. They are 
   necessary to get your applications working with the AT&T HTML5 APIs. See 'Adjusting parameters' below to learn how to use 
@@ -36,66 +41,74 @@ NOTE: You MUST select PAYMENT in the list of services under field 'Services' in 
   so these values in your application should be adjusted accordingly.
 
   Depending on the kind of authentication used, an application may be based on either the Autonomous Client or the Web-Server 
-  Client OAuth flow (see https://devconnect-api.att.com/docs/oauth-v1/client-credentials-grant-type or
-  https://devconnect-api.att.com/docs/oauth-v1/authorization-code-grant-type respectively).
+  Client OAuth flow (see https://devconnect-api.att.com/docs/oauth20/autonomous-client-application-oauth-flow or
+  https://devconnect-api.att.com/docs/oauth20/web-server-client-application-oauth-flow respectively).
 
 
 2. Installation
 
 ** Requirements
 
-   1. To run the this sample application you need an IIS Server. 
-   2. Change the value of "href" at the following line in Default.aspx to point to the location of the "common.css" of "style" folder:
-	<link rel="stylesheet" type="text/css" href="../../style/common.css"/>
-   3. Change the value of the "url" at the following line in common.css to point to the location of the "att.gif" of "images" folder.
-	div#header { background:url(../images/att.gif) left center no-repeat; margin: 10px 5px}
+   To run the examples you need an IIS Server. 
+
+** Setting up multiple sample applications simultaneously
+
+   In case multiple applications need to be run at the same time, make sure to put each app in a separate folder and 
+   adjust your OAuth Redirect URL accordingly.
+
+** Copy App_Code Directory in to the root Directory of domain.Which will have a ATT_ServiceLibrary.cs file
+
+** Create Log Directory in the Application Directory and give read,write permission to it.
 
 
 3. Parameters
 
    
-Each sample application contains a config.web file. It holds configurable parameters described in an easy to read format. 
-Please populate the following parameters in config.web as specified below:
+Each sample application contains a config.web file. It holds configurable parameters described in an easy to read format. Please populate the following parameters in config.web as specified below:
 
-1) api_key                		: {set the value as per your registered application 'API key' field value} 
+1) api_key                	    : {set the value as per your registered appliaction 'API key' field value} 
 
+2) secret_key     	  	    : {set the value as per your registered appliaction 'Secret key' field value} 
 
-2) secret_key     	  		 : {set the value as per your registered application 'Secret key' field value} 
+3) authorize_redirect_uri 	    : {set the value as per your registered appliaction 'OAuth Redirect URL' field value} 
 
-3) FQDN			  	 : https://api.att.com
+4) FQDN			  	    : https://api.att.com
 
-4) scope				 : PAYMENT   
+5) scope			    : PAYMENT 
 
-5) refundFile			: {set the value to file path which has read/write permissions}
+6) Category                         : 1
 
-6) Amount			: {set the value to decimal value}
+7) Channel                          : MOBILE_WEB
 
-7) Category			: {set the value to 1,3,4 or 5}
+8) MerchantPaymentRedirectUrl       : https://wincode-api-att.com/R2-Csharp-WrapperApplication/payment/app1/Default.aspx
 
-8) Channel			: {set the value to MOBILE_WEB}
+9) IsPurchaseOnNoActiveSubscription : false
 
-9) MerchantPaymentRedirectUrl	 : {set the value to the payment app1 application url}
+10) SubscriptionRecurringNumber     : 9999
 
-10) IsPurchaseOnNoActiveSubscription	 : {set the value to false}
+11) SubscriptionRecurringPeriod     : MONTHLY
 
-11) SubscriptionRecurringNumber"	: {set the value to 9999}
+12)SubscriptionRecurringPeriodAmount: 1
 
-12) SubscriptionRecurringPeriod	: {set the value to MONTHLY}
+13) notaryURL                       : https://wincode-api-att.com/R2-Csharp-WrapperApplication/notary/app1/Default.aspx
 
-13) SubscriptionRecurringPeriodAmount	: {set the value to 1}
+14) notificationFilePath            : //R2-Csharp-WrapperApplication//payment//app1//notification.txt
 
-14) AccessTokenFilePath		: {set the value to the path of the file, which application creates and stores access token }
+15) refundFilePath                  : //R2-Csharp-WrapperApplication//payment//app1//refund.txt
 
-15) notaryURL				: {set the value to the notary app url}
+16)applicationName                  : CS_PAYMENT_APP1
+
+17)grantType                        : client_credentials
+
+18)log_path                         : /R2-Csharp-WrapperApplication/Log/
+ 
+Note: You must update parameters 1-2 after you promote your application from 'Sandbox' environment to 'Production' environment.
+
 
 
 4. Running the application
 
-Notary application 1 is needed for this application.
-Suppose you copied the sample app files in your IIS server webroot/payment/app1/ folder, In order to run the sample application, type in'http://IIS_HOSTNAME/payment/app1/Default.aspx'
-
-
-
+Suppose you copied the sample app files in your IIS server webroot/payment/app1/ folder, In order to run the sample application, type in'http://IIS_HOSTNAME:8080/payment/app1/Default.aspx'(assuming you're using a HOSTNAME machine with IIS Server and have not changed the default port number, otherwise adjust accordingly) on your browser.
 
 
 

@@ -1,218 +1,108 @@
-﻿//Licensed by AT&T under 'Software Development Kit Tools Agreement.' September 2011
-//TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
-//Copyright 2011 AT&T Intellectual Property. All rights reserved. http://developer.att.com
-//For more information contact developer.support@att.com
+﻿// <copyright file="Default.aspx.cs" company="AT&amp;T">
+// Licensed by AT&amp;T under 'Software Development Kit Tools Agreement.' 2012
+// TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+// Copyright 2012 AT&amp;T Intellectual Property. All rights reserved. http://developer.att.com
+// For more information contact developer.support@att.com
+// </copyright>
+
+#region References
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using System.Net;
-using System.IO;
 using System.Configuration;
-using System.Web.Script.Serialization;
 using System.Drawing;
-using System.Text;
+using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Web.Script.Serialization;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 
-public partial class Default : System.Web.UI.Page
+#endregion
+
+/// <summary>
+/// Access Token Types
+/// </summary>
+public enum AccessTokenType
 {
-    //string shortCode, FQDN, accessTokenString, accessToken, refreshToken, responseData, apiKey, secretKey, scope, authCode, accessTokenFilePath;
-    //string[] accessTokenJson, accessTokenDetails, refreshTokenDetails, accessTokenExpireDetails;
-    //DateTime expireTime;
-    //double expiresIn;
-    string shortCode, FQDN, accessTokenFilePath, messageFilePath, phoneListFilePath, couponPath, couponFileName;
-    string api_key, secret_key, auth_code, access_token, authorize_redirect_uri, scope, expiryMilliSeconds, refresh_token, lastTokenTakenTime, refreshTokenExpiryTime;
-    List<string> phoneNumbersList = new List<string>();
-    List<string> invalidPhoneNumbers = new List<string>();
-    string phoneNumber,phoneNumbersParameter = null;
-    Dictionary<string, string> phoneNumberAndValidity;
-    Table getStatusTable, secondTable;
-    bool textChanged = false;
-    string phoneListContent = "";
-    bool errorInput = false;
+    /// <summary>
+    /// Access Token Type is based on Client Credential Mode
+    /// </summary>
+    Client_Credential,
 
-    /* This function reads the Access Token File and stores the values of access token, expiry seconds
-     * refresh token, last access token time and refresh token expiry time
-     * This funciton returns true, if access token file and all others attributes read successfully otherwise returns false
-     */
-    public bool readAccessTokenFile()
-    {
-        try
-        {
-            FileStream file = new FileStream(Request.MapPath(accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Read);
-            StreamReader sr = new StreamReader(file);
-            access_token = sr.ReadLine();
-            expiryMilliSeconds = sr.ReadLine();
-            refresh_token = sr.ReadLine();
-            lastTokenTakenTime = sr.ReadLine();
-            refreshTokenExpiryTime = sr.ReadLine();
-            sr.Close();
-            file.Close();
-        }
-        catch (Exception ex)
-        {
-            return false;
-        }
-        if ((access_token == null) || (expiryMilliSeconds == null) || (refresh_token == null) || (lastTokenTakenTime == null) || (refreshTokenExpiryTime == null))
-        {
-            return false;
-        }
-        return true;
-    }
+    /// <summary>
+    /// Access Token Type is based on Authorization Code
+    /// </summary>
+    Authorization_Code,
 
-    /* This function validates the expiry of the access token and refresh token,
-     * function compares the current time with the refresh token taken time, if current time is greater then 
-     * returns INVALID_REFRESH_TOKEN
-     * function compares the difference of last access token taken time and the current time with the expiry seconds, if its more,
-     * funciton returns INVALID_ACCESS_TOKEN
-     * otherwise returns VALID_ACCESS_TOKEN
-    */
-    public string isTokenValid()
-    {
-        try
-        {
+    /// <summary>
+    /// Access Token Type is based on Refresh Token
+    /// </summary>
+    Refresh_Token
+}
 
-            DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
-            DateTime lastRefreshTokenTime = DateTime.Parse(refreshTokenExpiryTime);
-            TimeSpan refreshSpan = currentServerTime.Subtract(lastRefreshTokenTime);
-            if (currentServerTime >= lastRefreshTokenTime)
-            {
-                return "INVALID_ACCESS_TOKEN";
-            }
-            DateTime lastTokenTime = DateTime.Parse(lastTokenTakenTime);
-            TimeSpan tokenSpan = currentServerTime.Subtract(lastTokenTime);
-            if (((tokenSpan.TotalSeconds)) > Convert.ToInt32(expiryMilliSeconds))
-            {
-                return "REFRESH_ACCESS_TOKEN";
-            }
-            else
-            {
-                return "VALID_ACCESS_TOKEN";
-            }
-        }
-        catch (Exception ex)
-        {
-            return "INVALID_ACCESS_TOKEN";
-        }
-    }
+/// <summary>
+/// MMS_App2 class
+/// </summary>
+/// <remarks>
+/// This is a server side application which also has a web interface. 
+/// The application looks for a file called numbers.txt containing MSISDNs of desired recipients, and an image called coupon.jpg, 
+/// and message text from a file called subject.txt, and then sends an MMS message with the attachment to every recipient in the list. 
+/// This can be triggered via a command line on the server, or through the web interface, which then displays all the returned mmsIds or respective errors
+/// </remarks>
+public partial class MMS_App2 : System.Web.UI.Page
+{
+    #region Instance Variables
+    /// <summary>
+    /// Instance variables for get status table
+    /// </summary>
+    private Table getStatusTable;
+    private Table secondTable;
 
+    /// <summary>
+    /// Instance variables for local processing
+    /// </summary>
+    private string endPoint, accessTokenFilePath, messageFilePath, phoneListFilePath, couponPath, couponFileName;
 
-    /* This function get the access token based on the type parameter type values.
-     * If type value is 1, access token is fetch for client credential flow
-     * If type value is 2, access token is fetch for client credential flow based on the exisiting refresh token
-     */
-    public bool getAccessToken(int type, Panel panelParam)
-    {
-        /*  This is client credential flow: */
-        if (type == 1)
-        {
-            try
-            {
-                DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
-                WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create("" + FQDN + "/oauth/token");
-                accessTokenRequest.Method = "POST";
-                string oauthParameters = "client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString() + "&grant_type=client_credentials&scope=MMS";
-                accessTokenRequest.ContentType = "application/x-www-form-urlencoded";
-                //sendSmsRequestObject.Accept = "application/json";
-                UTF8Encoding encoding = new UTF8Encoding();
-                byte[] postBytes = encoding.GetBytes(oauthParameters);
-                accessTokenRequest.ContentLength = postBytes.Length;
-                Stream postStream = accessTokenRequest.GetRequestStream();
-                postStream.Write(postBytes, 0, postBytes.Length);
-                postStream.Close();
+    /// <summary>
+    /// Instance variables for local processing
+    /// </summary>
+    private string apiKey, secretKey, authCode, accessToken, scope, expirySeconds, refreshToken, refreshTokenExpiryTime;
 
-                WebResponse accessTokenResponse = accessTokenRequest.GetResponse();
-                using (StreamReader accessTokenResponseStream = new StreamReader(accessTokenResponse.GetResponseStream()))
-                {
-                    string jsonAccessToken = accessTokenResponseStream.ReadToEnd().ToString();
-                    JavaScriptSerializer deserializeJsonObject = new JavaScriptSerializer();
-                    AccessTokenResponse deserializedJsonObj = (AccessTokenResponse)deserializeJsonObject.Deserialize(jsonAccessToken, typeof(AccessTokenResponse));
-                    access_token = deserializedJsonObj.access_token.ToString();
-                    expiryMilliSeconds = deserializedJsonObj.expires_in.ToString();
-                    refresh_token = deserializedJsonObj.refresh_token.ToString();
-                    FileStream file = new FileStream(Request.MapPath(accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Write);
-                    StreamWriter sw = new StreamWriter(file);
-                    sw.WriteLine(access_token);
-                    sw.WriteLine(expiryMilliSeconds);
-                    sw.WriteLine(refresh_token);
-                    sw.WriteLine(currentServerTime.ToLongDateString() + " " + currentServerTime.ToLongTimeString());
-                    lastTokenTakenTime = currentServerTime.ToLongDateString() + " " + currentServerTime.ToLongTimeString();
-                    //Refresh token valids for 24 hours
-                    DateTime refreshExpiry = currentServerTime.AddHours(24);
-                    refreshTokenExpiryTime = refreshExpiry.ToLongDateString() + " " + refreshExpiry.ToLongTimeString();
-                    sw.WriteLine(refreshExpiry.ToLongDateString() + " " + refreshExpiry.ToLongTimeString());
-                    sw.Close();
-                    file.Close();
-                    // Close and clean up the StreamReader
-                    accessTokenResponseStream.Close();
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                drawPanelForFailure(panelParam, ex.ToString());
-                return false;
-            }
-        }
-        else if (type == 2)
-        {
-            try
-            {
-                DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
-                WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create("" + FQDN + "/oauth/token");
-                accessTokenRequest.Method = "POST";
-                string oauthParameters = "grant_type=refresh_token&client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString() + "&refresh_token=" + refresh_token.ToString();
-                accessTokenRequest.ContentType = "application/x-www-form-urlencoded";
-                //sendSmsRequestObject.Accept = "application/json";
-                UTF8Encoding encoding = new UTF8Encoding();
-                byte[] postBytes = encoding.GetBytes(oauthParameters);
-                accessTokenRequest.ContentLength = postBytes.Length;
-                Stream postStream = accessTokenRequest.GetRequestStream();
-                postStream.Write(postBytes, 0, postBytes.Length);
-                postStream.Close();
-                WebResponse accessTokenResponse = accessTokenRequest.GetResponse();
-                using (StreamReader accessTokenResponseStream = new StreamReader(accessTokenResponse.GetResponseStream()))
-                {
-                    string access_token_json = accessTokenResponseStream.ReadToEnd().ToString();
-                    JavaScriptSerializer deserializeJsonObject = new JavaScriptSerializer();
-                    AccessTokenResponse deserializedJsonObj = (AccessTokenResponse)deserializeJsonObject.Deserialize(access_token_json, typeof(AccessTokenResponse));
-                    access_token = deserializedJsonObj.access_token.ToString();
-                    expiryMilliSeconds = deserializedJsonObj.expires_in.ToString();
-                    refresh_token = deserializedJsonObj.refresh_token.ToString();
-                    FileStream file = new FileStream(Request.MapPath(accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Write);
-                    StreamWriter sw = new StreamWriter(file);
-                    sw.WriteLine(access_token);
-                    sw.WriteLine(expiryMilliSeconds);
-                    sw.WriteLine(refresh_token);
-                    sw.WriteLine(currentServerTime.ToLongDateString() + " " + currentServerTime.ToLongTimeString());
-                    lastTokenTakenTime = currentServerTime.ToLongDateString() + " " + currentServerTime.ToLongTimeString();
-                    //Refresh token valids for 24 hours
-                    DateTime refreshExpiry = currentServerTime.AddHours(24);
-                    refreshTokenExpiryTime = refreshExpiry.ToLongDateString() + " " + refreshExpiry.ToLongTimeString();
-                    sw.WriteLine(refreshExpiry.ToLongDateString() + " " + refreshExpiry.ToLongTimeString());
-                    sw.Close();
-                    file.Close();
-                    accessTokenResponseStream.Close();
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                drawPanelForFailure(panelParam, ex.ToString());
-                return false;
-            }
-        }
-        return false;
-    }
+    /// <summary>
+    /// Instance variables for local processing
+    /// </summary>
+    private List<string> phoneNumbersList = new List<string>();
 
-    /* This function is used to neglect the ssl handshake error with authentication server */
+    /// <summary>
+    /// Instance variables for local processing
+    /// </summary>
+    private List<string> invalidPhoneNumbers = new List<string>();
 
+    /// <summary>
+    /// Instance variables for local processing
+    /// </summary>
+    private string phoneNumbersParameter = null;
+    
+    /// <summary>
+    /// Instance variables for local processing
+    /// </summary>
+    private DateTime accessTokenExpiryTime;
+
+    /// <summary>
+    /// Gets or sets the value of refreshTokenExpiresIn
+    /// </summary>
+    private int refreshTokenExpiresIn;
+
+    #endregion
+
+    #region Bypass SSL Certificate Error
+
+    /// <summary>
+    /// This method neglects the ssl handshake error with authentication server
+    /// </summary>
     public static void BypassCertificateError()
     {
         ServicePointManager.ServerCertificateValidationCallback +=
@@ -221,103 +111,555 @@ public partial class Default : System.Web.UI.Page
                 return true;
             };
     }
-    /* This function is used to read access token file and validate the access token
-     * this function returns true if access token is valid, or else false is returned
-     */
-    public bool readAndGetAccessToken(Panel panelParam)
+
+    #endregion
+
+    #region Events
+
+    /// <summary>
+    /// Event, that triggers when the applicaiton page is loaded into the browser, reads the web.config and gets the values of the attributes
+    /// </summary>
+    /// <param name="sender">object, that caused this event</param>
+    /// <param name="e">Event that invoked this function</param>
+    protected void Page_Load(object sender, EventArgs e)
     {
-        bool result = true;
-        if (readAccessTokenFile() == false)
+        StreamReader streamReader = null;
+        try
         {
-            result = getAccessToken(1, panelParam);
+            BypassCertificateError();
+
+            DateTime currentServerTime = DateTime.UtcNow;
+            serverTimeLabel.Text = String.Format("{0:ddd, MMM dd, yyyy HH:mm:ss}", currentServerTime) + " UTC";
+
+            this.ReadConfigFile();
+
+            if (!Page.IsPostBack)
+            {
+                streamReader = new StreamReader(Request.MapPath(this.phoneListFilePath));
+                phoneListTextBox.Text = streamReader.ReadToEnd();
+            }
+        }
+        catch (Exception ex)
+        {
+            this.DrawPanelForFailure(sendMMSPanel, ex.ToString());
+        }
+        finally
+        {
+            if (null != streamReader)
+            {
+                streamReader.Close();
+            }
+        }
+    }
+
+    /// <summary>
+    /// This method will be called when user clicks on send mms button
+    /// </summary>
+    /// <param name="sender">object, that caused this event</param>
+    /// <param name="e">Event that invoked this function</param>
+    protected void SendButton_Click(object sender, EventArgs e)
+    {
+        bool ableToGetNumbers = this.GetPhoneNumbers();
+        if (ableToGetNumbers == false)
+        {
+            //this.DrawPanelForFailure(sendMMSPanel, "Specify phone numbers to send");
+            return;
+        }
+
+        if (this.ReadAndGetAccessToken() == false)
+        {
+            return;
+        }
+
+        this.SendMMS();
+    }
+
+    /// <summary>
+    /// This method will be called when user clicks on  get status button
+    /// </summary>
+    /// <param name="sender">object, that caused this event</param>
+    /// <param name="e">Event that invoked this function</param>
+    protected void StatusButton_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(msgIdLabel.Text))
+            {
+                return;
+            }
+
+            if (this.ReadAndGetAccessToken() == false)
+            {
+                return;
+            }
+
+            string mmsId = msgIdLabel.Text;
+            string mmsDeliveryStatus;
+            
+            HttpWebRequest mmsStatusRequestObject = (HttpWebRequest)System.Net.WebRequest.Create(string.Empty + this.endPoint + "/rest/mms/2/messaging/outbox/" + mmsId);
+            mmsStatusRequestObject.Headers.Add("Authorization", "Bearer " + this.accessToken);
+            mmsStatusRequestObject.Method = "GET";
+            
+            HttpWebResponse mmsStatusResponseObject = (HttpWebResponse)mmsStatusRequestObject.GetResponse();
+            using (StreamReader mmsStatusResponseStream = new StreamReader(mmsStatusResponseObject.GetResponseStream()))
+            {
+                mmsDeliveryStatus = mmsStatusResponseStream.ReadToEnd();
+                mmsDeliveryStatus = mmsDeliveryStatus.Replace("-", string.Empty);
+                JavaScriptSerializer deserializeJsonObject = new JavaScriptSerializer();
+                GetDeliveryStatus status = (GetDeliveryStatus)deserializeJsonObject.Deserialize(mmsDeliveryStatus, typeof(GetDeliveryStatus));
+                DeliveryInfoList dinfoList = status.DeliveryInfoList;
+            
+                this.DrawPanelForGetStatusResult(null, null, null, true);
+
+                foreach (DeliveryInfoRaw deliveryInfo in dinfoList.DeliveryInfo)
+                {
+                   this.DrawPanelForGetStatusResult(deliveryInfo.Id, deliveryInfo.Address, deliveryInfo.DeliveryStatus, false);
+                }
+
+                msgIdLabel.Text = string.Empty;
+                mmsStatusResponseStream.Close();
+            }
+        }
+        catch (WebException we)
+        {
+            string errorResponse = string.Empty;
+
+            try
+            {
+                using (StreamReader sr2 = new StreamReader(we.Response.GetResponseStream()))
+                {
+                    errorResponse = sr2.ReadToEnd();
+                    sr2.Close();
+                }
+            }
+            catch
+            {
+                errorResponse = "Unable to get response";
+            }
+            this.DrawPanelForFailure(statusPanel, errorResponse + Environment.NewLine + we.Message);
+        }
+        catch (Exception ex)
+        {
+            this.DrawPanelForFailure(statusPanel, ex.ToString());
+        }
+    }
+
+    #endregion
+
+    #region Access Token Methods
+
+    /// <summary>
+    /// This function reads access token file, validates the access token and gets a new access token
+    /// </summary>
+    /// <returns>true if access token is valid, or else false is returned</returns>
+    private bool ReadAndGetAccessToken()
+    {
+        bool ableToGetToken = true;
+
+        if (this.ReadAccessTokenFile() == false)
+        {
+            ableToGetToken = this.GetAccessToken(AccessTokenType.Client_Credential);
         }
         else
         {
-            string tokenValidity = isTokenValid();
-            if (tokenValidity.CompareTo("REFRESH_ACCESS_TOKEN") == 0)
+            string tokenValidity = this.IsTokenValid();
+
+            if (tokenValidity.Equals("REFRESH_TOKEN"))
             {
-                result = getAccessToken(2, panelParam);
+                ableToGetToken = this.GetAccessToken(AccessTokenType.Refresh_Token);
             }
-            else if (string.Compare(isTokenValid(), "INVALID_ACCESS_TOKEN") == 0)
+            else if (tokenValidity.Equals("INVALID_ACCESS_TOKEN"))
             {
-                result = getAccessToken(1, panelParam);
+                ableToGetToken = this.GetAccessToken(AccessTokenType.Client_Credential);
             }
         }
-        return result;
+
+        return ableToGetToken;
     }
-    /* this function draws success table */
-    private void drawPanelForSuccess(Panel panelParam, string message)
+
+    /// <summary>
+    /// This function reads the Access Token File and stores the values of access token, expiry seconds, refresh token, 
+    /// last access token time and refresh token expiry time. 
+    /// </summary>
+    /// <returns>true, if access token file and all others attributes read successfully otherwise returns false</returns>
+    private bool ReadAccessTokenFile()
     {
+        FileStream fileStream = null;
+        StreamReader streamReader = null;
+        bool ableToRead = true;
+        try
+        {
+            fileStream = new FileStream(Request.MapPath(this.accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Read);
+            streamReader = new StreamReader(fileStream);
+            this.accessToken = streamReader.ReadLine();
+            this.expirySeconds = streamReader.ReadLine();
+            this.refreshToken = streamReader.ReadLine();
+            this.accessTokenExpiryTime = Convert.ToDateTime(streamReader.ReadLine());
+            this.refreshTokenExpiryTime = streamReader.ReadLine();
+        }
+        catch (Exception ex)
+        {
+            this.DrawPanelForFailure(sendMMSPanel, ex.ToString());
+            ableToRead = false;
+        }
+        finally
+        {
+            if (null != streamReader)
+            {
+                streamReader.Close();
+            }
+
+            if (null != fileStream)
+            {
+                fileStream.Close();
+            }
+        }
+
+        if (this.accessToken == null || this.expirySeconds == null || this.refreshToken == null || this.accessTokenExpiryTime == null || this.refreshTokenExpiryTime == null)
+        {
+            ableToRead = false;
+        }
+
+        return ableToRead;
+    }
+
+    /// <summary>
+    /// Validates he expiry of the access token and refresh token
+    /// </summary>
+    /// <returns>string, returns VALID_ACCESS_TOKEN if its valid
+    /// otherwise, returns INVALID_ACCESS_TOKEN if refresh token expired or not able to read session variables
+    /// return REFRESH_TOKEN, if access token in expired and refresh token is valid</returns>
+    private string IsTokenValid()
+    {
+        if (this.accessToken == null)
+        {
+            return "INVALID_ACCESS_TOKEN";
+        }
+
+        try
+        {
+            DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
+            if (currentServerTime >= this.accessTokenExpiryTime)
+            {
+                if (currentServerTime >= DateTime.Parse(this.refreshTokenExpiryTime))
+                {
+                    return "INVALID_ACCESS_TOKEN";
+                }
+                else
+                {
+                    return "REFRESH_TOKEN";
+                }
+            }
+            else
+            {
+                return "VALID_ACCESS_TOKEN";
+            }
+        }
+        catch
+        {
+            return "INVALID_ACCESS_TOKEN";
+        }
+    }
+
+    /// <summary>
+    /// This method gets access token based on either client credentials mode or refresh token.
+    /// </summary>
+    /// <param name="type">AccessTokenType; either Client_Credential or Refresh_Token</param>
+    /// <returns>true/false; true if able to get access token, else false</returns>
+    private bool GetAccessToken(AccessTokenType type)
+    {
+        Stream postStream = null;
+        StreamWriter streamWriter = null;
+        FileStream fileStream = null;
+        try
+        {
+
+            DateTime currentServerTime = DateTime.UtcNow.ToLocalTime();
+
+            WebRequest accessTokenRequest = System.Net.HttpWebRequest.Create(string.Empty + this.endPoint + "/oauth/token");
+            accessTokenRequest.Method = "POST";
+            string oauthParameters = string.Empty;
+            if (type == AccessTokenType.Client_Credential)
+            {
+                oauthParameters = "client_id=" + this.apiKey + "&client_secret=" + this.secretKey + "&grant_type=client_credentials&scope=" + this.scope;
+            }
+            else
+            {
+                oauthParameters = "grant_type=refresh_token&client_id=" + this.apiKey + "&client_secret=" + this.secretKey + "&refresh_token=" + this.refreshToken;
+            }
+
+            accessTokenRequest.ContentType = "application/x-www-form-urlencoded";
+            UTF8Encoding encoding = new UTF8Encoding();
+            byte[] postBytes = encoding.GetBytes(oauthParameters);
+            accessTokenRequest.ContentLength = postBytes.Length;
+
+            postStream = accessTokenRequest.GetRequestStream();
+            postStream.Write(postBytes, 0, postBytes.Length);
+            postStream.Close();
+
+            WebResponse accessTokenResponse = accessTokenRequest.GetResponse();
+            using (StreamReader accessTokenResponseStream = new StreamReader(accessTokenResponse.GetResponseStream()))
+            {
+                string jsonAccessToken = accessTokenResponseStream.ReadToEnd().ToString();
+                JavaScriptSerializer deserializeJsonObject = new JavaScriptSerializer();
+                AccessTokenResponse deserializedJsonObj = (AccessTokenResponse)deserializeJsonObject.Deserialize(jsonAccessToken, typeof(AccessTokenResponse));
+
+                this.accessToken = deserializedJsonObj.access_token.ToString();
+                this.expirySeconds = deserializedJsonObj.expires_in.ToString();
+                this.refreshToken = deserializedJsonObj.refresh_token.ToString();
+                this.accessTokenExpiryTime = currentServerTime.AddSeconds(Convert.ToDouble(deserializedJsonObj.expires_in.ToString()));
+
+                DateTime refreshExpiry = currentServerTime.AddHours(this.refreshTokenExpiresIn);
+
+                if (deserializedJsonObj.expires_in.Equals("0"))
+                {
+                    int defaultAccessTokenExpiresIn = 100; // In Years
+                    this.accessTokenExpiryTime = currentServerTime.AddYears(defaultAccessTokenExpiresIn);
+                }
+
+                this.refreshTokenExpiryTime = refreshExpiry.ToLongDateString() + " " + refreshExpiry.ToLongTimeString();
+
+                fileStream = new FileStream(Request.MapPath(this.accessTokenFilePath), FileMode.OpenOrCreate, FileAccess.Write);
+                streamWriter = new StreamWriter(fileStream);
+
+                streamWriter.WriteLine(this.accessToken);
+                streamWriter.WriteLine(this.expirySeconds);
+                streamWriter.WriteLine(this.refreshToken);
+                streamWriter.WriteLine(this.accessTokenExpiryTime.ToString());
+                streamWriter.WriteLine(this.refreshTokenExpiryTime);
+
+                // Close and clean up the StreamReader
+                accessTokenResponseStream.Close();
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            this.DrawPanelForFailure(sendMMSPanel, ex.ToString());
+            return false;
+        }
+        finally
+        {
+            if (null != postStream)
+            {
+                postStream.Close();
+            }
+
+            if (null != streamWriter)
+            {
+                streamWriter.Close();
+            }
+
+            if (null != fileStream)
+            {
+                fileStream.Close();
+            }
+        }
+    }
+
+    #endregion
+
+    #region Display Status message methods
+    /// <summary>
+    /// Display success message
+    /// </summary>
+    /// <param name="panelParam">Panel to draw success message</param>
+    /// <param name="message">Message to display</param>
+    private void DrawPanelForSuccess(Panel panelParam, string message)
+    {
+        if (panelParam.HasControls())
+        {
+            panelParam.Controls.Clear();
+        }
+
         Table table = new Table();
+        table.CssClass = "successWide";
         table.Font.Name = "Sans-serif";
         table.Font.Size = 9;
-        table.BorderStyle = BorderStyle.Outset;
-        table.Width = Unit.Pixel(650);
         TableRow rowOne = new TableRow();
         TableCell rowOneCellOne = new TableCell();
         rowOneCellOne.Font.Bold = true;
         rowOneCellOne.Text = "SUCCESS:";
-        // rowOneCellOne.BorderWidth = 1;
+        rowOneCellOne.Width = Unit.Pixel(75);
         rowOne.Controls.Add(rowOneCellOne);
         table.Controls.Add(rowOne);
+
         TableRow rowTwo = new TableRow();
         TableCell rowTwoCellOne = new TableCell();
         rowTwoCellOne.Font.Bold = true;
-        rowTwoCellOne.Width = Unit.Pixel(70);
         rowTwoCellOne.Text = "Message ID:";
-        //rowOneCellOne.BorderWidth = 1;
+        rowTwoCellOne.Width = Unit.Pixel(75);
         rowTwo.Controls.Add(rowTwoCellOne);
+
         TableCell rowTwoCellTwo = new TableCell();
-        rowTwoCellTwo.Text = message.ToString();
-        //rowTwoCellOne.BorderWidth = 1;
+        rowTwoCellTwo.Text = message;
+        rowTwoCellTwo.HorizontalAlign = HorizontalAlign.Left;
         rowTwo.Controls.Add(rowTwoCellTwo);
         table.Controls.Add(rowTwo);
-        table.BorderWidth = 2;
-        table.BorderColor = Color.DarkGreen;
-        table.BackColor = System.Drawing.ColorTranslator.FromHtml("#cfc");
         panelParam.Controls.Add(table);
     }
-    /* this function draws error table */
-    private void drawPanelForFailure(Panel panelParam, string message)
+
+    /// <summary>
+    /// Displays error message
+    /// </summary>
+    /// <param name="panelParam">Panel to draw success message</param>
+    /// <param name="message">Message to display</param>
+    private void DrawPanelForFailure(Panel panelParam, string message)
     {
+        if (panelParam.HasControls())
+        {
+            panelParam.Controls.Clear();
+        }
+
         Table table = new Table();
+        table.CssClass = "errorWide";
         table.Font.Name = "Sans-serif";
         table.Font.Size = 9;
-        table.BorderStyle = BorderStyle.Outset;
-        table.Width = Unit.Pixel(650);
         TableRow rowOne = new TableRow();
         TableCell rowOneCellOne = new TableCell();
         rowOneCellOne.Font.Bold = true;
         rowOneCellOne.Text = "ERROR:";
         rowOne.Controls.Add(rowOneCellOne);
-        //rowOneCellOne.BorderWidth = 1;
         table.Controls.Add(rowOne);
         TableRow rowTwo = new TableRow();
         TableCell rowTwoCellOne = new TableCell();
-        //rowTwoCellOne.BorderWidth = 1;
         rowTwoCellOne.Text = message.ToString();
         rowTwo.Controls.Add(rowTwoCellOne);
         table.Controls.Add(rowTwo);
-        table.BorderWidth = 2;
-        table.BorderColor = Color.Red;
-        table.BackColor = System.Drawing.ColorTranslator.FromHtml("#fcc");
         panelParam.Controls.Add(table);
     }
 
-    /* this function validates the given string as valid msisdn */
-    private Boolean isValidMISDN(string number)
+    /// <summary>
+    /// This function draws table for failed numbers
+    /// </summary>
+    /// <param name="panelParam">Panel to draw error</param>
+    private void DrawPanelForFailedNumbers(Panel panelParam)
+    {
+        //if (panelParam.HasControls())
+        //{
+         //   panelParam.Controls.Clear();
+        //}
+
+        Table table = new Table();
+        table.CssClass = "errorWide";
+        table.Font.Name = "Sans-serif";
+        table.Font.Size = 9;
+        TableRow rowOne = new TableRow();
+        TableCell rowOneCellOne = new TableCell();        
+        rowOneCellOne.Font.Bold = true;
+        rowOneCellOne.Text = "ERROR: Invalid numbers";
+        rowOne.Controls.Add(rowOneCellOne);
+        table.Controls.Add(rowOne);
+
+        foreach (string number in this.invalidPhoneNumbers)
+        {
+            TableRow rowTwo = new TableRow();
+            TableCell rowTwoCellOne = new TableCell();
+            rowTwoCellOne.Text = number.ToString();
+            rowTwo.Controls.Add(rowTwoCellOne);
+            table.Controls.Add(rowTwo);
+        }
+
+        panelParam.Controls.Add(table);
+    }
+
+    /// <summary>
+    /// This method draws table for get status response
+    /// </summary>
+    /// <param name="msgid">string, Message Id</param>
+    /// <param name="phone">string, phone number</param>
+    /// <param name="status">string, status</param>
+    /// <param name="headerFlag">bool, headerFlag</param>
+    private void DrawPanelForGetStatusResult(string msgid, string phone, string status, bool headerFlag)
+    {
+        if (headerFlag == true)
+        {
+            getStatusTable = new Table();
+            getStatusTable.CssClass = "successWide";
+            getStatusTable.Font.Name = "Sans-serif";
+            getStatusTable.Font.Size = 9;
+
+            TableRow rowOne = new TableRow();
+            TableCell rowOneCellOne = new TableCell();
+            rowOneCellOne.Width = Unit.Pixel(110);
+            rowOneCellOne.Font.Bold = true;
+            rowOneCellOne.Text = "SUCCESS:";
+            rowOne.Controls.Add(rowOneCellOne);
+            getStatusTable.Controls.Add(rowOne);
+            TableRow rowTwo = new TableRow();
+            TableCell rowTwoCellOne = new TableCell();
+            rowTwoCellOne.Width = Unit.Pixel(250);
+            rowTwoCellOne.Text = "Messages Delivered";
+
+            rowTwo.Controls.Add(rowTwoCellOne);
+            getStatusTable.Controls.Add(rowTwo);
+            getStatusTable.Controls.Add(rowOne);
+            getStatusTable.Controls.Add(rowTwo);
+            statusPanel.Controls.Add(getStatusTable);
+
+            secondTable = new Table();
+            secondTable.Font.Name = "Sans-serif";
+            secondTable.Font.Size = 9;
+            secondTable.Width = Unit.Pixel(650);
+            TableRow tableRow = new TableRow();
+            TableCell tableCell = new TableCell();
+            tableCell.Width = Unit.Pixel(300);
+            tableCell.Text = "Recipient";
+            tableCell.HorizontalAlign = HorizontalAlign.Center;
+            tableCell.Font.Bold = true;
+            tableRow.Cells.Add(tableCell);
+            tableCell = new TableCell();
+            tableCell.Font.Bold = true;
+            tableCell.Width = Unit.Pixel(300);
+            tableCell.Wrap = true;
+            tableCell.Text = "Status";
+            tableCell.HorizontalAlign = HorizontalAlign.Center;
+            tableRow.Cells.Add(tableCell);
+            secondTable.Rows.Add(tableRow);
+            statusPanel.Controls.Add(secondTable);
+        }
+        else
+        {
+            TableRow row = new TableRow();
+            TableCell cell1 = new TableCell();
+            TableCell cell2 = new TableCell();
+            cell1.Text = phone.ToString();
+            cell1.Width = Unit.Pixel(300);
+            cell1.HorizontalAlign = HorizontalAlign.Center;
+            row.Controls.Add(cell1);
+            cell2.Text = status.ToString();
+            cell2.Width = Unit.Pixel(300);
+            cell2.HorizontalAlign = HorizontalAlign.Center;
+            row.Controls.Add(cell2);
+            secondTable.Controls.Add(row);
+            statusPanel.Controls.Add(secondTable);
+        }
+    }
+
+#endregion
+
+    #region MMS App2 specific methods
+
+    /// <summary>
+    /// This method validates the given string as valid msisdn
+    /// </summary>
+    /// <param name="number">string, phone number</param>
+    /// <returns>true/false; true if valid phone number, else false</returns>
+    private bool IsValidMISDN(string number)
     {
         string smsAddressInput = number;
         string smsAddressFormatted;
         string phoneStringPattern = "^\\d{3}-\\d{3}-\\d{4}$";
+
         if (System.Text.RegularExpressions.Regex.IsMatch(smsAddressInput, phoneStringPattern))
         {
-            smsAddressFormatted = smsAddressInput.Replace("-", "");
+            smsAddressFormatted = smsAddressInput.Replace("-", string.Empty);
         }
         else
         {
             smsAddressFormatted = smsAddressInput;
         }
+
         string smsAddressForRequest = smsAddressFormatted.ToString();
         long tryParseResult = 0;
         if (smsAddressFormatted.Length == 16 && smsAddressFormatted.StartsWith("tel:+1"))
@@ -340,440 +682,439 @@ public partial class Default : System.Web.UI.Page
         {
             smsAddressFormatted = smsAddressFormatted.Substring(1, 10);
         }
+
         if ((smsAddressFormatted.Length != 10) || (!long.TryParse(smsAddressFormatted, out tryParseResult)))
         {
             return false;
         }
+
         return true;
     }
 
-    /*
-     * On page load if query string 'code' is present, invoke get_access_token
-     */
-
-    protected void Page_Load(object sender, EventArgs e)
+    /// <summary>
+    /// This method reads config file and assigns values to local variables
+    /// </summary>
+    /// <returns>true/false, true- if able to read from config file</returns>
+    private bool ReadConfigFile()
     {
-        try
+        this.apiKey = ConfigurationManager.AppSettings["api_key"];
+        if (string.IsNullOrEmpty(this.apiKey))
         {
-            BypassCertificateError();
-            DateTime currentServerTime = DateTime.UtcNow;
-            serverTimeLabel.Text = String.Format("{0:ddd, MMM dd, yyyy HH:mm:ss}", currentServerTime) + " UTC";
-            if (ConfigurationManager.AppSettings["messageFilePath"] == null)
-            {
-                drawPanelForFailure(sendMMSPanel, "Message file path is missing in configuration file");
-                return;
-            }
-            messageFilePath = ConfigurationManager.AppSettings["messageFilePath"];
-            if (ConfigurationManager.AppSettings["phoneListFilePath"] == null)
-            {
-                drawPanelForFailure(sendMMSPanel, "Phone list file path is missing in configuration file");
-                return;
-            }
-            phoneListFilePath = ConfigurationManager.AppSettings["phoneListFilePath"];
-            if (ConfigurationManager.AppSettings["couponPath"] == null)
-            {
-                drawPanelForFailure(sendMMSPanel, "Coupon file path is missing in configuration file");
-                return;
-            }
-            couponPath = ConfigurationManager.AppSettings["couponPath"];
-
-            if (ConfigurationManager.AppSettings["couponFileName"] == null)
-            {
-                drawPanelForFailure(sendMMSPanel, "Coupon file name is missing in configuration file");
-                return;
-            }
-            couponFileName = ConfigurationManager.AppSettings["couponFileName"];
-
-            DirectoryInfo _dir = new DirectoryInfo(Request.MapPath(couponPath));
-            FileInfo[] _imgs = _dir.GetFiles();
-            int fileindex = 0;
-            bool foundFlag = false;
-            foreach (FileInfo tempFileInfo in _imgs)
-            {
-                if (tempFileInfo.Name.ToLower().CompareTo(couponFileName.ToLower()) == 0)
-                {
-                    foundFlag = true;
-                    break;
-                }
-                else
-                    fileindex++;
-            }
-            if (foundFlag == false)
-            {
-                drawPanelForFailure(sendMMSPanel, "Coupon doesnt exists");
-                return;
-            }
-            Image1.ImageUrl = string.Format("{0}{1}", couponPath, _imgs[fileindex].Name);
-
-            //Image1.ImageUrl = Request.MapPath(couponPath + couponFileName);
-            if (ConfigurationManager.AppSettings["AccessTokenFilePath"] != null)
-            {
-                accessTokenFilePath = ConfigurationManager.AppSettings["AccessTokenFilePath"];
-            }
-            else
-            {
-                accessTokenFilePath = "~\\MMSApp2AccessToken.txt";
-            }
-            if (ConfigurationManager.AppSettings["FQDN"] == null)
-            {
-                drawPanelForFailure(sendMMSPanel, "FQDN is not defined in configuration file");
-                return;
-            }
-            FQDN = ConfigurationManager.AppSettings["FQDN"].ToString();
-            if (ConfigurationManager.AppSettings["short_code"] == null)
-            {
-                drawPanelForFailure(sendMMSPanel, "short_code is not defined in configuration file");
-                return;
-            }
-            shortCode = ConfigurationManager.AppSettings["short_code"].ToString();
-            if (ConfigurationManager.AppSettings["api_key"] == null)
-            {
-                drawPanelForFailure(sendMMSPanel, "api_key is not defined in configuration file");
-                return;
-            }
-            api_key = ConfigurationManager.AppSettings["api_key"].ToString();
-            if (ConfigurationManager.AppSettings["secret_key"] == null)
-            {
-                drawPanelForFailure(sendMMSPanel, "secret_key is not defined in configuration file");
-                return;
-            }
-            secret_key = ConfigurationManager.AppSettings["secret_key"].ToString();
-            if (ConfigurationManager.AppSettings["scope"] == null)
-            {
-                scope = "MMS";
-            }
-            else
-            {
-                scope = ConfigurationManager.AppSettings["scope"].ToString();
-            }
-            //StreamReader str2 = File.OpenText(Request.MapPath(messageFilePath));
-            StreamReader str2 = new StreamReader(Request.MapPath(messageFilePath));
-            subjectLabel.Text = str2.ReadToEnd();
-            str2.Close();
-
-            if (!Page.IsPostBack)
-            {
-                StreamReader str3 = new StreamReader(Request.MapPath(phoneListFilePath));
-                phoneListTextBox.Text = str3.ReadToEnd();
-                str3.Close();
-            }
-
+            this.DrawPanelForFailure(sendMMSPanel, "api_key is not defined in configuration file");
+            return false;
         }
-        catch (Exception ex)
+
+        this.secretKey = ConfigurationManager.AppSettings["secret_key"];
+        if (string.IsNullOrEmpty(this.secretKey))
         {
-            drawPanelForFailure(sendMMSPanel, ex.ToString());
-            Response.Write(ex.ToString());
+            this.DrawPanelForFailure(sendMMSPanel, "secret_key is not defined in configuration file");
+            return false;
         }
-    }
 
-    /* this function draws table for failed numbers */
-    private void drawPanelForFailedNumbers(Panel panelParam)
-    {
-        Table table = new Table();
-        table.Font.Name = "Sans-serif";
-        table.Font.Size = 9;
-        table.BorderStyle = BorderStyle.Outset;
-        table.Width = Unit.Pixel(650);
-        TableRow rowOne = new TableRow();
-        TableCell rowOneCellOne = new TableCell();
-        //rowOneCellOne.BorderWidth = 1;
-        rowOneCellOne.Font.Bold = true;
-        rowOneCellOne.Text = "ERROR: Invalid numbers";
-        rowOne.Controls.Add(rowOneCellOne);
-        table.Controls.Add(rowOne);
-        foreach (string number in invalidPhoneNumbers)
+        this.endPoint = ConfigurationManager.AppSettings["endPoint"];
+        if (string.IsNullOrEmpty(this.endPoint))
         {
-            TableRow rowTwo = new TableRow();
-            TableCell rowTwoCellOne = new TableCell();
-            //rowTwoCellOne.BorderWidth = 1;
-            rowTwoCellOne.Text = number.ToString();
-            rowTwo.Controls.Add(rowTwoCellOne);
-            table.Controls.Add(rowTwo);
+            this.DrawPanelForFailure(sendMMSPanel, "endPoint is not defined in configuration file");
+            return false;
         }
-        table.BorderWidth = 2;
-        table.BorderColor = Color.Red;
-        table.BackColor = System.Drawing.ColorTranslator.FromHtml("#fcc");
-        panelParam.Controls.Add(table);
-    }
 
-    /* this function draws table for get status response */
-    private void drawPanelForGetStatusResult(string msgid, string phone, string status, bool headerFlag)
-    {
-        if (headerFlag == true)
+        this.scope = ConfigurationManager.AppSettings["scope"];
+        if (string.IsNullOrEmpty(this.scope))
         {
-            getStatusTable = new Table();
-            getStatusTable.Font.Name = "Sans-serif";
-            getStatusTable.Font.Size = 9;
-            getStatusTable.BorderStyle = BorderStyle.Outset;
-            getStatusTable.Width = Unit.Pixel(650);
-            TableRow rowOne = new TableRow();
-            TableCell rowOneCellOne = new TableCell();
-            rowOneCellOne.Width = Unit.Pixel(110);
-            rowOneCellOne.Font.Bold = true;
-            rowOneCellOne.Text = "SUCCESS:";
-            //rowOneCellOne.BorderWidth = 1;
-            rowOne.Controls.Add(rowOneCellOne);
-            getStatusTable.Controls.Add(rowOne);
-            TableRow rowTwo = new TableRow();
-            TableCell rowTwoCellOne = new TableCell();
-            rowTwoCellOne.Width = Unit.Pixel(110);
-            rowTwoCellOne.Text = "Messages Delivered";
-            //rowTwoCellOne.BorderWidth = 1;
-            rowTwo.Controls.Add(rowTwoCellOne);
-            getStatusTable.Controls.Add(rowTwo);
+            this.scope = "MMS";
+        }
 
+        this.accessTokenFilePath = ConfigurationManager.AppSettings["AccessTokenFilePath"];
+        if (string.IsNullOrEmpty(this.accessTokenFilePath))
+        {
+            this.accessTokenFilePath = "MMSApp1AccessToken.txt";
+        }
 
-            getStatusTable.BorderWidth = 2;
-            getStatusTable.BorderColor = Color.DarkGreen;
-            getStatusTable.BackColor = System.Drawing.ColorTranslator.FromHtml("#cfc");
-            getStatusTable.Controls.Add(rowOne);
-            getStatusTable.Controls.Add(rowTwo);
-            //getStatusTable.Controls.Add(rowThree);
-            statusPanel.Controls.Add(getStatusTable);
+        this.messageFilePath = ConfigurationManager.AppSettings["messageFilePath"];
+        if (string.IsNullOrEmpty(this.messageFilePath))
+        {
+            this.DrawPanelForFailure(sendMMSPanel, "Message file path is missing in configuration file");
+            return false;
+        }
 
-            secondTable = new Table();
-            secondTable.Font.Name = "Sans-serif";
-            secondTable.Font.Size = 9;
-            secondTable.Width = Unit.Pixel(650);
-            TableRow TableRow = new TableRow();
-            //secondTable.Width = Unit.Percentage(80);
-            TableCell TableCell = new TableCell();
-            TableCell.Width = Unit.Pixel(300);
-            //TableCell.BorderWidth = 1;
-            TableCell.Text = "Recipient";
-            TableCell.HorizontalAlign = HorizontalAlign.Center;
-            TableCell.Font.Bold = true;
-            TableRow.Cells.Add(TableCell);
-            TableCell = new TableCell();
-            //TableCell.BorderWidth = 1;
-            TableCell.Font.Bold = true;
-            TableCell.Width = Unit.Pixel(300);
-            TableCell.Wrap = true;
-            TableCell.Text = "Status";
-            TableCell.HorizontalAlign = HorizontalAlign.Center;
-            TableRow.Cells.Add(TableCell);
-            secondTable.Rows.Add(TableRow);
-            statusPanel.Controls.Add(secondTable);
+        this.phoneListFilePath = ConfigurationManager.AppSettings["phoneListFilePath"];
+        if (string.IsNullOrEmpty(this.phoneListFilePath))
+        {
+            this.DrawPanelForFailure(sendMMSPanel, "Phone list file path is missing in configuration file");
+            return false;
+        }
+
+        this.couponPath = ConfigurationManager.AppSettings["couponPath"];
+        if (string.IsNullOrEmpty(this.couponPath))
+        {
+            this.DrawPanelForFailure(sendMMSPanel, "Coupon path is missing in configuration file");
+            return false;
+        }
+
+        this.couponFileName = ConfigurationManager.AppSettings["couponFileName"];
+        if (string.IsNullOrEmpty(this.couponFileName))
+        {
+            this.DrawPanelForFailure(sendMMSPanel, "Coupon file name is missing in configuration file");
+            return false;
+        }
+
+        string refreshTokenExpires = ConfigurationManager.AppSettings["refreshTokenExpiresIn"];
+        if (!string.IsNullOrEmpty(refreshTokenExpires))
+        {
+            this.refreshTokenExpiresIn = Convert.ToInt32(refreshTokenExpires);
         }
         else
         {
-            TableRow row = new TableRow();
-            TableCell cell1 = new TableCell();
-            TableCell cell2 = new TableCell();
-            //TableCell cell3 = new TableCell();
-            //cell1.BorderWidth = 1;
-            //cell2.BorderWidth = 1;
-            //cell3.BorderWidth = 1;
-            //cell1.Text = msgid.ToString();
-            //row.Controls.Add(cell1);
-            cell1.Text = phone.ToString();
-            cell1.Width = Unit.Pixel(300);
-            cell1.HorizontalAlign = HorizontalAlign.Center;
-            row.Controls.Add(cell1);
-            cell2.Text = status.ToString();
-            cell2.Width = Unit.Pixel(300);
-            cell2.HorizontalAlign = HorizontalAlign.Center;
-            row.Controls.Add(cell2);
-            secondTable.Controls.Add(row);
+            this.refreshTokenExpiresIn = 24;
         }
-    }
 
-    /* this function is called with user clicks on send mms button */
-    protected void sendButton_Click(object sender, EventArgs e)
-    {
-
-        if (phoneListTextBox.Text.Length == 0)
+        DirectoryInfo dirInfo = new DirectoryInfo(Request.MapPath(this.couponPath));
+        FileInfo[] imgFileList = dirInfo.GetFiles();
+        int fileindex = 0;
+        bool foundFlag = false;
+        foreach (FileInfo tempFileInfo in imgFileList)
         {
-            return;
-        }
-        string[] phoneNumbers = phoneListTextBox.Text.ToString().Split(',');
-        foreach (string phoneNum in phoneNumbers)
-        {
-            if (phoneNum != null && (string.Compare(phoneNum, "") != 0))
-                phoneNumbersList.Add(phoneNum.ToString());
-        }
-        phoneNumberAndValidity = new Dictionary<string, string>();
-        foreach (string phNumber in phoneNumbersList)
-        {
-            if (isValidMISDN(phNumber) == true)
+            if (tempFileInfo.Name.ToLower().Equals(this.couponFileName.ToLower()))
             {
-                if (phNumber.StartsWith("tel:"))
-                {
-
-                    string phNumberWithoutHyphens = phNumber.Replace("-", "");
-                    phoneNumbersParameter = phoneNumbersParameter + "Address=" + Server.UrlEncode(phNumberWithoutHyphens.ToString()) + "&";
-                }
-                else
-                {
-                    string phNumberWithoutHyphens = phNumber.Replace("-", "");
-                    phoneNumbersParameter = phoneNumbersParameter + "Address=" + Server.UrlEncode("tel:" + phNumberWithoutHyphens.ToString()) + "&";
-                }
-
+                foundFlag = true;
+                break;
             }
             else
             {
-                invalidPhoneNumbers.Add(phNumber);
+                fileindex++;
             }
         }
-        if (phoneNumbersParameter  == null)
+
+        if (foundFlag == false)
         {
-            if (invalidPhoneNumbers.Count > 0)
-                drawPanelForFailedNumbers(sendMMSPanel);
-            return;
+            this.DrawPanelForFailure(sendMMSPanel, "Coupon doesnt exists");
+            return false;
         }
-        if (readAndGetAccessToken(sendMMSPanel) == false)
-        {
-            return;
-        }
-            
-        string mmsFilePath = Request.MapPath(couponPath);
-        //Table table = new Table();
-        //table.Font.Size = 8;
-                try
-                {
-                    string boundary = "----------------------------" + DateTime.Now.Ticks.ToString("x");
 
-                    HttpWebRequest mmsRequestObject = (HttpWebRequest)WebRequest.Create("" + FQDN + "/rest/mms/2/messaging/outbox?access_token=" + access_token.ToString());
-                    mmsRequestObject.ContentType = "multipart/form-data; type=\"application/x-www-form-urlencoded\"; start=\"<startpart>\"; boundary=\"" + boundary + "\"\r\n";
-                    mmsRequestObject.Method = "POST";
-                    mmsRequestObject.KeepAlive = true;
-                    UTF8Encoding encoding = new UTF8Encoding();
-                    byte[] postBytes = encoding.GetBytes("");
-                    string sendMMSData = phoneNumbersParameter + "&Subject=" + Server.UrlEncode(subjectLabel.Text.ToString());
-                    string data = "";
-                    //string mmsFileName = Path.GetFileName(mmsFilePath.ToString());
-                    FileStream fs = new FileStream(mmsFilePath + couponFileName, FileMode.Open, FileAccess.Read);
-                    BinaryReader br = new BinaryReader(fs);
-                    byte[] image = br.ReadBytes((int)fs.Length);
-                    br.Close();
-                    fs.Close();
+        Image1.ImageUrl = string.Format("{0}{1}", this.couponPath, imgFileList[fileindex].Name);
 
-                    data += "--" + boundary + "\r\n";
-                    data += "Content-Type:application/x-www-form-urlencoded;charset=UTF-8\r\nContent-Transfer-Encoding:8bit\r\nContent-ID:<startpart>\r\n\r\n" + sendMMSData + "\r\n";
-                    data += "--" + boundary + "\r\n";
-                    data += "Content-Disposition:attachment;name=\"" + "coupon.jpg" + "\"\r\n";
-                    data += "Content-Type:image/gif\r\n";
-                    data += "Content-ID:<" + "coupon.jpg" + ">\r\n";
-                    data += "Content-Transfer-Encoding:binary\r\n\r\n";
-                    byte[] firstPart = encoding.GetBytes(data);
-                    int newSize = firstPart.Length + image.Length;
-                    var ms = new MemoryStream(new byte[newSize], 0, newSize, true, true);
-                    ms.Write(firstPart, 0, firstPart.Length);
-                    ms.Write(image, 0, image.Length);
-                    byte[] secondpart = ms.GetBuffer();
-                    byte[] thirdpart = encoding.GetBytes("\r\n--" + boundary + "--\r\n");
-                    newSize = secondpart.Length + thirdpart.Length;
-                    var ms2 = new MemoryStream(new byte[newSize], 0, newSize, true, true);
-                    ms2.Write(secondpart, 0, secondpart.Length);
-                    ms2.Write(thirdpart, 0, thirdpart.Length);
-                    postBytes = ms2.GetBuffer();
-                    
-                    mmsRequestObject.ContentLength = postBytes.Length;
-
-                    Stream postStream = mmsRequestObject.GetRequestStream();
-                    postStream.Write(postBytes, 0, postBytes.Length);
-                    postStream.Close();
-                    WebResponse mmsResponseObject = mmsRequestObject.GetResponse();
-                    using (StreamReader sr = new StreamReader(mmsResponseObject.GetResponseStream()))
-                    {
-                        string mmsResponseData = sr.ReadToEnd();
-                        JavaScriptSerializer deserializeJsonObject = new JavaScriptSerializer();
-                        mmsResponseId deserializedJsonObj = (mmsResponseId)deserializeJsonObject.Deserialize(mmsResponseData, typeof(mmsResponseId));
-                        msgIdLabel.Text = deserializedJsonObj.id.ToString();
-                        drawPanelForSuccess(sendMMSPanel, deserializedJsonObj.id.ToString());
-                        sr.Close();
-                    }
-                    mmsRequestObject = null;
-                    //sendMMSPanel.Controls.Add(table);
-                    if (invalidPhoneNumbers.Count > 0 )
-                        drawPanelForFailedNumbers(sendMMSPanel);
-                }
-                catch (Exception ex)
-                {
-                    drawPanelForFailure(sendMMSPanel, ex.ToString());
-                    if (invalidPhoneNumbers.Count > 0)
-                        drawPanelForFailedNumbers(sendMMSPanel);
-                }
-    }
-
-    /*this function is called when user clicks on get status button */
-    protected void statusButton_Click(object sender, EventArgs e)
-    {
+        StreamReader streamReader = null;
         try
         {
-            //Session["Inprocess"] = null;
-
-            if (msgIdLabel.Text == null || msgIdLabel.Text.ToString() == null || msgIdLabel.Text.ToString().Length <= 0)
-            {
-                return;
-            }
-            if (readAndGetAccessToken(statusPanel) == false)
-            {
-                return;
-            }
-            string mmsId = msgIdLabel.Text.ToString();
-            String mmsDeliveryStatus;
-            HttpWebRequest mmsStatusRequestObject = (HttpWebRequest)System.Net.WebRequest.Create("" + FQDN + "/rest/mms/2/messaging/outbox/" + mmsId + "?access_token=" + access_token.ToString());
-            mmsStatusRequestObject.Method = "GET";
-            HttpWebResponse mmsStatusResponseObject = (HttpWebResponse)mmsStatusRequestObject.GetResponse();
-            using (StreamReader mmsStatusResponseStream = new StreamReader(mmsStatusResponseObject.GetResponseStream()))
-            {
-                mmsDeliveryStatus = mmsStatusResponseStream.ReadToEnd();
-                mmsDeliveryStatus = mmsDeliveryStatus.Replace("-", "");
-                JavaScriptSerializer deserializeJsonObject = new JavaScriptSerializer();
-                GetDeliveryStatus status = (GetDeliveryStatus)deserializeJsonObject.Deserialize(mmsDeliveryStatus, typeof(GetDeliveryStatus));
-                DeliveryInfoList dinfoList = status.DeliveryInfoList;
-                drawPanelForGetStatusResult(null, null, null, true);
-                foreach (deliveryInfo dInfo in dinfoList.deliveryInfo)
-                {
-                    drawPanelForGetStatusResult(dInfo.id, dInfo.address, dInfo.deliverystatus, false);
-                }
-                msgIdLabel.Text = "";
-                mmsStatusResponseStream.Close();
-            }
+            streamReader = new StreamReader(Request.MapPath(this.messageFilePath));
+            subjectLabel.Text = streamReader.ReadToEnd();            
         }
         catch (Exception ex)
         {
-            drawPanelForFailure(statusPanel, ex.ToString());
+            throw ex;
+        }
+        finally
+        {
+            if (null != streamReader)
+            {
+                streamReader.Close();
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Sends MMS message by invoking Send MMS api
+    /// </summary>
+    private void SendMMS()
+    {
+        Stream postStream = null;
+        FileStream fileStream = null;
+        BinaryReader binaryReader = null;
+        try
+        {
+            string mmsFilePath = Request.MapPath(this.couponPath);
+            string boundary = "----------------------------" + DateTime.Now.Ticks.ToString("x");
+
+            HttpWebRequest mmsRequestObject = (HttpWebRequest)WebRequest.Create(string.Empty + this.endPoint + "/rest/mms/2/messaging/outbox");
+            mmsRequestObject.Headers.Add("Authorization", "Bearer " + this.accessToken);
+            mmsRequestObject.ContentType = "multipart/form-data; type=\"application/x-www-form-urlencoded\"; start=\"<startpart>\"; boundary=\"" + boundary + "\"\r\n";
+            mmsRequestObject.Method = "POST";
+            mmsRequestObject.KeepAlive = true;
+
+            UTF8Encoding encoding = new UTF8Encoding();
+            byte[] postBytes = encoding.GetBytes(string.Empty);
+            string sendMMSData = this.phoneNumbersParameter + "&Subject=" + Server.UrlEncode(subjectLabel.Text.ToString());
+            string data = string.Empty;
+
+            fileStream = new FileStream(mmsFilePath + this.couponFileName, FileMode.Open, FileAccess.Read);
+            binaryReader = new BinaryReader(fileStream);
+            byte[] image = binaryReader.ReadBytes((int)fileStream.Length);
+
+            data += "--" + boundary + "\r\n";
+            data += "Content-Type:application/x-www-form-urlencoded;charset=UTF-8\r\nContent-Transfer-Encoding:8bit\r\nContent-ID:<startpart>\r\n\r\n" + sendMMSData + "\r\n";
+            data += "--" + boundary + "\r\n";
+            data += "Content-Disposition:attachment;name=\"" + "coupon.jpg" + "\"\r\n";
+            data += "Content-Type:image/gif\r\n";
+            data += "Content-ID:<" + "coupon.jpg" + ">\r\n";
+            data += "Content-Transfer-Encoding:binary\r\n\r\n";
+            byte[] firstPart = encoding.GetBytes(data);
+            int newSize = firstPart.Length + image.Length;
+
+            var memoryStream = new MemoryStream(new byte[newSize], 0, newSize, true, true);
+            memoryStream.Write(firstPart, 0, firstPart.Length);
+            memoryStream.Write(image, 0, image.Length);
+
+            byte[] secondpart = memoryStream.GetBuffer();
+            byte[] thirdpart = encoding.GetBytes("\r\n--" + boundary + "--\r\n");
+            newSize = secondpart.Length + thirdpart.Length;
+
+            var memoryStream2 = new MemoryStream(new byte[newSize], 0, newSize, true, true);
+            memoryStream2.Write(secondpart, 0, secondpart.Length);
+            memoryStream2.Write(thirdpart, 0, thirdpart.Length);
+
+            postBytes = memoryStream2.GetBuffer();
+            mmsRequestObject.ContentLength = postBytes.Length;
+
+            postStream = mmsRequestObject.GetRequestStream();
+            postStream.Write(postBytes, 0, postBytes.Length);
+            postStream.Close();
+
+            WebResponse mmsResponseObject = mmsRequestObject.GetResponse();
+            using (StreamReader streamReader = new StreamReader(mmsResponseObject.GetResponseStream()))
+            {
+                string mmsResponseData = streamReader.ReadToEnd();
+                JavaScriptSerializer deserializeJsonObject = new JavaScriptSerializer();
+                MmsResponseId deserializedJsonObj = (MmsResponseId)deserializeJsonObject.Deserialize(mmsResponseData, typeof(MmsResponseId));
+
+                msgIdLabel.Text = deserializedJsonObj.Id;
+                this.DrawPanelForSuccess(sendMMSPanel, deserializedJsonObj.Id);
+                streamReader.Close();
+            }
+            /*if (this.invalidPhoneNumbers.Count > 0)
+            {
+                this.DrawPanelForFailedNumbers(sendMMSPanel);
+            }*/
+            mmsRequestObject = null;
+        }
+        catch (WebException we)
+        {
+            string errorResponse = string.Empty;
+
+            try
+            {
+                using (StreamReader sr2 = new StreamReader(we.Response.GetResponseStream()))
+                {
+                    errorResponse = sr2.ReadToEnd();
+                    sr2.Close();
+                }
+            }
+            catch
+            {
+                errorResponse = "Unable to get response";
+            }
+            this.DrawPanelForFailure(sendMMSPanel, errorResponse + Environment.NewLine + we.Message);
+        }
+        catch (Exception ex)
+        {
+            this.DrawPanelForFailure(sendMMSPanel, ex.ToString());
+        }
+        finally
+        {
+            if (null != binaryReader)
+            {
+                binaryReader.Close();
+            }
+
+            if (null != fileStream)
+            {
+                fileStream.Close();
+            }
+
+            if (null != postStream)
+            {
+                postStream.Close();
+            }
         }
     }
 
+    /// <summary>
+    /// This method gets the phone numbers present in phonenumber text box and validates each phone number and prepares valid and invalid phone number lists
+    /// and returns a bool value indicating if able to get the phone numbers.
+    /// </summary>
+    /// <returns>true/false; true if able to get valis phone numbers, else false</returns>
+    private bool GetPhoneNumbers()
+    {
+        if (string.IsNullOrEmpty(phoneListTextBox.Text))
+        {
+            return false;
+        }
 
+        string[] phoneNumbers = phoneListTextBox.Text.Split(',');
+        foreach (string phoneNum in phoneNumbers)
+        {
+            if (!string.IsNullOrEmpty(phoneNum))
+            {
+                this.phoneNumbersList.Add(phoneNum);
+            }
+        }
+
+        foreach (string phoneNo in this.phoneNumbersList)
+        {
+            if (this.IsValidMISDN(phoneNo) == true)
+            {
+                if (phoneNo.StartsWith("tel:"))
+                {
+                    string phoneNumberWithoutHyphens = phoneNo.Replace("-", string.Empty);
+                    this.phoneNumbersParameter = this.phoneNumbersParameter + "Address=" + Server.UrlEncode(phoneNumberWithoutHyphens.ToString()) + "&";
+                }
+                else
+                {
+                    string phoneNumberWithoutHyphens = phoneNo.Replace("-", string.Empty);
+                    this.phoneNumbersParameter = this.phoneNumbersParameter + "Address=" + Server.UrlEncode("tel:" + phoneNumberWithoutHyphens.ToString()) + "&";
+                }
+            }
+            else
+            {
+                this.invalidPhoneNumbers.Add(phoneNo);
+            }
+        }
+
+        //if (string.IsNullOrEmpty(this.phoneNumbersParameter))
+        //{
+            if (this.invalidPhoneNumbers.Count > 0)
+            {
+                this.DrawPanelForFailedNumbers(sendMMSPanel);
+                return false;
+            }
+            //return false;
+       // }
+
+        return true;
+    }
+
+#endregion
 }
 
-/*following are data structures used for the application */
+#region Data Structures
 
-public class mmsResponseId
+/// <summary>
+/// MmsResponseId object
+/// </summary>
+public class MmsResponseId
 {
-    public string id;
+    /// <summary>
+    /// Gets or sets the value of Id
+    /// </summary>
+    public string Id { get; set; }
+
+    /// <summary>
+    /// Gets or sets the value of Resource Reference
+    /// </summary>
+    public ResourceReferenceRaw ResourceReference
+    { 
+        get; 
+        set; 
+    }
 }
 
-public class mmsStatus
+/// <summary>
+/// ResourceReferenceRaw object
+/// </summary>
+public class ResourceReferenceRaw
 {
-    public string status;
-    public string resourceURL;
+    /// <summary>
+    /// Gets or sets the value of ResourceUrl
+    /// </summary>
+    public string ResourceUrl
+    {
+        get;
+        set;
+    }
 }
 
+/// <summary>
+/// AccessTokenResponse Object
+/// </summary>
 public class AccessTokenResponse
 {
-    public string access_token;
-    public string refresh_token;
-    public string expires_in;
+    /// <summary>
+    /// Gets or sets the value of access_token
+    /// </summary>
+    public string access_token
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// Gets or sets the value of refresh_token
+    /// </summary>
+    public string refresh_token
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// Gets or sets the value of expires_in
+    /// </summary>
+    public string expires_in
+    {
+        get;
+        set;
+    }
 }
 
+/// <summary>
+/// GetDeliveryStatus object
+/// </summary>
 public class GetDeliveryStatus
 {
-    public DeliveryInfoList DeliveryInfoList = new DeliveryInfoList();
-}
-public class DeliveryInfoList
-{
-    public string resourceURL;
-    public List<deliveryInfo> deliveryInfo { get; set; }
+    /// <summary>
+    /// Gets or sets the value of DeliveryInfoList object
+    /// </summary>
+    public DeliveryInfoList DeliveryInfoList
+    {
+        get;
+        set;
+    }
 }
 
-public class deliveryInfo
+/// <summary>
+/// DeliveryInfoList object
+/// </summary>
+public class DeliveryInfoList
 {
-    public string id { get; set; }
-    public string address { get; set; }
-    public string deliverystatus { get; set; }
+    /// <summary>
+    /// Gets or sets the value of Resource Url
+    /// </summary>
+    public string ResourceUrl
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// Gets or sets the value of DeliveryInfo List
+    /// </summary>
+    public List<DeliveryInfoRaw> DeliveryInfo 
+    { 
+        get; 
+        set; 
+    }
 }
+
+/// <summary>
+/// DeliveryInfoRaw Object
+/// </summary>
+public class DeliveryInfoRaw
+{
+    /// <summary>
+    /// Gets or sets the value of Id
+    /// </summary>
+    public string Id { get; set; }
+
+    /// <summary>
+    /// Gets or sets the value of Address
+    /// </summary>
+    public string Address { get; set; }
+
+    /// <summary>
+    /// Gets or sets the value of DeliveryStatus
+    /// </summary>
+    public string DeliveryStatus { get; set; }
+}
+
+#endregion

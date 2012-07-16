@@ -1,3 +1,9 @@
+
+<!-- Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012 
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com 
+For more information contact developer.support@att.com -->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
@@ -10,7 +16,7 @@
       <div id="header"><!-- open HEADER -->
         <div>
           <div id="hcRight">
-            <%= Time.now.strftime("%B %d, %Y %H:%M")  %>
+           <%= Time.now.utc.strftime("%a, %B %d, %Y %H:%M:%S UTC") %>
           </div>
 	      <div id="hcLeft">Server Time:</div>
         </div>
@@ -94,9 +100,6 @@
         <br clear="all" />
         <div align="center"></div>
       </form>
-        
-      <div id="wrapper">
-        <div id="content">
 
           <% if @address_valid == false %>
             <div class="errorWide">
@@ -121,6 +124,8 @@
             </div>
           <% end %>
 
+    <div id="wrapper">
+        <div id="content">
           <h2>
             <br/>
           Feature 2: Get Delivery Status</h2>            
@@ -159,7 +164,7 @@
         <div class="errorWide">
           <strong>ERROR:</strong>
           <br/>
-          <%= @delivery_error %>
+           Message ID is null or empty
         </div>
       <% end %>
 
@@ -170,12 +175,12 @@
           <%= @delivery_status %>
           <br/>
           <strong>Resource URL:</strong>
-          <%= @delivery_URL %>
+          <%= @delivery_Url %>
         </div>
       <% end %>
       <div id="footer">
-	    <div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
-        <p>&copy; 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+	    <div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
+        <p>&copy; 2012 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
         <br/>
         The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
         <br/>

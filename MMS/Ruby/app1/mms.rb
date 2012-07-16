@@ -1,3 +1,9 @@
+
+# Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+# TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+# Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+# For more information contact developer.support@att.com
+
 #!/usr/bin/ruby
 require 'rubygems'
 require 'json'
@@ -13,7 +19,7 @@ config_file 'config.yml'
 
 set :port, settings.port
 
-SCOPE = 'SMS,MMS'
+SCOPE = 'MMS'
 
 # setup filter fired before reaching our urls
 # this is to ensure we are o-authenticated before actual action (like sendMms)
@@ -88,7 +94,8 @@ def send_mms
     end
 
     mimeContent = "--#{@split}\n" + @contents.join("--#{@split}\n") + "--#{@split}--\n"
-    response = RestClient.post "#{settings.FQDN}/rest/mms/2/messaging/outbox?access_token=#{@access_token}", "#{mimeContent}", :Accept => 'application/json', :Content_Type => 'multipart/form-data; type="application/json"; start=""; boundary="' + @split + '"'
+	
+    response = RestClient.post "#{settings.FQDN}/rest/mms/2/messaging/outbox?", "#{mimeContent}", :Authorization => "Bearer #{@access_token}", :Accept => 'application/json', :Content_Type => 'multipart/form-data; type="application/json"; start=""; boundary="' + @split + '"'
 
     @mms_id = session[:mms_id] = JSON.parse(response)['Id']
   end
@@ -99,16 +106,15 @@ ensure
 end
 
 def get_mms_delivery_status
-  response = RestClient.get "#{settings.FQDN}/rest/mms/2/messaging/outbox/#{session[:mms_id]}?access_token=#{@access_token}"
+  response = RestClient.get "#{settings.FQDN}/rest/mms/2/messaging/outbox/#{session[:mms_id]}?", :Authorization => "Bearer #{@access_token}"
 
   delivery_info_list = JSON.parse(response).fetch 'DeliveryInfoList'
   delivery_info = delivery_info_list['DeliveryInfo'].first
 
   @delivery_status = delivery_info['DeliveryStatus']
-  @delivery_URL    = delivery_info_list['ResourceURL']
+  @delivery_Url    = delivery_info_list['ResourceUrl']
 rescue => e
   @delivery_error = e.response
 ensure
   return erb :mms
 end
-

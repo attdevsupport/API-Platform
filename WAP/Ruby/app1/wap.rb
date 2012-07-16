@@ -1,3 +1,9 @@
+
+# Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+# TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+# Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+# For more information contact developer.support@att.com
+
 #!/usr/bin/ruby
 require 'rubygems'
 require 'json'
@@ -50,7 +56,10 @@ def wapPush
   @contents << part2
 
   mimeContent = "--#{@split}\n" + @contents.join("--#{@split}\n") + "--#{@split}--\n"
-  RestClient.post "#{settings.FQDN}/1/messages/outbox/wapPush?access_token=#{@access_token}", "#{mimeContent}", :Accept => 'application/json', :Content_Type => 'multipart/form-data; type="application/json"; start=""; boundary="' + @split + '"' do |response, request, result, &block|
+  
+  url = "#{settings.FQDN}/1/messages/outbox/wapPush?"
+  
+  RestClient.post url, mimeContent, :Authorization => "Bearer #{@access_token}", :Accept => 'application/json', :Content_Type => 'multipart/form-data; type="application/json"; start=""; boundary="' + @split + '"' do |response, request, code, &block|
     @r = response
   end
 
@@ -60,6 +69,7 @@ def wapPush
   else
     @error = @r
   end
+  
 rescue => e
   @error = e.message
 ensure
@@ -92,3 +102,5 @@ post '/submit' do
     wapPush
   end
 end
+
+

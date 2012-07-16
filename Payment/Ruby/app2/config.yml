@@ -8,3 +8,5 @@ notary_app_sign_url:         http://localhost:4568/signPayload
 notary_app_view_payload_url: http://localhost:4568/
 subscription_redirect_url:   http://localhost:4567/callbackSubscription
 FQDN:                        https://api.att.com
+notifications_file:          notifications
+recent_notifications_stored: 5

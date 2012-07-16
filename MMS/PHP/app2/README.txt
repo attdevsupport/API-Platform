@@ -1,5 +1,5 @@
 
-  AT&T API Samples - Device Capabilities
+  AT&T API Samples - MMS
  ----------------------------------------
 
 This file describes how to set up, configure and run the php versions of the AT&T HTML5 Program sample applications. 

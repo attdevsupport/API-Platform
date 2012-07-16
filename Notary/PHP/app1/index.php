@@ -1,3 +1,9 @@
+<!-- 
+Licensed by AT&T under 'Software Development Kit Tools Agreement.' June 2012
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+For more information contact developer.support@att.com
+-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
     <title>AT&amp;T Sample Notary Application - Sign Payload Application</title>
@@ -46,18 +52,7 @@ if($payload==null || $payload ==''){
 "\"IsPurchaseOnNoActiveSubscription\":false,\n".
 "\"SubscriptionRecurringNumber\": 5,\n \"SubscriptionRecurringPeriod\" : \"MONTHLY\",\n \"SubscriptionRecurringPeriodAmount\" : 1, }";
  }
-    $signedPayload = $_REQUEST["signedPayload"];
-    if($signedPayload==null || $signedPayload == '')
-        $signedPayload = $_SESSION["not1_signedPayload"];
-    if($signedPayload==null || $signedPayload == '')
-        $signedPayload = "Sbe gur Abgnel ncc, fvzcyr gbby. Gurer fubhyq whfg or n Erdhrfg fvqr ba gur yrsg, pbagnvavat bar YNETR grkg obk jvgu ab qrsnhyg inyhr. Guvf vf jurer gur hfre pna chg va n obql bs grkg jvgu nyy gur cnenzrgref sbe n cnlzrag genafnpgvba, ohg gurl jvyy perngr guvf grkg gurzfryirf onfrq ba gur genafnpgvba qrgnvyf. Gura gurl pyvpx gur ohggba, juvpu qvfcynlf n grkg obk ba gur evtug jvgu gur Fvtarq Cnlybnq, naq gur Fvtangher, obgu bs juvpu gur hfre fubhyq or noyr gb pbcl rnfvyl naq cnfgr vagb gur cnlzrag nccyvpngvba yngre ba. Va erny yvsr, guvf jvyy or qbar nhgbzngvpnyyl ol pbqr, ohg guvf ncc whfg arrqf gb fubj gur onfvp vagrenpgvba jvgu guvf arj Abgnel NCV, juvpu yvgrenyyl whfg gnxrf gur grkg lbh fraq, naq ergheaf gur fvtarq cnlybnq (grkg) naq gur fvtangher. V ubcr gung znxrf frafr";
-    $signature = $_POST["signature"];
-    if($signature==null || $signature =='')
-        $signature = $_SESSION["not1_signature"];
-    if($signature==null || $signature == '')
-        $signature = "hfd7adsf76asffs987sdf98fs6a7a98ff6a";
-?>
-
+ ?>
 <div id="container">
 <!-- open HEADER --><div id="header">
 
@@ -162,15 +157,15 @@ foreach ( $split as $line ){
     <td class="cell" ><textarea rows="20" cols="60" name="payload" ><?php echo str_replace(",\n",",",$payload) ?></textarea>
     </td>
     <td width="50px"></td>
-    <td  valign="top" class="label">Signed Payload:</td>
-    <td class="cell" width="400px" ><?php  echo $formattedSignedPayload; ?></td>
+    <td  valign="top" class="label">Signed Payload:</td><?php  if($signPayload!=null) {?>
+    <td class="cell" width="400px" ><?php  echo $formattedSignedPayload; } ?></td>
   </tr>
 <tr>
     <td></td>
     <td></td>
     <td width="50px"></td>
-    <td valign="top" class="label">Signature:</td>
-    <td class="cell"><?php  echo $formattedSignature;?></td>
+    <td valign="top" class="label">Signature:</td><?php  if($signPayload!=null) {?>
+    <td class="cell"><?php  echo $formattedSignature;?></td><?php }?>
 </tr>
   <tr>
     <td></td>
@@ -184,8 +179,8 @@ foreach ( $split as $line ){
 
 <div id="footer">
 
-	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
-    <p>&#169; 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
+    <p>&#169; 2012 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
 <br>
 The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br>
@@ -197,3 +192,5 @@ For more information contact <a href="mailto:developer.support@att.com">develope
 </div>
 
 </body></html>
+
+

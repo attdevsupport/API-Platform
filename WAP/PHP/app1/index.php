@@ -1,7 +1,7 @@
 <!-- 
-Licensed by AT&T under 'Software Development Kit Tools Agreement.' September 2011
+Licensed by AT&T under 'Software Development Kit Tools Agreement.'June 2012
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
-Copyright 2011 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 For more information contact developer.support@att.com
 -->
 
@@ -9,6 +9,7 @@ For more information contact developer.support@att.com
 header("Content-Type: text/html; charset=ISO-8859-1");
 include ("config.php");
 include ($oauth_file);
+error_reporting(0);
 
     session_start();
 
@@ -46,7 +47,7 @@ function RefreshToken($FQDN,$api_key,$secret_key,$scope,$fullTocken){
 
   //Invoke the URL
   $post_data="client_id=".$api_key."&client_secret=".$secret_key."&refresh_token=".$refreshToken."&grant_type=refresh_token";
-
+$proxy = "http://proxy.entp.attws.com";
   $accessTok = curl_init();
   curl_setopt($accessTok, CURLOPT_URL, $accessTok_Url);
   curl_setopt($accessTok, CURLOPT_HTTPGET, 1);
@@ -67,6 +68,11 @@ function RefreshToken($FQDN,$api_key,$secret_key,$scope,$fullTocken){
     $accessToken = $jsonObj->{'access_token'};//fetch the access token from the response.
     $refreshToken = $jsonObj->{'refresh_token'};
     $expiresIn = $jsonObj->{'expires_in'};
+
+     if($expiresIn == 0) {
+	  $expiresIn = 24*60*60;
+	
+	  }
 	      
     $refreshTime=$currentTime+(int)($expiresIn); // Time for tocken refresh
     $updateTime=$currentTime + ( 24*60*60); // Time to get for a new tocken update, current time + 24h 
@@ -123,6 +129,11 @@ function GetAccessToken($FQDN,$api_key,$secret_key,$scope){
       $accessToken = $jsonObj->{'access_token'};//fetch the access token from the response.
       $refreshToken = $jsonObj->{'refresh_token'};
       $expiresIn = $jsonObj->{'expires_in'};
+
+       if($expiresIn == 0) {
+	  $expiresIn = 24*60*60*365*100;
+	 
+	  }
 
       $refreshTime=$currentTime+(int)($expiresIn); // Time for tocken refresh
       $updateTime=$currentTime + ( 24*60*60); // Time to get for a new tocken update, current time + 24h
@@ -193,25 +204,24 @@ function check_tocken( $FQDN,$api_key,$secret_key,$scope, $fullTocken,$oauth_fil
 <body>
 <div id="container">
 <!-- open HEADER --><div id="header">
-
 <div>
-	<div id="hcRight">
-<?php echo  date("D M j G:i:s T Y"); ?>
-</div>
-	<div id="hcLeft">Server Time:</div>
+    <div id="hcRight">
+      <?php echo  date("D M j G:i:s T Y"); ?>
+    </div>
+    <div id="hcLeft">Server Time:</div>
 </div>
 <div>
-	<div id="hcRight"><script language="JavaScript" type="text/javascript">
+    <div id="hcRight"><script language="JavaScript" type="text/javascript">
 var myDate = new Date();
 document.write(myDate);
 </script></div>
-	<div id="hcLeft">Client Time:</div>
+    <div id="hcLeft">Client Time:</div>
 </div>
 <div>
-	<div id="hcRight"><script language="JavaScript" type="text/javascript">
+    <div id="hcRight"><script language="JavaScript" type="text/javascript">
 document.write("" + navigator.userAgent);
 </script></div>
-	<div id="hcLeft">User Agent:</div>
+    <div id="hcLeft">User Agent:</div>
 </div>
 <br clear="all" />
 </div><!-- close HEADER -->
@@ -242,7 +252,7 @@ document.write("" + navigator.userAgent);
   </tr>
   <tr>
   	<td valign="top" class="label">Service Type</td>
-    <td valign="top" class="cell">Service Indication <input type="radio" name="" value="" checked /> Service Loading </td>
+    <td valign="top" class="cell">Service Indication <input type="radio" name="" value="" checked /> Service Loading<input type="radio" name="" value="" disabled />  </td>
   </tr>
   </tbody></table>
 
@@ -339,8 +349,9 @@ At this time, AT&T only supports Service Type: Service Indication due to securit
       $data .= $wap_message."\r\n"; 
       $data .= "--$boundary--\r\n"; 
       //http header values
-      $header = "POST $FQDN/1/messages/outbox/wapPush?access_token=$accessToken HTTP/1.0\r\n";
+      $header = "POST $FQDN/1/messages/outbox/wapPush? HTTP/1.0\r\n";
       $header .= "Host: $server\r\n";
+	  $header .= "Authorization:Bearer ".$accessToken."\r\n";
       $header .= "MIME-Version: 1.0\r\n";
       $dc = strlen($data); //content length
       $header .= "Content-Type: multipart/form-data; type=\"application/x-www-form-urlencoded\"; start=\"\"; boundary=\"$boundary\"\r\n";
@@ -376,7 +387,7 @@ At this time, AT&T only supports Service Type: Service Indication due to securit
 	?>
 	<div class="errorWide">
 	<strong>ERROR:</strong><br />
-	<?php echo $errormsg  ?>
+	<?php echo $errormsg  ?><?php echo $res; ?>
 	</div>
 	<?php 
       }
@@ -385,8 +396,8 @@ At this time, AT&T only supports Service Type: Service Indication due to securit
 
 <div id="footer">
 
-	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
-    <p>� 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
+    <p> &#169;  2012 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
 <br>
 The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br>
@@ -398,4 +409,5 @@ For more information contact <a href="mailto:developer.support@att.com">develope
 </div>
 
 </body></html>
+
 

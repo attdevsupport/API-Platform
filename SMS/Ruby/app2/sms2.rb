@@ -1,3 +1,9 @@
+
+# Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+# TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+# Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+# For more information contact developer.support@att.com
+
 #!/usr/bin/ruby
 require 'rubygems'
 require 'json'
@@ -12,7 +18,7 @@ config_file 'config.yml'
 
 set :port, settings.port
 
-SCOPE = 'SMS,MMS'
+SCOPE = 'SMS'
 
 
 # setup filter fired before reaching our urls
@@ -60,7 +66,8 @@ end
 
 
 def get_received_sms
-  response = RestClient.get "#{settings.FQDN}/rest/sms/2/messaging/inbox?access_token=#{@access_token}&RegistrationID=#{settings.registration_id}", :Accept => "application/json"
+  response = RestClient.get "#{settings.FQDN}/rest/sms/2/messaging/inbox?RegistrationID=#{settings.registration_id}", :Authorization => "Bearer #{@access_token}", :Accept => "application/json"
+
   sms_list = JSON.parse(response)['InboundSmsMessageList']
 
   @messages_in_this_batch = sms_list['NumberOfMessagesInThisBatch'].to_i

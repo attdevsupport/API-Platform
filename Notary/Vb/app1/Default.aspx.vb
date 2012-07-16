@@ -32,9 +32,15 @@ Partial Public Class _Default
     Private transactionTimeString As String
     Private payLoadStringFromRequest As String
 
-    Public Shared Sub BypassCertificateError()
-        ServicePointManager.ServerCertificateValidationCallback = DirectCast([Delegate].Combine(ServicePointManager.ServerCertificateValidationCallback, Function(sender1 As [Object], certificate As X509Certificate, chain As X509Chain, sslPolicyErrors As SslPolicyErrors) True), RemoteCertificateValidationCallback)
-    End Sub
+    Function CertificateValidationCallBack( _
+    ByVal sender As Object, _
+    ByVal certificate As X509Certificate, _
+    ByVal chain As X509Chain, _
+    ByVal sslPolicyErrors As SslPolicyErrors _
+) As Boolean
+
+        Return True
+    End Function
 
     Private Sub readTransactionParametersFromConfigurationFile()
         transactionTime = DateTime.UtcNow
@@ -44,33 +50,33 @@ Partial Public Class _Default
             Return
         End If
         amount = ConfigurationManager.AppSettings("Amount")
-        requestText.Text = "Amount: " & amount & vbCr & vbLf
+        'requestText.Text = "Amount: " + amount + "\r\n";
         If ConfigurationManager.AppSettings("Category") Is Nothing Then
             drawPanelForFailure(notaryPanel, "Category is not defined in configuration file")
             Return
         End If
         category = Convert.ToInt32(ConfigurationManager.AppSettings("Category"))
-        requestText.Text = requestText.Text + "Category: " & category & vbCr & vbLf
+        'requestText.Text = requestText.Text + "Category: " + category + "\r\n";
         If ConfigurationManager.AppSettings("Channel") Is Nothing Then
             channel = "MOBILE_WEB"
         Else
             channel = ConfigurationManager.AppSettings("Channel")
         End If
-        requestText.Text = requestText.Text + "Channel: " & channel & vbCr & vbLf
+        'requestText.Text = requestText.Text + "Channel: " + channel + "\r\n";
         description = "TrDesc" & transactionTimeString
-        requestText.Text = requestText.Text + "Description: " & description & vbCr & vbLf
+        'requestText.Text = requestText.Text + "Description: " + description + "\r\n";
         merchantTransactionId = "TrId" & transactionTimeString
-        requestText.Text = requestText.Text + "MerchantTransactionId: " & merchantTransactionId & vbCr & vbLf
+        'requestText.Text = requestText.Text + "MerchantTransactionId: " + merchantTransactionId + "\r\n";
         merchantProductId = "ProdId" & transactionTimeString
-        requestText.Text = requestText.Text + "MerchantProductId: " & merchantProductId & vbCr & vbLf
+        'requestText.Text = requestText.Text + "MerchantProductId: " + merchantProductId + "\r\n";
         merchantApplicationId = "MerAppId" & transactionTimeString
-        requestText.Text = requestText.Text + "MerchantApplicationId: " & merchantApplicationId & vbCr & vbLf
+        'requestText.Text = requestText.Text + "MerchantApplicationId: " + merchantApplicationId + "\r\n";
         If ConfigurationManager.AppSettings("MerchantPaymentRedirectUrl") Is Nothing Then
             drawPanelForFailure(notaryPanel, "MerchantPaymentRedirectUrl is not defined in configuration file")
             Return
         End If
         merchantRedirectURI = New Uri(ConfigurationManager.AppSettings("MerchantPaymentRedirectUrl"))
-        requestText.Text = requestText.Text + "MerchantPaymentRedirectUrl: " & Convert.ToString(merchantRedirectURI)
+        'requestText.Text = requestText.Text + "MerchantPaymentRedirectUrl: " + merchantRedirectURI;
     End Sub
     Private Sub readSubscriptionParametersFromConfigurationFile()
         If ConfigurationManager.AppSettings("MerchantSubscriptionIdList") Is Nothing Then
@@ -78,34 +84,34 @@ Partial Public Class _Default
         Else
             MerchantSubscriptionIdList = ConfigurationManager.AppSettings("MerchantSubscriptionIdList")
         End If
-        requestText.Text = requestText.Text + vbCr & vbLf & "MerchantSubscriptionIdList: " & MerchantSubscriptionIdList & vbCr & vbLf
+        'requestText.Text = requestText.Text + "\r\n" + "MerchantSubscriptionIdList: " + MerchantSubscriptionIdList + "\r\n";
         If ConfigurationManager.AppSettings("SubscriptionRecurringPeriod") Is Nothing Then
             SubscriptionRecurringPeriod = "MONTHLY"
         Else
             SubscriptionRecurringPeriod = ConfigurationManager.AppSettings("SubscriptionRecurringPeriod")
         End If
-        requestText.Text = requestText.Text + "SubscriptionRecurringPeriod: " & SubscriptionRecurringPeriod & vbCr & vbLf
+        'requestText.Text = requestText.Text + "SubscriptionRecurringPeriod: " + SubscriptionRecurringPeriod + "\r\n";
         If ConfigurationManager.AppSettings("SubscriptionRecurringNumber") Is Nothing Then
             SubscriptionRecurringNumber = Convert.ToInt32("9999")
         Else
             SubscriptionRecurringNumber = Convert.ToInt32(ConfigurationManager.AppSettings("SubscriptionRecurringNumber"))
         End If
-        requestText.Text = requestText.Text + "SubscriptionRecurringNumber: " & SubscriptionRecurringNumber & vbCr & vbLf
+        'requestText.Text = requestText.Text + "SubscriptionRecurringNumber: " + SubscriptionRecurringNumber + "\r\n";
         If ConfigurationManager.AppSettings("SubscriptionRecurringPeriodAmount") Is Nothing Then
             SubscriptionRecurringPeriodAmount = Convert.ToInt32("1")
         Else
             SubscriptionRecurringPeriodAmount = Convert.ToInt32(ConfigurationManager.AppSettings("SubscriptionRecurringPeriodAmount"))
         End If
-        requestText.Text = requestText.Text + "SubscriptionRecurringPeriodAmount: " & SubscriptionRecurringPeriodAmount & vbCr & vbLf
+        ' requestText.Text = requestText.Text + "SubscriptionRecurringPeriodAmount: " + SubscriptionRecurringPeriodAmount + "\r\n";
         If ConfigurationManager.AppSettings("IsPurchaseOnNoActiveSubscription") Is Nothing Then
             IsPurchaseOnNoActiveSubscription = "false"
         Else
             IsPurchaseOnNoActiveSubscription = ConfigurationManager.AppSettings("IsPurchaseOnNoActiveSubscription")
         End If
-        requestText.Text = requestText.Text + "IsPurchaseOnNoActiveSubscription: " & IsPurchaseOnNoActiveSubscription
+        'requestText.Text = requestText.Text + "IsPurchaseOnNoActiveSubscription: " + IsPurchaseOnNoActiveSubscription;
     End Sub
-    Protected Sub Page_Load(sender As Object, e As EventArgs)
-        'BypassCertificateError()
+    Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs)
+        ServicePointManager.ServerCertificateValidationCallback = New RemoteCertificateValidationCallback(AddressOf CertificateValidationCallBack)
         Dim currentServerTime As DateTime = DateTime.UtcNow
         serverTimeLabel.Text = [String].Format("{0:ddd, MMM dd, yyyy HH:mm:ss}", currentServerTime) & " UTC"
         FQDN = ConfigurationManager.AppSettings("FQDN").ToString()
@@ -144,22 +150,28 @@ Partial Public Class _Default
                 secret_key = Request("secret_key").ToString()
                 executeSignedPayloadFromRequest()
             Else
-                If ConfigurationManager.AppSettings("paymentType") Is Nothing Then
-                    drawPanelForFailure(notaryPanel, "paymentType is not defined in configuration file")
-                    Return
+                If Not Page.IsPostBack Then
+                    If ConfigurationManager.AppSettings("paymentType") Is Nothing Then
+                        drawPanelForFailure(notaryPanel, "paymentType is not defined in configuration file")
+                        Return
+                    End If
+                    paymentType = ConfigurationManager.AppSettings("paymentType")
+                    If paymentType.Equals("Transaction", StringComparison.OrdinalIgnoreCase) Then
+                        readTransactionParametersFromConfigurationFile()
+                        Dim payLoadString As String = "{'Amount':'" & amount.ToString() & "','Category':'" & category.ToString() & "','Channel':'" & channel.ToString() & "','Description':'" & description.ToString() & "','MerchantTransactionId':'" & merchantTransactionId.ToString() & "','MerchantProductId':'" & merchantProductId.ToString() & "','MerchantApplicaitonId':'" & merchantApplicationId.ToString() & "','MerchantPaymentRedirectUrl':'" & merchantRedirectURI.ToString() & "'}"
+                        requestText.Text = payLoadString.ToString()
+                    ElseIf paymentType.Equals("Subscription", StringComparison.OrdinalIgnoreCase) Then
+                        readTransactionParametersFromConfigurationFile()
+                        readSubscriptionParametersFromConfigurationFile()
+                        'string payLoadString = "{'Amount':'" + amount.ToString() + "','Category':'" + category.ToString() + "','Channel':'" + channel.ToString() + "','Description':'" + description.ToString() + "','MerchantTransactionId':'" + merchantTransactionId.ToString() + "','MerchantProductId':'" + merchantProductId.ToString() + "','MerchantApplicaitonId':'" + merchantApplicationId.ToString() + "','MerchantPaymentRedirectUrl':'" + merchantRedirectURI.ToString() + "','MerchantSubscriptionIdList':'" + MerchantSubscriptionIdList.ToString() + "','IsPurchaseOnNoActiveSubscription':'" + IsPurchaseOnNoActiveSubscription.ToString() + "','SubscriptionRecurringNumber':'" + SubscriptionRecurringNumber.ToString() + "','SubscriptionRecurringPeriod':'" + SubscriptionRecurringPeriod.ToString() + "','SubscriptionRecurringPeriodAmount':'" + SubscriptionRecurringPeriodAmount.ToString() + "'}";
+                        Dim payLoadString As String = "{'Amount':'" & amount.ToString() & "','Category':'" & category.ToString() & "','Channel':'" & channel.ToString() & "','Description':'" & description.ToString() & "','MerchantTransactionId':'" & merchantTransactionId.ToString() & "','MerchantProductId':'" & merchantProductId.ToString() & "','MerchantPaymentRedirectUrl':'" & merchantRedirectURI.ToString() & "','MerchantSubscriptionIdList':'" & MerchantSubscriptionIdList.ToString() & "','IsPurchaseOnNoActiveSubscription':'" & IsPurchaseOnNoActiveSubscription.ToString() & "','SubscriptionRecurrences':'" & SubscriptionRecurringNumber.ToString() & "','SubscriptionPeriod':'" & SubscriptionRecurringPeriod.ToString() & "','SubscriptionPeriodAmount':'" & SubscriptionRecurringPeriodAmount.ToString() & "'}"
+                        'Response.Write(payLoadString);
+                        requestText.Text = payLoadString.ToString()
+                    Else
+                        drawPanelForFailure(notaryPanel, "paymentType is  defined with invalid value in configuration file.  Valid values are Transaction or Subscription.")
+                        Return
+                    End If
                 End If
-                paymentType = ConfigurationManager.AppSettings("paymentType")
-                If paymentType.Equals("Transaction", StringComparison.OrdinalIgnoreCase) Then
-                    readTransactionParametersFromConfigurationFile()
-                ElseIf paymentType.Equals("Subscription", StringComparison.OrdinalIgnoreCase) Then
-                    readTransactionParametersFromConfigurationFile()
-                    readSubscriptionParametersFromConfigurationFile()
-                Else
-                    drawPanelForFailure(notaryPanel, "paymentType is  defined with invalid value in configuration file.  Valid values are Transaction or Subscription.")
-                    Return
-                End If
-                Dim payLoadString As String = "{'Amount':'" & amount.ToString() & "','Category':'" & category.ToString() & "','Channel':'" & channel.ToString() & "','Description':'" & description.ToString() & "','MerchantTransactionId':'" & merchantTransactionId.ToString() & "','MerchantProductId':'" & merchantProductId.ToString() & "','MerchantApplicaitonId':'" & merchantApplicationId.ToString() & "','MerchantPaymentRedirectUrl':'" & merchantRedirectURI.ToString() & "','MerchantSubscriptionIdList':'" & MerchantSubscriptionIdList.ToString() & "','IsPurchaseOnNoActiveSubscription':'" & IsPurchaseOnNoActiveSubscription.ToString() & "','SubscriptionRecurringNumber':'" & SubscriptionRecurringNumber.ToString() & "','SubscriptionRecurringPeriod':'" & SubscriptionRecurringPeriod.ToString() & "','SubscriptionRecurringPeriodAmount':'" & SubscriptionRecurringPeriodAmount.ToString()
-                requestText.Text = payLoadString.ToString()
             End If
         End If
     End Sub
@@ -205,17 +217,15 @@ Partial Public Class _Default
             Dim newTransactionResponseData As [String]
             Dim notaryAddress As String
             notaryAddress = "" & FQDN & "/Security/Notary/Rest/1/SignedPayload"
-            'WebRequest newTransactionRequestObject = (WebRequest)System.Net.WebRequest.Create("" + FQDN + "/Security/Notary/Rest/1/SignedPayload?client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString());
             Dim newTransactionRequestObject As WebRequest = DirectCast(System.Net.WebRequest.Create(notaryAddress), WebRequest)
             newTransactionRequestObject.Headers.Add("client_id", api_key.ToString())
             newTransactionRequestObject.Headers.Add("client_secret", secret_key.ToString())
-            Dim payLoadString As String = "{'Amount':'" & amount.ToString() & "','Category':'" & category.ToString() & "','Channel':'" & channel.ToString() & "','Description':'" & description.ToString() & "','MerchantTransactionId':'" & merchantTransactionId.ToString() & "','MerchantProductId':'" & merchantProductId.ToString() & "','MerchantApplicaitonId':'" & merchantApplicationId.ToString() & "','MerchantPaymentRedirectUrl':'" & merchantRedirectURI.ToString() & "','MerchantSubscriptionIdList':'" & MerchantSubscriptionIdList.ToString() & "','IsPurchaseOnNoActiveSubscription':'" & IsPurchaseOnNoActiveSubscription.ToString() & "','SubscriptionRecurringNumber':'" & SubscriptionRecurringNumber.ToString() & "','SubscriptionRecurringPeriod':'" & SubscriptionRecurringPeriod.ToString() & "','SubscriptionRecurringPeriodAmount':'" & SubscriptionRecurringPeriodAmount.ToString() & "'}"
             newTransactionRequestObject.Method = "POST"
             newTransactionRequestObject.ContentType = "application/json"
             Dim encoding As New UTF8Encoding()
+            Dim payLoadString As String = requestText.Text.ToString()
             Dim postBytes As Byte() = encoding.GetBytes(payLoadString)
             newTransactionRequestObject.ContentLength = postBytes.Length
-
             Dim postStream As Stream = newTransactionRequestObject.GetRequestStream()
             postStream.Write(postBytes, 0, postBytes.Length)
             postStream.Close()
@@ -231,11 +241,18 @@ Partial Public Class _Default
                 newTransactionResponseStream.Close()
                 Return True
             End Using
+        Catch we As WebException
+            If we.Response IsNot Nothing Then
+                Using stream As Stream = we.Response.GetResponseStream()
+                    Me.drawPanelForFailure(notaryPanel, New StreamReader(stream).ReadToEnd())
+                End Using
+            End If
+            Return False
         Catch ex As Exception
             Return False
         End Try
     End Function
-    Protected Sub signPayLoadButton_Click(sender As Object, e As EventArgs)
+    Protected Sub signPayLoadButton_Click(ByVal sender As Object, ByVal e As EventArgs)
         If signPayLoadButton.Text.Equals("Back", StringComparison.CurrentCultureIgnoreCase) Then
             Try
                 Response.Redirect(goBackURL.ToString() & "?shown_notary=true")
@@ -248,7 +265,7 @@ Partial Public Class _Default
     End Sub
 
 
-    Private Sub drawPanelForFailure(panelParam As Panel, message As String)
+    Private Sub drawPanelForFailure(ByVal panelParam As Panel, ByVal message As String)
         failureTable = New Table()
         failureTable.Font.Name = "Sans-serif"
         failureTable.Font.Size = 9
@@ -285,7 +302,7 @@ Public Class TransactionResponse
         Get
             Return m_SignedDocument
         End Get
-        Set(value As String)
+        Set(ByVal value As String)
             m_SignedDocument = Value
         End Set
     End Property
@@ -294,7 +311,7 @@ Public Class TransactionResponse
         Get
             Return m_Signature
         End Get
-        Set(value As String)
+        Set(ByVal value As String)
             m_Signature = Value
         End Set
     End Property

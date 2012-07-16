@@ -1,5 +1,5 @@
 
-  AT&T API Samples - Payment app 1
+  AT&T API Samples - Payment app 2
  ------------------------------
 
 This file describes how to set up, configure and run the Java Applications of the AT&T HTML5 Program sample applications. 
@@ -25,7 +25,7 @@ create and run one's own full-fledged sample applications.
   Be careful while filling in the "OAuth Redirect URL" field. It should contain the URL that the oAuth provider will redirect
   users to when he/she successfully authenticates and authorizes your application. For this application, it should point to 
   the oauth.jsp file inside this application folder. For example, if running on a local machine in a default Tomcat installation, 
-  your OAuth Redirect URL might be http://localhost:8080/SampleApp/oauth.jsp
+  your OAuth Redirect URL might be http://localhost:8080/SampleApp/OauthStorage.jsp
 
   Also be careful when filling in the "Payment Listener URL" field when setting up your organization profile. This should point 
   to the paymentlistener.jsp file packaged with this application. This listener URL must be a public URL or IP address that the 
@@ -67,7 +67,9 @@ Please populate the following parameters in config.jsp as specified below:
 
 2) clientSecretAut                    : {set the value as per your registered appliaction 'Secret key' field value} 
 
-3) FQDN              	              : https://api.att.com
+3) FQDN              	          : https://api.att.com
+
+4) subscriptionRedirect               : http://localhost:8080/SampleApp/subscription.jsp
 
 Note: If your application is promoted from Sandbox environment to Production environment and you decide to use production 
 application settings, you must update parameters 1-2 as per production application details.

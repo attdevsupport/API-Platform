@@ -1,3 +1,9 @@
+
+# Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+# TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+# Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+# For more information contact developer.support@att.com
+
 #!/usr/bin/ruby
 require 'rubygems'
 require 'json'
@@ -56,11 +62,11 @@ def new_transaction
     :MerchantApplicationId => 'wordGames',
     :MerchantPaymentRedirectUrl => settings.payment_redirect_url
   }
-   
+  
   response = RestClient.post settings.notary_app_sign_url, :payload => data.to_json
   from_json = JSON.parse response
-
-  u = settings.FQDN + "/Commerce/Payment/Rest/2/Transactions?clientid=" + settings.api_key + "&SignedPaymentDetail=" + from_json['signed_payload'] + "&Signature=" + from_json['signature']
+ 
+  u = settings.FQDN + "/rest/3/Commerce/Payment/Transactions?Signature=#{from_json['signature']}&SignedPaymentDetail=#{from_json['signed_payload']}&clientid=#{settings.api_key}"
 
   redirect u
 end
@@ -70,6 +76,7 @@ def return_transaction
 
   @new_transaction[:merchant_transaction_id] = session[:merchant_transaction_id]
   @new_transaction[:transaction_auth_code] = params['TransactionAuthCode']
+  params['TransactionAuthCode'] = session[:transaction_auth_code]
   @transactions.push @new_transaction
   
   @transactions.delete_at 0 if @transactions.length > settings.recent_transactions_stored
@@ -81,14 +88,14 @@ end
 
 def get_transaction_status
   if params['getTransactionType'] == '1'
-    u = settings.FQDN + "/Commerce/Payment/Rest/2/Transactions/MerchantTransactionId/" + @transactions.last[:merchant_transaction_id] + "?access_token=" + @access_token
+    url = settings.FQDN + "/rest/3/Commerce/Payment/Transactions/MerchantTransactionId/" + @transactions.last[:merchant_transaction_id]
   elsif params['getTransactionType'] == '2'
-    u = settings.FQDN + "/Commerce/Payment/Rest/2/Transactions/TransactionAuthCode/" + @transactions.last[:transaction_auth_code] + "?access_token=" + @access_token
+    url = settings.FQDN + "/rest/3/Commerce/Payment/Transactions/TransactionAuthCode/" + @transactions.last[:transaction_auth_code]
   elsif params['getTransactionType'] == '3'
-    u = settings.FQDN + "/Commerce/Payment/Rest/2/Transactions/TransactionId/" + @transactions.last[:transaction_id] + "?access_token=" + @access_token
+    url = settings.FQDN + "/rest/3/Commerce/Payment/Transactions/TransactionId/" + @transactions.last[:transaction_id]
   end
 
-  RestClient.get u do |response, request, code, &block|
+  RestClient.get url, :Authorization => "Bearer #{@access_token}", :Content_Type => 'application/json', :Accept => 'application/json' do |response, request, code, &block|
     @r = response
   end
 
@@ -111,17 +118,20 @@ def refund_transaction
     redirect '/'
   end
 
-  u = settings.FQDN + "/Commerce/Payment/Rest/2/Transactions/" + params['trxId'] + "?access_token=" + @access_token + "&Action=refund"
+  url = settings.FQDN + "/rest/3/Commerce/Payment/Transactions/" + params['trxId']
 
   payload = Hash.new
+  payload['TransactionOperationStatus'] = 'Refunded'
   payload['RefundReasonCode'] = 1
   payload['RefundReasonText'] = 'User did not like product'
 
-  RestClient.put u, payload.to_json, :content_type => 'application/json', :accept => 'application/json' do |response, request, code, &block|
+  RestClient.put url, payload.to_json, :Authorization => "Bearer #{@access_token}", :Content_Type => 'application/json', :Accept => 'application/json' do |response, request, code, &block|
     @r = response
   end
 
   if @r.code == 200
+    @transaction_refund = @transactions.last
+    @transaction_refund[:status] = JSON.parse @r
     @refund = Hash.new
     @refund[:transaction_id] = params['trxId']
   else
@@ -130,12 +140,12 @@ def refund_transaction
   erb :app1
 end
 
-#def refresh_notifications
-#  # make the API call
-#
-#ensure
-#  return erb :app1
-#end
+def refresh_notifications
+  # make the API call
+
+ensure
+  return erb :app1
+end
 
 ['/','/newTransaction','/getTransactionStatus','/refundTransaction', '/refreshNotifications', '/returnTransaction'].each do |path|
   before path do
@@ -166,7 +176,8 @@ post '/refundTransaction'  do
   refund_transaction
 end
 
-post '/refreshNotifications'  do
+get '/refreshNotifications'  do
   # validate parameters
   refresh_notifications
 end
+

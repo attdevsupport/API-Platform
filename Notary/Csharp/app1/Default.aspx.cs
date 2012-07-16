@@ -209,7 +209,9 @@ public partial class _Default : System.Web.UI.Page
                     {
                         readTransactionParametersFromConfigurationFile();
                         readSubscriptionParametersFromConfigurationFile();
-                        string payLoadString = "{'Amount':'" + amount.ToString() + "','Category':'" + category.ToString() +                                     "','Channel':'" + channel.ToString() + "','Description':'" + description.ToString() +                                                   "','MerchantTransactionId':'" + merchantTransactionId.ToString() + "','MerchantProductId':'" +                                          merchantProductId.ToString() + "','MerchantApplicaitonId':'" + merchantApplicationId.ToString() +                                       "','MerchantPaymentRedirectUrl':'" + merchantRedirectURI.ToString() + "','MerchantSubscriptionIdList':'" +                              MerchantSubscriptionIdList.ToString() + "','IsPurchaseOnNoActiveSubscription':'" +                                                      IsPurchaseOnNoActiveSubscription.ToString() + "','SubscriptionRecurringNumber':'" +                                                     SubscriptionRecurringNumber.ToString() + "','SubscriptionRecurringPeriod':'" +                                                          SubscriptionRecurringPeriod.ToString() + "','SubscriptionRecurringPeriodAmount':'" +                                                    SubscriptionRecurringPeriodAmount.ToString() + "'}";
+                        //string payLoadString = "{'Amount':'" + amount.ToString() + "','Category':'" + category.ToString() + "','Channel':'" + channel.ToString() + "','Description':'" + description.ToString() + "','MerchantTransactionId':'" + merchantTransactionId.ToString() + "','MerchantProductId':'" + merchantProductId.ToString() + "','MerchantApplicaitonId':'" + merchantApplicationId.ToString() + "','MerchantPaymentRedirectUrl':'" + merchantRedirectURI.ToString() + "','MerchantSubscriptionIdList':'" + MerchantSubscriptionIdList.ToString() + "','IsPurchaseOnNoActiveSubscription':'" + IsPurchaseOnNoActiveSubscription.ToString() + "','SubscriptionRecurringNumber':'" + SubscriptionRecurringNumber.ToString() + "','SubscriptionRecurringPeriod':'" + SubscriptionRecurringPeriod.ToString() + "','SubscriptionRecurringPeriodAmount':'" + SubscriptionRecurringPeriodAmount.ToString() + "'}";
+                        string payLoadString = "{'Amount':'" + amount.ToString() + "','Category':'" + category.ToString() + "','Channel':'" + channel.ToString() + "','Description':'" + description.ToString() + "','MerchantTransactionId':'" + merchantTransactionId.ToString() + "','MerchantProductId':'" + merchantProductId.ToString() + "','MerchantPaymentRedirectUrl':'" + merchantRedirectURI.ToString() + "','MerchantSubscriptionIdList':'" + MerchantSubscriptionIdList.ToString() + "','IsPurchaseOnNoActiveSubscription':'" + IsPurchaseOnNoActiveSubscription.ToString() + "','SubscriptionRecurrences':'" + SubscriptionRecurringNumber.ToString() + "','SubscriptionPeriod':'" + SubscriptionRecurringPeriod.ToString() + "','SubscriptionPeriodAmount':'" + SubscriptionRecurringPeriodAmount.ToString() + "'}";
+                        //Response.Write(payLoadString);
                         requestText.Text = payLoadString.ToString();
                     }
                     else
@@ -295,6 +297,17 @@ public partial class _Default : System.Web.UI.Page
                 newTransactionResponseStream.Close();
                 return true;
             }
+        }
+        catch (WebException we)
+        {
+            if (null != we.Response)
+            {
+                using (Stream stream = we.Response.GetResponseStream())
+                {
+                    this.drawPanelForFailure(notaryPanel, new StreamReader(stream).ReadToEnd());
+                }
+            }
+            return false;
         }
         catch (Exception ex)
         {

@@ -8,7 +8,7 @@
 <style type="text/css">
 pre {
     white-space: pre;           /* CSS 2.0 */
-	white-space: pre-wrap;      /* CSS 2.1 */
+    white-space: pre-wrap;      /* CSS 2.1 */
 	white-space: pre-line;      /* CSS 3.0 */
 	white-space: -pre-wrap;     /* Opera 4-6 */
 	white-space: -o-pre-wrap;   /* Opera 7 */
@@ -87,7 +87,7 @@ document.write("" + navigator.userAgent);
 <div id="wrapper">
 <div id="content">
 
-<h1>A&amp;T Sample Notary Application - Sign Payload Application</h1>
+<h1>AT&amp;T Sample Notary Application - Sign Payload Application</h1>
 
 </div>
 </div>
@@ -149,7 +149,7 @@ Feature 1: Sign Payload</h2>
 </tr>
   <tr>
     <td></td>
-    <td class="cell" align="right"><button type="submit" name="signPayload">Sign Payload</button></td>
+    <td class="cell" align="right"><input type="button" value="Back" onclick="history.go(-1)"></td>
   </tr>
   </tbody></table>
 </div>
@@ -159,8 +159,8 @@ Feature 1: Sign Payload</h2>
 
 <div id="footer">
 
-	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
-    <p>&#169; 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
+    <p>&#169; 2012 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
 <br>
 The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br>
@@ -172,3 +172,4 @@ For more information contact <a href="mailto:developer.support@att.com">develope
 </div>
 
 </body></html>
+

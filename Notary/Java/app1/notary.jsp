@@ -51,12 +51,12 @@ pre {
     if(signedPayload==null || signedPayload.equalsIgnoreCase("null"))
         signedPayload = (String) session.getAttribute("signedPayload");
     if(signedPayload==null || signedPayload.equalsIgnoreCase("null"))
-        signedPayload = "Sbe gur Abgnel ncc, fvzcyr gbby. Gurer fubhyq whfg or n Erdhrfg fvqr ba gur yrsg, pbagnvavat bar YNETR grkg obk jvgu ab qrsnhyg inyhr. Guvf vf jurer gur hfre pna chg va n obql bs grkg jvgu nyy gur cnenzrgref sbe n cnlzrag genafnpgvba, ohg gurl jvyy perngr guvf grkg gurzfryirf onfrq ba gur genafnpgvba qrgnvyf. Gura gurl pyvpx gur ohggba, juvpu qvfcynlf n grkg obk ba gur evtug jvgu gur Fvtarq Cnlybnq, naq gur Fvtangher, obgu bs juvpu gur hfre fubhyq or noyr gb pbcl rnfvyl naq cnfgr vagb gur cnlzrag nccyvpngvba yngre ba. Va erny yvsr, guvf jvyy or qbar nhgbzngvpnyyl ol pbqr, ohg guvf ncc whfg arrqf gb fubj gur onfvp vagrenpgvba jvgu guvf arj Abgnel NCV, juvpu yvgrenyyl whfg gnxrf gur grkg lbh fraq, naq ergheaf gur fvtarq cnlybnq (grkg) naq gur fvtangher. V ubcr gung znxrf frafr";
+        signedPayload = "";
     String signature = request.getParameter("signature");
     if(signature==null || signature.equalsIgnoreCase("null"))
         signature = (String) session.getAttribute("signature");
     if(signature==null || signature.equalsIgnoreCase("null"))
-        signature = "hfd7adsf76asffs987sdf98fs6a7a98ff6a";
+        signature = "";
 %>
 
 <div id="container">
@@ -87,7 +87,7 @@ document.write("" + navigator.userAgent);
 <div id="wrapper">
 <div id="content">
 
-<h1>A&amp;T Sample Notary Application - Sign Payload Application</h1>
+<h1>AT&amp;T Sample Notary Application - Sign Payload Application</h1>
 
 </div>
 </div>
@@ -157,8 +157,8 @@ Feature 1: Sign Payload</h2>
 
 <div id="footer">
 
-	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
-    <p>&#169; 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
+    <p>&#169; 2012 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
 <br>
 The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br>

@@ -33,6 +33,7 @@
 <%
 
 String newTransaction = request.getParameter("newTransaction");
+String refreshNotifications = request.getParameter("refreshNotifications");
 String getTransactionStatus = request.getParameter("getTransactionStatus");
 String refundTransaction = request.getParameter("refundTransaction");
 String refundReasonText = "User did not like product";
@@ -42,6 +43,9 @@ if(trxId==null || trxId.equalsIgnoreCase("null"))
 String trxIdRefund = request.getParameter("trxIdRefund");
 if(trxIdRefund==null || trxIdRefund.equalsIgnoreCase("null"))
     trxIdRefund = "";
+String notificationId = request.getParameter("notificationId");
+if(notificationId==null || notificationId.equalsIgnoreCase("null"))
+    notificationId = "";
 String merchantTrxId = request.getParameter("merchantTrxId");
 if(merchantTrxId==null || merchantTrxId.equalsIgnoreCase("null"))
     merchantTrxId = (String) session.getAttribute("merchantTrxId");
@@ -73,6 +77,7 @@ if(product==1) {
     description = "Number Game 1";
     merchantProductId = "NumberGame1";
 }
+String charged = "Charged";
 %>
 
 <div id="container">
@@ -114,14 +119,11 @@ document.write("" + navigator.userAgent);
 <table border="0" width="100%">
   <tbody>
   <tr>
-    <td width="50%" valign="top" class="label">Buy product 1 for $0.99:</td>
-    <td class="cell"><input type="radio" name="product" value="1" checked>
-    </td>
-  </tr>
+    <td width="50%" valign="top" class="label"><input type="radio" name="product" value="1" checked> Buy product 1 for $0.99:</td>
+    </tr>
   <tr>
-    <td width="50%" valign="top" class="label">Buy product 2 for $2.99:</td>
-    <td class="cell"><input type="radio" name="product" value="2">
-    </td></tr>
+    <td width="50%" valign="top" class="label"><input type="radio" name="product" value="2"> Buy product 2 for $2.99:</td>
+    </tr>
   </tbody></table>
 
 </div>
@@ -130,7 +132,7 @@ document.write("" + navigator.userAgent);
   <table>
   <tbody>
   <tr>
-  	<td><br /><br /><button type="submit" name="newTransaction">Buy Product</button></td>
+      <td><br /><br /><button type="submit" name="newTransaction">Buy Product</button></td>
   </tr>
   </tbody></table>
 
@@ -140,7 +142,7 @@ document.write("" + navigator.userAgent);
 <div align="center"></div>
 </form>
 
-<% if(newTransaction!=null) { 
+<% if(newTransaction!=null) {
 merchantTrxId = "user" + randomGenerator.nextInt(100000) + "transaction" + randomGenerator.nextInt(1000000);
 session.setAttribute("merchantTrxId", merchantTrxId);
 session.setAttribute("trxId", null);
@@ -157,14 +159,15 @@ String forNotary = "notary.jsp?signPayload=true&return=singlepay.jsp&payload={\"
 "\"MerchantTransactionId\":\"" + merchantTrxId + "\", \"MerchantProductId\":\"" + merchantProductId + "\","+
 "\"MerchantPaymentRedirectUrl\":"+
 "\"" + singlepayRedirect + "\"}";
+
 response.sendRedirect(forNotary);
 } %>
 
-<% if(request.getParameter("TransactionAuthCode")!=null) { 
+<% if(request.getParameter("TransactionAuthCode")!=null) {
 PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/transactionData/" + merchantTrxId + ".txt"))), false);
 String toSave = trxId + "\n" + merchantTrxId + "\n" + authCode;
 outWrite.write(toSave);
-outWrite.close();    
+outWrite.close();
 session.setAttribute("authCode", authCode);
 %>
 <div class="successWide">
@@ -179,7 +182,7 @@ session.setAttribute("authCode", authCode);
 
 <%
 if(request.getParameter("signedPayload")!=null && request.getParameter("signature")!=null){
-    response.sendRedirect(FQDN + "/Commerce/Payment/Rest/2/Transactions?clientid=" + clientIdAut + "&SignedPaymentDetail=" + request.getParameter("signedPayload") + "&Signature=" + request.getParameter("signature"));
+    response.sendRedirect(FQDN + "/rest/3/Commerce/Payment/Transactions?clientid=" + clientIdAut + "&SignedPaymentDetail=" + request.getParameter("signedPayload") + "&Signature=" + request.getParameter("signature"));
 }
 %>
 
@@ -203,34 +206,34 @@ Feature 2: Get Transaction Status</h2>
     </tr>
 </thead>
   <tbody>
+
   <tr>
-    <td class="cell" align="right">
-        <input type="radio" name="getTransactionType" value="1" checked /> Merchant Trans. ID:
+    <td class="cell" align="left"><input type="radio" name="getTransactionType" value="1" checked /> Merchant Trans. ID:
     </td>
     <td></td>
     <td class="cell" align="left"><%=merchantTrxId%></td>
   </tr>
+
   <tr>
-    <td class="cell" align="right">
-        <input type="radio" name="getTransactionType" value="2" /> Auth Code:
+    <td class="cell" align="left"><input type="radio" name="getTransactionType" value="2" /> Auth Code:
+    </td>
     <td></td>
     <td class="cell" align="left"><%=authCode%></td>
-    </td>
   </tr>
-<% if(!trxId.equalsIgnoreCase("")) { %>
+
   <tr>
-    <td class="cell" align="right">
-        <input type="radio" name="getTransactionType" value="3" /> Transaction ID:
-    <td></td>
-    <td class="cell" align="left"><%=trxId%></td>
+    <td class="cell" align="left"><input type="radio" name="getTransactionType" value="3" /> Transaction ID:
     </td>
+    <td></td>
+    <% if(!trxId.equalsIgnoreCase("")) { %>
+    <td class="cell" align="left"><%=trxId%></td><% } %>
   </tr>
-<% } %>
+
   <tr>
     <td></td>
     <td></td>
     <td></td>
-    <td class="cell"><button  type="submit" name="getTransactionStatus">Get Transaction Status</button>
+    <td class="cell"><button type="submit" name="getTransactionStatus">Get Transaction Status</button>
     </td>
   </tr>
   </tbody></table>
@@ -240,22 +243,24 @@ Feature 2: Get Transaction Status</h2>
 </div>
 <br clear="all" />
 
-<% if(getTransactionStatus!=null) { 
+<% if(getTransactionStatus!=null) {
 int getTransactionType = Integer.parseInt(request.getParameter("getTransactionType"));
 String url = "";
 if(getTransactionType==1)
-    url = FQDN + "/Commerce/Payment/Rest/2/Transactions/MerchantTransactionId/" + merchantTrxId;   
+    url = FQDN + "/rest/3/Commerce/Payment/Transactions/MerchantTransactionId/" + merchantTrxId;
 if(getTransactionType==2)
-    url = FQDN + "/Commerce/Payment/Rest/2/Transactions/TransactionAuthCode/" + authCode;
+    url = FQDN + "/rest/3/Commerce/Payment/Transactions/TransactionAuthCode/" + authCode;
 if(getTransactionType==3)
-    url = FQDN + "/Commerce/Payment/Rest/2/Transactions/TransactionId/" + trxId;
+    url = FQDN + "/rest/3/Commerce/Payment/Transactions/TransactionId/" + trxId;
 HttpClient client = new HttpClient();
-GetMethod method = new GetMethod(url);  
-method.setQueryString("access_token=" + accessToken);
+GetMethod method = new GetMethod(url);
+//method.setQueryString("access_token=" + accessToken);
+method.addRequestHeader("Authorization", "Bearer " + accessToken);
 method.addRequestHeader("Accept","application/json");
 int statusCode = client.executeMethod(method);
 if(statusCode==200) {
     JSONObject jsonResponse = new JSONObject(method.getResponseBodyAsString());
+
     trxId = jsonResponse.getString("TransactionId");
     session.setAttribute("trxId", trxId);
     consumerId = jsonResponse.getString("ConsumerId");
@@ -269,9 +274,8 @@ if(statusCode==200) {
     outWrite.close();
     %>
         <div class="successWide">
-        <strong>SUCCESS:</strong><br />
-        <strong>Transaction ID</strong> <%=trxId%><br />
-        <strong>Merchant Transaction ID</strong> <%=merchantTrxId%><br/>
+        <strong>SUCCESS</strong><br />
+       
         </div><br/>
         <div align="center"><table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
         <thead>
@@ -283,12 +287,12 @@ if(statusCode==200) {
         </thead>
         <tbody>
             <% for(int i=0; i<parameters.length(); i++) { %>
-            	<tr>
-                	<td align="right" class="cell"><%=parameters.getString(i)%></td>
+             <tr>
+                 <td align="right" class="cell"><%=parameters.getString(i)%></td>
                     <td align="center" class="cell"></td>
                     <td align="left" class="cell"><%=jsonResponse.getString(parameters.getString(i))%></td>
                 </tr>
-        	<% } %>
+         <% } %>
         </tbody>
         </table>
         </div><br/>
@@ -324,15 +328,15 @@ method.releaseConnection();
 <strong>WARNING:</strong><br />
 You must use Get Transaction Status to get the Transaction ID before you can refund it.
 </div></td>
-	</tr>
+</tr>
 </thead>
   <tbody>
 <%
 if(true) {
     String url = request.getRequestURL().toString().substring(0,request.getRequestURL().toString().lastIndexOf("/")) + "/getLatestTransactions.jsp";
     HttpClient client = new HttpClient();
-    GetMethod method = new GetMethod(url);  
-    int statusCode = client.executeMethod(method); 
+    GetMethod method = new GetMethod(url);
+    int statusCode = client.executeMethod(method);
     if(statusCode==200) {
         JSONObject jsonResponse = new JSONObject(method.getResponseBodyAsString());
         JSONArray transactionList = new JSONArray(jsonResponse.getString("transactionList"));
@@ -343,21 +347,25 @@ if(true) {
                     %>
                       <tr>
                         <td class="cell" align="right">
+    					<% if(transaction.getString("transactionId").length() > 4)
+							{ %>
                             <input type="radio" name="trxIdRefund" value="<%=transaction.getString("transactionId")%>" checked /><%=transaction.getString("transactionId")%>
                         </td>
                         <td></td>
                         <td class="cell" align="left"><%=transaction.getString("merchantTransactionId")%></td>
-                      </tr>  
+                      </tr> <% } %> 
                     <%
                 } else {
                     %>
                       <tr>
                         <td class="cell" align="right">
+						<% if(transaction.getString("transactionId").length() > 4)
+							{ %>
                             <input type="radio" name="trxIdRefund" value="<%=transaction.getString("transactionId")%>" /><%=transaction.getString("transactionId")%>
                         </td>
                         <td></td>
                         <td class="cell" align="left"><%=transaction.getString("merchantTransactionId")%></td>
-                      </tr>  
+                      </tr> <% } %> 
                     <%
                 }
             }
@@ -371,7 +379,7 @@ if(true) {
     <td></td>
     <td></td>
     <td></td>
-    <td class="cell"><button  type="submit" name="refundTransaction">Refund Transaction</button>
+    <td class="cell"><button type="submit" name="refundTransaction">Refund Transaction</button>
     </td>
   </tr>
   </tbody></table>
@@ -382,35 +390,59 @@ if(true) {
 <br clear="all" />
 
 
-<% if(refundTransaction!=null) { 
+<% if(refundTransaction!=null) {
 
-    String url = FQDN + "/Commerce/Payment/Rest/2/Transactions/" + trxIdRefund;  
+    String url = FQDN + "/rest/3/Commerce/Payment/Transactions/" + trxIdRefund;
     HttpClient client = new HttpClient();
-    PutMethod method = new PutMethod(url);  
-    method.setQueryString("access_token=" + accessToken + "&Action=refund");
+    PutMethod method = new PutMethod(url);
+    //method.setQueryString("access_token=" + accessToken + "&Action=refund");
+method.addRequestHeader("Authorization", "Bearer " + accessToken);
     method.addRequestHeader("Content-Type","application/json");
     method.addRequestHeader("Accept","application/json");
     JSONObject bodyObject = new JSONObject();
     String reasonCode = "1";
+String status = "Refunded";
+bodyObject.put("TransactionOperationStatus",status);
     bodyObject.put("RefundReasonCode",Double.parseDouble(reasonCode));
     bodyObject.put("RefundReasonText",refundReasonText);
-    method.setRequestBody(bodyObject.toString()); 
-    int statusCode = client.executeMethod(method);   
+    method.setRequestBody(bodyObject.toString());
+    int statusCode = client.executeMethod(method);
     if(statusCode==200) {
-         //JSONObject rpcObject = new JSONObject(method.getResponseBodyAsString());
-     	%>
+         JSONObject rpcObject = new JSONObject(method.getResponseBodyAsString());
+    	 JSONArray parameters = rpcObject.names();
+      %>
             <div class="successWide">
-            <strong>SUCCESS:</strong><br />
-            <strong>Transaction ID</strong> <%=method.getResponseBodyAsString()%><br />
+            <strong>SUCCESS</strong><br />
+           
+</div><br/>
+        <div align="center"><table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
+        <thead>
+            <tr>
+                <th style="width: 100px" class="cell" align="right"><strong>Parameter</strong></th>
+                <th style="width: 100px" class="cell"><strong></strong></th>
+                <th style="width: 275px" class="cell" align="left"><strong>Value</strong></th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for(int i=0; i<parameters.length(); i++) { %>
+             <tr>
+                 <td align="right" class="cell"><%=parameters.getString(i)%></td>
+                    <td align="center" class="cell"></td>
+                    <td align="left" class="cell"><%=rpcObject.getString(parameters.getString(i))%></td>
+                </tr>
+         <% } %>
+        </tbody>
+        </table>
+       
             </div><br/>
-		<%
+<%
   } else {
-  	%>
+   %>
             <div class="errorWide">
             <strong>ERROR:</strong><br />
             <%=method.getResponseBodyAsString()%>
             </div><br/>
-	<%
+<%
   }
    method.releaseConnection();
 }
@@ -429,19 +461,20 @@ if(true) {
 <div align="center"><table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
 <thead>
     <tr>
-    	<th style="width: 100px" class="cell"><strong>Notification ID</strong></th>
+     <th style="width: 100px" class="cell"><strong>Notification ID</strong></th>
         <th style="width: 100px" class="cell"><strong>Notification Type</strong></th>
         <th style="width: 125px" class="cell"><strong>Transaction ID</strong></th>
         <th style="width: 175px" class="cell"><strong>Merchant Transaction ID</strong></th>
-	</tr>
+</tr>
 </thead>
 <tbody>
 <%
 if(true) {
     String url = request.getRequestURL().toString().substring(0,request.getRequestURL().toString().lastIndexOf("/")) + "/getLatestNotifications.jsp";
     HttpClient client = new HttpClient();
-    GetMethod method = new GetMethod(url);  
-    int statusCode = client.executeMethod(method); 
+    GetMethod method = new GetMethod(url);
+    int statusCode = client.executeMethod(method);
+
     if(statusCode==200) {
         JSONObject jsonResponse = new JSONObject(method.getResponseBodyAsString());
         JSONArray notificationList = new JSONArray(jsonResponse.getString("notificationList"));
@@ -449,8 +482,8 @@ if(true) {
             if(notificationList.length()>0) {
                 JSONObject notification = new JSONObject(notificationList.getString(i));
 %>
-                	<tr>
-                    	<td align="center" class="cell"><%=notification.getString("notificationId")%></td>
+                 <tr>
+                     <td align="center" class="cell"><%=notification.getString("notificationId")%></td>
                         <td align="center" class="cell"><%=notification.getString("notificationType")%></td>
                         <td align="center" class="cell"><%=notification.getString("transactionId")%></td>
                         <td align="center" class="cell"><%=notification.getString("merchantTransactionId")%></td>
@@ -479,12 +512,43 @@ if(true) {
 <br clear="all" />
 </form></div>
 
+<% if(refreshNotifications!=null) {
+
+    String url = FQDN + "/Notifications/" + notificationId;
+    HttpClient client = new HttpClient();
+    PutMethod method = new PutMethod(url);
+    
+method.addRequestHeader("Authorization", "Bearer " + accessToken);
+    method.addRequestHeader("Content-Type","application/json");
+    method.addRequestHeader("Accept","application/json");
+    int statusCode = client.executeMethod(method);
+    if(statusCode==200) {
+         JSONObject rpcObject = new JSONObject(method.getResponseBodyAsString());
+      %>
+            <div class="successWide">
+            <strong>SUCCESS:</strong><br />
+            <strong>Transaction ID</strong> <%=trxId%><br />
+		 <%=method.getResponseBodyAsString()%><br />
+            </div><br/>
+<%
+  } else {
+   %>
+            <div class="errorWide">
+            <strong>ERROR:</strong><br />
+            <%=method.getResponseBodyAsString()%>
+            </div><br/>
+<%
+  }
+   method.releaseConnection();
+}
+%>
+
 <div id="footer">
 
-	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
-    <p>&#169; 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
+    <p>&#169; 2012 AT&amp;T Intellectual Property. All rights reserved. <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
 <br>
-The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
+The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and not meant to be used as part of your product. The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br>
 For download of tools and documentation, please go to <a href="https://devconnect-api.att.com/" target="_blank">https://devconnect-api.att.com</a>
 <br>

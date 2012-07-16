@@ -1,3 +1,9 @@
+
+<!-- Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012 
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com 
+For more information contact developer.support@att.com -->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
 	<head>
@@ -11,7 +17,7 @@
 				<div id="header">
 					<div>
 						<div id="hcRight">
-							<%= Time.now %>
+							<%= Time.now.utc.strftime("%a, %B %d, %Y %H:%M:%S UTC") %>
 						</div>
 						<div id="hcLeft">
 							Server Time:
@@ -53,39 +59,36 @@
 						<table border="0" width="100%">
 							<tbody>
 								<tr>
-									<td width="20%" valign="top" class="label">Phone:</td>
-									<td class="cell">
-									<input maxlength="16" size="12" name="address" value="<%= session[:tl_entered_address] || settings.default_phone %>" style="width: 90%">
-									</td>
-								</tr>
-								<tr>
 									<td valign="top" class="label">Requested Accuracy:</td>
-									<td valign="top" class="cell">150 m
+									<td valign="top" class="cell">
 									<input type="radio" name="requestedAccuracy" value="150" />
-									1,000 m
+									150 m
 									<input type="radio" name="requestedAccuracy" value="1000" checked/>
-									10,000 m
+									1,000 m
 									<input type="radio" name="requestedAccuracy" value="10000" />
+									10,000 m
 									</td>
 								</tr>
 								<tr>
 									<td valign="top" class="label">Acceptable Accuracy:</td>
-									<td valign="top" class="cell">150 m
+									<td valign="top" class="cell">
 									<input type="radio" name="acceptableAccuracy" value="150" />
-									1,000 m
+									150 m
 									<input type="radio" name="acceptableAccuracy" value="1000" />
-									10,000 m
+									1,000 m
 									<input type="radio" name="acceptableAccuracy" value="10000" checked/>
+									10,000 m
 									</td>
 								</tr>
 								<tr>
 									<td valign="top" class="label">Delay Tolerance:</td>
-									<td valign="top" class="cell">No Delay
+									<td valign="top" class="cell">
 									<input type="radio" name="tolerance" value="NoDelay"/>
-									Low Delay
+									No Delay
 									<input type="radio" name="tolerance" value="LowDelay" checked/>
-									Delay Tolerant
+									Low Delay
 									<input type="radio" name="tolerance" value="DelayTolerant" />
+									Delay Tolerant
 									</td>
 									</td>
 								</tr>
@@ -143,10 +146,10 @@
 				<% end %>
 				<div id="footer">
 					<div style="float: right; width: 20%; font-size: 9px; text-align: right">
-						Powered by AT&amp;T Virtual Mobile
+						Powered by AT&amp;T Cloud Architecture
 					</div>
 					<p>
-						&copy; 2011 AT&amp;T Intellectual Property. All rights reserved. <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+						&copy; 2012 AT&amp;T Intellectual Property. All rights reserved. <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
 						<br>
 						The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 						<br>
@@ -157,3 +160,5 @@
 			</div>
 		</body>
 </html>
+
+
