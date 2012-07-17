@@ -61,7 +61,7 @@ Partial Public Class MMSApp3_Listener
                 Directory.CreateDirectory(Request.MapPath(ConfigurationManager.AppSettings("ImageDirectory")))
             End If
 
-            Dim fileNameToSave As String = "From_" & senderAddress & "_At_" & receivedTime & "_UTC_On_" & receivedDate & random.[Next]()
+            Dim fileNameToSave As String = "From_" & senderAddress.Replace("+", "") & "_At_" & receivedTime & "_UTC_On_" & receivedDate & random.[Next]()
             fileStream = New FileStream(Request.MapPath(ConfigurationManager.AppSettings("ImageDirectory")) & fileNameToSave & "." & type, FileMode.CreateNew, FileAccess.Write)
             fileStream.Write(todecode_byte, 0, todecode_byte.Length)
         Catch

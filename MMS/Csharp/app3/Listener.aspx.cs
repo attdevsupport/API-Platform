@@ -67,7 +67,7 @@ public partial class MMSApp3_Listener : System.Web.UI.Page
                 Directory.CreateDirectory(Request.MapPath(ConfigurationManager.AppSettings["ImageDirectory"]));
             }
 
-            string fileNameToSave = "From_" + senderAddress + "_At_" + receivedTime + "_UTC_On_" + receivedDate + random.Next();
+            string fileNameToSave = "From_" + senderAddress.Replace("+","") + "_At_" + receivedTime + "_UTC_On_" + receivedDate + random.Next();
             fileStream = new FileStream(Request.MapPath(ConfigurationManager.AppSettings["ImageDirectory"]) + fileNameToSave + "." + type, FileMode.CreateNew, FileAccess.Write);
             fileStream.Write(todecode_byte, 0, todecode_byte.Length);            
         }
