@@ -1,4 +1,4 @@
-﻿' <copyright file="Default.aspx.cs" company="AT&amp;T">
+﻿' <copyright file="Default.aspx.vb" company="AT&amp;T">
 ' Licensed by AT&amp;T under 'Software Development Kit Tools Agreement.' 2012
 ' TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 ' Copyright 2012 AT&amp;T Intellectual Property. All rights reserved. http://developer.att.com
@@ -151,13 +151,21 @@ Partial Public Class WapPush_App1
         Dim rowOneCellOne As New TableCell()
         rowOneCellOne.Font.Bold = True
         rowOneCellOne.Text = "SUCCESS:"
+        rowOneCellOne.Width = Unit.Pixel(75)
         rowOne.Controls.Add(rowOneCellOne)
         table.Controls.Add(rowOne)
 
         Dim rowTwo As New TableRow()
         Dim rowTwoCellOne As New TableCell()
-        rowTwoCellOne.Text = "Message ID: " & message
+        rowTwoCellOne.Font.Bold = True
+        rowTwoCellOne.Text = "Message ID:"
+        rowTwoCellOne.Width = Unit.Pixel(75)
         rowTwo.Controls.Add(rowTwoCellOne)
+
+        Dim rowTwoCellTwo As New TableCell()
+        rowTwoCellTwo.Text = message
+        rowTwoCellTwo.HorizontalAlign = HorizontalAlign.Left
+        rowTwo.Controls.Add(rowTwoCellTwo)
         table.Controls.Add(rowTwo)
         panelParam.Controls.Add(table)
     End Sub

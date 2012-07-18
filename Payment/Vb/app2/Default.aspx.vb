@@ -1,4 +1,4 @@
-' <copyright file="Default.aspx.cs" company="AT&amp;T">
+' <copyright file="Default.aspx.vb" company="AT&amp;T">
 ' Licensed by AT&amp;T under 'Software Development Kit Tools Agreement.' September 2011
 ' TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 ' Copyright 2011 AT&amp;T Intellectual Property. All rights reserved. http://developer.att.com

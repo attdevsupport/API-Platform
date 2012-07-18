@@ -1,4 +1,11 @@
-﻿<%@ Page Language="VB" AutoEventWireup="false" CodeFile="Listener.aspx.vb" Inherits="Listener" %>
+﻿<!-- 
+Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+For more information contact developer.support@att.com
+-->
+
+<%@ Page Language="VB" AutoEventWireup="false" CodeFile="Listener.aspx.vb" Inherits="Listener" %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 

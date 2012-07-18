@@ -1,5 +1,6 @@
 ******************************************************************************************
-* Licensed by AT&T under 'Software Development Kit Tools Agreement.' June 2012
+* Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+* TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 * Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 * For more information contact developer.support@att.com<mailto:developer.support@att.com>
 ******************************************************************************************
@@ -77,7 +78,7 @@ web.config as specified below:
 2) secret_key     	: This is mandatory parameter, set the value as per your 
                           registered appliaction 'Secret key' field value.
 
-3) FQDN			: This is mandatory parameter, set it to the end point URI 
+3) endPoint		: This is mandatory parameter, set it to the end point URI 
                           of AT&T Service.
 
 4) scope		: SPEECH (Scope of the ATT service that will be invoked by 

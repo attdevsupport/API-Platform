@@ -1,3 +1,10 @@
+<!-- 
+Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+For more information contact developer.support@att.com
+-->
+
 <%@ Page Language="VB" AutoEventWireup="true" CodeFile="Default.aspx.vb" Inherits="_Default" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">

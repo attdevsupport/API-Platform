@@ -165,13 +165,21 @@ public partial class WapPush_App1 : System.Web.UI.Page
         TableCell rowOneCellOne = new TableCell();
         rowOneCellOne.Font.Bold = true;
         rowOneCellOne.Text = "SUCCESS:";
+        rowOneCellOne.Width = Unit.Pixel(75);
         rowOne.Controls.Add(rowOneCellOne);
         table.Controls.Add(rowOne);
 
         TableRow rowTwo = new TableRow();
         TableCell rowTwoCellOne = new TableCell();
-        rowTwoCellOne.Text = "Message ID: " + message;
+        rowTwoCellOne.Font.Bold = true;
+        rowTwoCellOne.Text = "Message ID:";
+        rowTwoCellOne.Width = Unit.Pixel(75);
         rowTwo.Controls.Add(rowTwoCellOne);
+
+        TableCell rowTwoCellTwo = new TableCell();
+        rowTwoCellTwo.Text = message;
+        rowTwoCellTwo.HorizontalAlign = HorizontalAlign.Left;
+        rowTwo.Controls.Add(rowTwoCellTwo);
         table.Controls.Add(rowTwo);
         panelParam.Controls.Add(table);
     }
