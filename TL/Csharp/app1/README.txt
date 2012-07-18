@@ -13,7 +13,7 @@ AT&T Mobile Network device. The latitude and longtitude coordinates, based on an
 accuracy paramter provided by the user, are returned in decimal format.
 
 This file describes how to set up, configure and run the C# Applications of the
-AT&T Platform API sample applications. It covers all steps required to register
+AT&T API Platform sample applications. It covers all steps required to register
 the application on DevConnect and, based on the generated API keys and secrets, 
 create and run one's own full-fledged sample applications.
 

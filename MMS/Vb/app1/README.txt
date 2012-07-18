@@ -14,7 +14,7 @@ This application allows the user to
   3. Check the delivery status of the MMS
 
 This file describes how to set up, configure and run the VB Applications of the 
-AT&T Platform API sample applications. It covers all steps required to register 
+AAT&T API Platform sample applications. It covers all steps required to register 
 the application on DevConnect and, based on the generated API keys and secrets,
 create and run one's own full-fledged sample applications.
 

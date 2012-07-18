@@ -20,7 +20,7 @@ To make a new subscription request, the app uses the Notary app in the backgroun
 to sign the payload first.
 
 This file describes how to set up, configure and run the VB Applications of the
-AT&T Platform API sample applications. It covers all steps required to register
+AT&T API Platform sample applications. It covers all steps required to register
 the application on DevConnect and, based on the generated API keys and secrets, 
 create and run one's own full-fledged sample applications.
 
