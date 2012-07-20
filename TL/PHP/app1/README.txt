@@ -1,8 +1,13 @@
-
-  AT&T API Samples - Terminal Location
+******************************************************************************************
+* Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+* TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+* Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+* For more information contact developer.support@att.com<mailto:developer.support@att.com>
+******************************************************************************************
+  AT&T API Platform Samples - Terminal Location
  ----------------------------------------
 
-This file describes how to set up, configure and run the php versions of the AT&T HTML5 Program sample applications. 
+This file describes how to set-up, configure and run the PHP Applications using AT&T API Platform services. 
 It covers all steps required to register the application on DevConnect and, based on the generated API keys and secrets, 
 create and run one's own full-fledged sample applications.
 
@@ -27,7 +32,7 @@ create and run one's own full-fledged sample applications.
   NOTE: You MUST select Terminal Location in the list of services under field 'Services' in order to use this sample application code.
 
   Having your application registered, you will get back an important pair of data: an API key and Secret key. They are 
-  necessary to get your applications working with the AT&T HTML5 APIs. See 'Adjusting parameters' below to learn how to use 
+  necessary to get your applications working with the AT&T API Platform. See 'Adjusting parameters' below to learn how to use 
   these keys.
 
   Initially your newly registered application is restricted to the "Sandbox" environment only. To move it to production,
@@ -56,15 +61,11 @@ Copy the sample application  folder to apache web root folder, for example /var/
    
    1) $api_key                                : Client API key
    2) $secret_key                             : Client secret key
-   3) $short_code                             : Short code
-   4) $short_code2                            : Second short code if configured 
-   5) $FQDN = "https://api.att.com"           : Endpoint 
-   6) $oauth_file = "/tmp/smsoauthtoken.php"  : Oauth Token persistance location, should be writable by Apache server  
-   7) $authorize_redirect_uri = ""            : url where oAuth provider will redirect to in case of successful authentication. 
+   3) $FQDN = "https://api.att.com"           : Endpoint 
+   4) $oauth_file = "/tmp/smsoauthtoken.php"  : Oauth Token persistance location, should be writable by Apache server  
+   5) $authorize_redirect_uri = ""            : url where oAuth provider will redirect to in case of successful authentication. 
                                                 Needs to be exactly the same as one used while registering application in DevConnect.
-   8) $scope = "SMS";                         : Oauth scope ( SMS ) 
-   9) $default_address                        : Default phone number 
-   10) $default_smsMsg                        : Default text message
+   6) $scope = "TL";                         : Oauth scope ( SMS ) 
 
    Note: If your application is promoted from Sandbox environment to Production environment and you decide to use
    production application settings, you must update parameters 1-2 as per production application details.

@@ -5,11 +5,11 @@ Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer
 For more information contact developer.support@att.com
 -->
 
-  AT&T API Samples - TL app 1
+  AT&T API Platform Samples - TL app 1
  ------------------------------
 
-This file describes how to set up, configure and run the Java Applications of the AT&T HTML5 Program sample applications. 
-It covers all steps required to register the application on DevConnect and, based on the generated API keys and secrets, 
+This file describes how to set-up, configure and run the Java Applications using AT&T API Platform services. 
+It covers all steps required to register the application, based on the generated API keys and secrets, 
 create and run one's own full-fledged sample applications.
 
   1. Configuration
@@ -20,7 +20,7 @@ create and run one's own full-fledged sample applications.
 
 1. Configuration
 
-  Configuration consists of a few steps necessary to get an application registered on DevConnect with the proper services and 
+  Configuration consists of a few steps necessary to get an application registered with the proper services and 
   endpoints, depending on the type of client-side application (autonomous/non-autonomous). 
 
   To register an application, go to https://devconnect-api.att.com/ and login with your valid username and password.
@@ -36,7 +36,7 @@ create and run one's own full-fledged sample applications.
 NOTE: You MUST select Terminal Location in the list of services under field 'Services' in order to use this sample application code. 
 
   Having your application registered, you will get back an important pair of data: an API key and Secret key. They are 
-  necessary to get your applications working with the AT&T HTML5 APIs. See 'Adjusting parameters' below to learn how to use 
+  necessary to get your applications working with the AT&T APIs. See 'Adjusting parameters' below to learn how to use 
   these keys.
 
   Initially your newly registered application is restricted to the "Sandbox" environment only. To move it to production,
@@ -66,11 +66,11 @@ Please populate the following parameters in config.jsp as specified below:
 
 1) clientIdWeb                        : {set the value as per your registered appliaction 'API key' field value} 
 
-2) clientSecretWeb           		      : {set the value as per your registered appliaction 'Secret key' field value} 
+2) clientSecretWeb                    : {set the value as per your registered appliaction 'Secret key' field value} 
 
-3) FQDN			  	                  : https://api.att.com
+3) FQDN			          : https://api.att.com
 
-4) redirectUri						  : http://localhost:8080/SampleApp/oauth.jsp
+4) redirectUri			   : http://localhost:8080/SampleApp/oauth.jsp
 
 Note: If your application is promoted from Sandbox environment to Production environment and you decide to use production 
 application settings, you must update parameters 1-2 as per production application details.
@@ -82,7 +82,7 @@ application settings, you must update parameters 1-2 as per production applicati
   folder in your Apache Tomcat home directory. If you have specified a different home directory in Tomcat for your web applications, 
   put it there instead. 
 
-  Depending on your security settings in Apache Tomcat, you might need to enable write access to the OauthStorage.jsp file.
+  Depending on your security settings in Apache Tomcat, you might need to enable write access to the oauth.jsp file.
 
   Once you start tomcat, typically using the command "<your-tomcat-root-folder>/bin/startup.sh", your application becomes available 
   in a web browser, so you may visit: http://localhost:8080/SampleApp/TL.jsp to see it working.

@@ -5,7 +5,7 @@
 * For more information contact developer.support@att.com<mailto:developer.support@att.com>
 ******************************************************************************************
 
-  AT&T API Samples - SMS app 1
+  AT&T API Platform Samples - SMS app 1
  ------------------------------
 
 Application with a web interface that allows a user to send an SMS message, check

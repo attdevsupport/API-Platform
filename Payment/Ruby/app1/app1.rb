@@ -22,6 +22,24 @@ set :port, settings.port
 
 Scope = 'PAYMENT'
 
+def read_recent_notifications
+  @notifications = Array.new
+  File.open settings.notificationdetails_file, 'r' do |f| 
+    while (line = f.gets)
+      a = line.split
+      n = Hash.new
+      n[:original_trxId] = a[0]
+      n[:notificationtype] = a[1] 
+      n[:notificationId] = a[2]
+      @notifications.push n
+    end 
+  end
+  @notifications = @notifications.drop(@notifications.length - settings.recent_notifications_stored) if @notifications.length > settings.recent_notifications_stored
+rescue
+  return
+end
+
+
 def read_recent_transactions
   @transactions = Array.new
   File.open settings.transactions_file, 'r' do |f| 
@@ -141,14 +159,73 @@ def refund_transaction
 end
 
 def refresh_notifications
-  # make the API call
+  File.open settings.notifications_file, 'r' do |f| 
+    while (line = f.gets)
+ 
+      url = settings.FQDN + "/rest/3/Commerce/Payment/Notifications/" + line 
+      
+      RestClient.get url, :Authorization => "Bearer #{@access_token}", :Content_Type => 'application/json', :Accept => 'application/json' do |response, request, code, &block|
+        @r = response
+      end
+    
+ 
+  if @r.code == 200
+  from_json = JSON.parse @r
+    originaltrxId = from_json['GetNotificationResponse']['OriginalTransactionId']
+    notificationtype = from_json['GetNotificationResponse']['NotificationType']
+    input = line + ' ' + originaltrxId +' ' + notificationtype
 
+  
+    
+  File.open("#{settings.notifications_file_dir}/notificationdetails", 'a+') { |f| f.puts input}
+  
+  acknowledge_notifications 
+  end
+  end
+ end
+ read_recent_notifications
+ erb :app1
+end
+ 
+def acknowledge_notifications
+ read_recent_notifications
+ File.open settings.notifications_file, 'r' do |f| 
+    while (line = f.gets)
+  
+    url = settings.FQDN + "/rest/3/Commerce/Payment/Notifications/" + line 
+  
+    
+    payload = ''
+    RestClient.put url, payload, :Authorization => "Bearer #{@access_token}", :Content_Type => 'application/json', :Accept => 'application/json' do |response, request, code, &block|
+    
+    @r2 = response
+  
+  end
+  if @r2.code == 200
+   
+  end
+  end
+  end
+ensure
+  return erb :app1
+  read_recent_notifications
+end
+
+def transaction_listener
+  # make the API call
+  input   = request.env["rack.input"].read
+  notificationId = /\<hub:notificationId\>(.*?)<\/hub:notificationId>/.match(input)[1]
+  random  = rand(10000000).to_s
+
+  File.open("#{settings.notifications_file_dir}/notifications", 'a+') { |f| f.puts notificationId }
+ 
 ensure
   return erb :app1
 end
 
-['/','/newTransaction','/getTransactionStatus','/refundTransaction', '/refreshNotifications', '/returnTransaction'].each do |path|
+['/', '/newTransaction', '/getTransactionStatus', '/refundTransaction', '/refreshNotifications', '/acknowledgeNotifications', '/returnTransaction'].each do |path|
   before path do
+  read_recent_notifications
     read_recent_transactions
     obtain_tokens(settings.FQDN, settings.api_key, settings.secret_key, Scope, settings.tokens_file)
   end
@@ -167,17 +244,22 @@ post '/newTransaction'  do
 end
 
 post '/getTransactionStatus'  do
-  # validate parameters
   get_transaction_status
 end
 
 post '/refundTransaction'  do
-  # validate parameters
   refund_transaction
 end
 
-get '/refreshNotifications'  do
-  # validate parameters
+post '/transactionListener'  do
+  transaction_listener
+end
+
+post '/refreshNotifications' do
   refresh_notifications
+end
+
+get '/acknowledgeNotifications' do
+  acknowledge_notifications
 end
 

@@ -69,10 +69,10 @@ def send_messages
   contents << result
 
   # part 2
-  result = "Content-Type: image/jpeg"
+  result = "Content-Type: image/jpeg; name=coupon.jpg"
   result += "\nContent-ID: '<attachment>'"
   result += "\nContent-Transfer-Encoding: base64 "
-  result += "\nContent-Disposition: attachment; name=\"\"; filename=\"\""
+  result += "\nContent-Disposition: attachment; filename=coupon.jpg"  
   result += "\n\n" + attachment
   result += "\n"
   contents << result
@@ -82,7 +82,7 @@ def send_messages
   # send
   RestClient.post "#{settings.FQDN}/rest/mms/2/messaging/outbox?", "#{mimeContent}", :Authorization => "Bearer #{@access_token}",
   :Accept => 'application/json',
-    :Content_Type => 'multipart/form-data; type="application/json"; start=""; boundary="' + split + '"' do |response, request, result, &block|
+    :Content_Type => 'multipart/related; boundary="' + split + '"' do |response, request, result, &block|
   @r = response
   end
 
@@ -90,7 +90,7 @@ def send_messages
     @result = JSON.parse @r
     session[:mms2_id] = @result['Id']
   else
-    @error = @r
+    @send_error = @r
   end
  erb :mms2
 end
@@ -131,17 +131,15 @@ get '/' do
 end
 
 post '/submit' do
+ 
   addresses = params[:address].strip.split ","
   session[:mms2_entered_address] = params[:address]
   
   session[:mms2_address] = Array.new
-  
   addresses.each do |address|
     a = parse_address(address)
     if a
       session[:mms2_address] << a
-    else
-      @error += 'Phone number format not recognized: ' + address + '<br>'
     end
   end
 
@@ -155,5 +153,4 @@ end
 post '/checkStatus' do
   check_status
 end
-
 

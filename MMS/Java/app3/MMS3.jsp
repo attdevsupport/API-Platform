@@ -1,7 +1,14 @@
+<%-- 
+Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+For more information contact developer.support@att.com
+--%>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
     <title>AT&T Sample MMS Application 3 - MMS Gallery Application</title>
-	<meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
     <link rel="stylesheet" type="text/css" href="style/common.css"/ >
     <script type="text/javascript" src="js/helper.js">
 </script>
@@ -24,7 +31,7 @@
     <div id="hcRight">
         <%=new java.util.Date()%>
     </div>
-	<div id="hcLeft">Server Time:</div>
+    <div id="hcLeft">Server Time:</div>
 </div>
 <div>
 	<div id="hcRight"><script language="JavaScript" type="text/javascript">
@@ -70,11 +77,14 @@ String totalNumberOfImagesSent = jsonResponse.getString("totalNumberOfImagesSent
 
 <div id="gallerywrapper">
 <%
-for(int i=0; i<10; i++) {
+for(int i=0; i<imageList.length(); i++) {
 JSONObject image = new JSONObject(imageList.getString(i));
 %>
             <div id="gallery"><img src="<%=image.getString("path")%>" width="150" border="0"  /><br /><strong>Sent from:</strong> <%=image.getString("senderAddress")%><br /><strong>On:</strong> <%=image.getString("date")%><div><%=image.getString("text")%></div></div>
 <%
+if (i==10) {
+   break;
+}
 }
 method.releaseConnection();
 %>
@@ -84,8 +94,8 @@ method.releaseConnection();
 
 <div id="footer">
 
-	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Virtual Mobile</div>
-    <p>&#169; 2011 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
+    <p>&#169; 2012 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
 <br>
 The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br>

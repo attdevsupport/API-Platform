@@ -1,9 +1,9 @@
-<!-- 
-Licensed by AT&T under 'Software Development Kit Tools Agreement.' September 2011
+<%-- 
+Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
-Copyright 2011 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 For more information contact developer.support@att.com
--->
+--%>
 
 <%@ page contentType="text/html; charset=iso-8859-1" language="java" %>
 <%@ page import="java.util.*" %>
@@ -32,6 +32,8 @@ while ((letti = is.read(buf)) > 0)
 baos.write(buf, 0, letti);
 
 data = new String(baos.toByteArray());
+System.out.print(data);
+
 String senderAddress = data.split("<SenderAddress>tel:")[1].split("</SenderAddress>")[0].substring(2);
 Date d = new Date();
 DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US);
@@ -45,6 +47,8 @@ String[] lowerParts = parts[2].split("BASE64");
 String type = lowerParts[0].split("image/")[1].split(";")[0];
 byte[] outFile = Base64.decodeBase64(lowerParts[1]);
 int random = (int)(Math.random()*10000000);
+
+
 FileOutputStream fous = new FileOutputStream(application.getRealPath("/MoMmsImages/"+random+"."+type));
 fous.write(outFile);
 fous.close();
@@ -66,7 +70,8 @@ PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(applica
 String toSave = senderAddress + "\n" + date + "\n" + decodedText;
 outWrite.write(toSave);
 outWrite.close();
-}catch(Exception e){
+}
+catch(Exception e){
 
 }
 %>

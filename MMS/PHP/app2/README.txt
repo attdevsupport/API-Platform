@@ -1,5 +1,5 @@
 
-  AT&T API Samples - MMS
+  AT&T API Samples - MMS app2
  ----------------------------------------
 
 This file describes how to set up, configure and run the php versions of the AT&T HTML5 Program sample applications. 
@@ -59,9 +59,8 @@ Copy the sample application  folder to apache web root folder, for example /var/
    3) $short_code                             : Short code
    4) $FQDN = "https://api.att.com"           : Endpoint 
    5) $oauth_file = "/tmp/mmsoauthtoken.php"  : Oauth Token persistance location, should be writable by Apache server  
-   6) $scope = "SMS"                          : Oauth scope ( SMS ) 
-   7) $default_address                        : Default phone number 
-   8) $default_subject                        : Default text message
+   6) $scope = "MMS"                          : Oauth scope ( MMS ) 
+   7) $default_subject                        : Default text message
 
    Note: If your application is promoted from Sandbox environment to Production environment and you decide to use
    production application settings, you must update parameters 1-2 as per production application details.

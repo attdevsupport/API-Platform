@@ -5,7 +5,7 @@
 * For more information contact developer.support@att.com<mailto:developer.support@att.com>
 ******************************************************************************************
 
-  AT&T API Samples - MMS app 2
+  AT&T API Platform Samples - MMS app 2
  ------------------------------
 
 This is a server side application which also has a web interface. The application 

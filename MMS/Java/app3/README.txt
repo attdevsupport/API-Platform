@@ -1,10 +1,17 @@
+<%-- 
+Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+For more information contact developer.support@att.com
+--%>
 
-  AT&T API Samples - MMS app 3
- ------------------------------
+  AT&T API Platform Samples - MMS app 3
+ ---------------------------------------
 
-This file describes how to set up, configure and run the Java Applications of the AT&T HTML5 Program sample applications. 
-It covers all steps required to register the application on DevConnect and, based on the generated API keys and secrets, 
+This file describes how to set-up, configure and run the Java Applications using AT&T API Platform services. 
+It covers all steps required to register the application, based on the generated API keys and secrets, 
 create and run one's own full-fledged sample applications.
+
 
   1. Configuration
   2. Installation
@@ -14,7 +21,7 @@ create and run one's own full-fledged sample applications.
 
 1. Configuration
 
-  Configuration consists of a few steps necessary to get an application registered on DevConnect with the proper services and 
+  Configuration consists of a few steps necessary to get an application registered with the proper services and 
   endpoints, depending on the type of client-side application (autonomous/non-autonomous). 
 
   To register an application, go to https://devconnect-api.att.com/ and login with your valid username and password.
@@ -35,7 +42,7 @@ create and run one's own full-fledged sample applications.
 NOTE: You MUST select MMS in the list of services under field 'Services' in order to use this sample application code. 
 
   Having your application registered, you will get back an important pair of data: an API key and Secret key. They are 
-  necessary to get your applications working with the AT&T HTML5 APIs. See 'Adjusting parameters' below to learn how to use 
+  necessary to get your applications working with the AT&T APIs. See 'Adjusting parameters' below to learn how to use 
   these keys.
 
   Initially your newly registered application is restricted to the "Sandbox" environment only. To move it to production,
@@ -67,7 +74,7 @@ Please populate the following parameters in config.jsp as specified below:
 
 2) clientSecretAut                    : {set the value as per your registered appliaction 'Secret key' field value} 
 
-3) FQDN        	  	                  : https://api.att.com
+3) FQDN        	  	          : https://api.att.com
 
 4) shortCode1                         : short-code 1
 

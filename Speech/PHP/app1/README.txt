@@ -1,11 +1,13 @@
-*Licensed Under .License Agreement for AT&T Developer Website APIs and SDKs.
-* at http://developer.att.com/sdk/licenses.
-* Copyright AT&T, 2012. All Rights Reserved.
-******************************************************************************
-AT&T API Samples - SpeechToText app 1 
+******************************************************************************************
+* Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+* TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+* Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+* For more information contact developer.support@att.com<mailto:developer.support@att.com>
+******************************************************************************************
+AT&T API Platform Samples - SpeechToText app 1 
 ------------------------------ 
-This file describes how to set up, configure and run the PHP Applications 
-of the AT&T API Platform. 
+This file describes how to set-up, configure and run the PHP Applications 
+using AT&T API Platform services. 
 It covers all steps required to register the application on DevConnect and,
 based on the generated API keys and secrets, create and run one's own 
 full-fledged sample applications. 
@@ -30,7 +32,7 @@ with your valid username and password.
 
   Having your application registered, you will get back an important pair of
 data: an API key and Secret key. They are 
-  necessary to get your applications working with the AT&T HTML5 APIs. See
+  necessary to get your applications working with the AT&T API Platform. See
 'Adjusting parameters' below to learn how to use 
   these keys.
 

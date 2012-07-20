@@ -1,4 +1,9 @@
 
+# Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+# TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+# Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+# For more information contact developer.support@att.com
+
 # Tries to parse supplied address using one of known formats. Returns false on failure.
 def parse_address(address)
   address.strip!

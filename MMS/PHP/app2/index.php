@@ -1,4 +1,4 @@
-<!--- Licensed by AT&T under 'Software Development Kit Tools Agreement.'June 2012 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+<!--- Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 For more information contact developer.support@att.com
 -->
@@ -323,7 +323,7 @@ total size of all attachments cannot exceed 600 KB.
       $data .= "--$boundary\r\n";
       $data .= "Content-Type: application/x-www-form-urlencoded; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\nContent-Disposition: form-data; name=\"root-fields\"\r\nContent-ID: <startpart>\r\n\r\n".$sendMMSData."\r\n";
       $data .= "--$boundary\r\n";
-      $data .= "Content-Disposition: attachment; name=\"coupon.jpg\"\r\n";
+      $data .= "Content-Disposition: attachment; filename=\"coupon.jpg\"\r\n";
       $data .= "Content-Type:image/png\r\n";
       $data .= "Content-ID: <coupon.jpg>\r\n";
       $data .= "Content-Transfer-Encoding: binary\r\n\r\n";
@@ -333,7 +333,7 @@ total size of all attachments cannot exceed 600 KB.
 	// Form the HTTP headers
 	$header = "POST $FQDN/rest/mms/2/messaging/outbox? HTTP/1.0\r\n";
 	$header .= "Authorization: BEARER ".$accessToken."\r\n";
-	$header .= "Content-type: multipart/form-data; type=\"application/x-www-form-urlencoded\"; start=\"<startpart>\"; boundary=\"$boundary\"\r\n";
+	$header .= "Content-type: multipart/related; boundary=\"$boundary\"\r\n";
 	$header .= "MIME-Version: 1.0\r\n";
 	$header .= "Host: $server\r\n";
 	$dc = strlen($data); //content length

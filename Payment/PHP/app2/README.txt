@@ -1,15 +1,19 @@
+******************************************************************************************
+* Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+* TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+* Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+* For more information contact developer.support@att.com<mailto:developer.support@att.com>
+******************************************************************************************
+  AT&T API Platform Samples - Payment app2
+ -----------------------------
 
-  AT&T API Samples - Payment app 2
- ------------------------------
-
-This file describes how to set up, configure and run the Java Applications of the AT&T HTML5 Program sample applications. 
+This file describes how to set-up, configure and run the PHP Applications using AT&T API Platform services.
 It covers all steps required to register the application on DevConnect and, based on the generated API keys and secrets, 
 create and run one's own full-fledged sample applications.
 
   1. Configuration
   2. Installation
   3. Parameters
-  4. Running the application
 
 
 1. Configuration
@@ -20,19 +24,10 @@ create and run one's own full-fledged sample applications.
   To register an application, go to https://devconnect-api.att.com/ and login with your valid username and password.
   Next, choose "My Apps" from the bar at the top of the page and click the "Setup a New Application" button. 
 
-  Fill in the form, in particular all fields marked as "required".
+  Fill in the form, in particular all fields marked as "required". 
 
   Be careful while filling in the "OAuth Redirect URL" field. It should contain the URL that the oAuth provider will redirect
-  users to when he/she successfully authenticates and authorizes your application. For this application, it should point to 
-  the oauth.jsp file inside this application folder. For example, if running on a local machine in a default Tomcat installation, 
-  your OAuth Redirect URL might be http://localhost:8080/SampleApp/oauth.jsp
-
-  Also be careful when filling in the "Payment Listener URL" field when setting up your organization profile. This should point 
-  to the paymentlistener.jsp file packaged with this application. This listener URL must be a public URL or IP address that the 
-  gateway will be able to reach. For example, if running this application on a server with IP address 1.2.3.4 in a default Tomcat 
-  instance, your listener URL might be https://1.2.3.4:8080/SampleApp/paymentlistener.jsp
-
-NOTE: You MUST select Payment in the list of services under field 'Services' in order to use this sample application code. 
+  users to when he/she successfully authenticates and authorizes your application.
 
   Having your application registered, you will get back an important pair of data: an API key and Secret key. They are 
   necessary to get your applications working with the AT&T HTML5 APIs. See 'Adjusting parameters' below to learn how to use 
@@ -49,38 +44,28 @@ NOTE: You MUST select Payment in the list of services under field 'Services' in 
 
 2. Installation
 
-** Requirements
+   Requirements:
+     Apache web server
+     PHP 5.2+
+     Apache and PHP configured, on most Linux systems if installed using packages this will be done automatically.
 
-   To run the examples you need a Java environment and at least Apache Tomcat 6, or another Java web server such as Jetty. 
-
-** Setting up multiple sample applications simultaneously
-
-   In case multiple applications need to be run at the same time, make sure to put each app in a separate folder and 
-   adjust your OAuth Redirect URL accordingly.
+   Installation:
+     Copy the sample application folder to Apache web root folder, for example /var/www/html.
+ 
 
 3. Parameters
+
+   Each application contains a config.php file. It holds the following configurable parameters and defaults 
    
-Each sample application contains a config.jsp file. It holds configurable parameters described in an easy to read format. 
-Please populate the following parameters in config.jsp as specified below:
-
-1) clientIdAut                        : {set the value as per your registered appliaction 'API key' field value} 
-
-2) clientSecretAut                    : {set the value as per your registered appliaction 'Secret key' field value} 
-
-3) FQDN              	              : https://api.att.com
-
-Note: If your application is promoted from Sandbox environment to Production environment and you decide to use production 
-application settings, you must update parameters 1-2 as per production application details.
+    $api_key                                : Client API key
+    $secret_key                             : Client secret key
+   
+    $FQDN = "https://api.att.com";          : Endpoint 
+    $oauth_file = "/tmp/paymentoauthtoken.php"; : Oauth Token persistance location,should be writable by apache server  
+    $authorize_redirect_uri = "";	         : Url where oAuth provider will redirect to in case of successful authentication. 
+                                              Needs to be exactly the same as one used while registering application in DevConnect.
+    $scope = "PAYMENT";                     : Oauth scope ( SMS ) 
+   
 
 
-4. Running the application
-
-  To run the application, put the entire contents of the application folder into a separate folder named SampleApp inside the webapps 
-  folder in your Apache Tomcat home directory. If you have specified a different home directory in Tomcat for your web applications, 
-  put it there instead. 
-
-  Depending on your security settings in Apache Tomcat, you might need to enable write access to the OauthStorage.jsp file.
-
-  Once you start tomcat, typically using the command "<your-tomcat-root-folder>/bin/startup.sh", your application becomes available 
-  in a web browser, so you may visit: http://localhost:8080/SampleApp/singlepay.jsp to see it working.
 

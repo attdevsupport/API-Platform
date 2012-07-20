@@ -1,3 +1,9 @@
+<% 
+//Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+//TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+//Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+//For more information contact developer.support@att.com%>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
     <title>AT&amp;T Sample SMS Application - Basic SMS Service Application</title>
@@ -23,7 +29,7 @@
 
     String address = request.getParameter("address");
     if(address==null || address.equalsIgnoreCase("null"))
-    	address = (String) session.getAttribute("addressSms");
+        address = (String) session.getAttribute("addressSms");
 	if(address==null || address.equalsIgnoreCase("null"))
 		address = "";
 	session.setAttribute("addressSms",address);
@@ -135,7 +141,6 @@ if(invalidAddress==null) {
 	rpcObject.put("Address", address);
 	method.setRequestBody(rpcObject.toString());
 	method.addRequestHeader("Content-Type","application/json; charset=UTF-8");
-	//method.setQueryString("access_token=" + accessToken);
 	method.addRequestHeader("Authorization","Bearer " + accessToken);
     method.addRequestHeader("Accept","application/json");
     //Send the request and parse based on HTTP status code
@@ -210,8 +215,8 @@ Feature 2: Get Delivery Status</h2>
            String url = FQDN + "/rest/sms/2/messaging/outbox/" + smsId;   
            HttpClient client = new HttpClient();
            GetMethod method = new GetMethod(url);  
-           //method.setQueryString("access_token=" + accessToken);
-		   method.addRequestHeader("Authorization","Bearer " + accessToken);
+
+	    method.addRequestHeader("Authorization","Bearer " + accessToken);
            method.addRequestHeader("Accept","application/json");
            //Send the request, parse based on HTTP status code
            int statusCode = client.executeMethod(method); 
@@ -337,4 +342,3 @@ For more information contact <a href="mailto:developer.support@att.com">develope
 </div>
 
 </body></html>
-

@@ -1,5 +1,5 @@
 <!-- 
-Licensed by AT&T under 'Software Development Kit Tools Agreement.'June 2012
+Licensed by AT&T under 'Software Development Kit Tools Agreement.'2012
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 For more information contact developer.support@att.com
@@ -24,9 +24,6 @@ $subject=$_SESSION["wap1_subject"];
 $address=$_SESSION["wap1_address"];
 $url=$_SESSION["wap1_url"];
 
-if($address==null){
-  $address = $default_address;
- }
 if($url==null){
   $url =  $default_url;
  }
@@ -289,6 +286,16 @@ At this time, AT&T only supports Service Type: Service Indication due to securit
 	
     if (!empty($_REQUEST["sendWAP"] )) {
 
+
+if( $_SESSION["wap1_address"] == null){?>
+  	<div class="errorWide">
+	<strong>ERROR:</strong><br> No number entered. <br />
+	
+	 
+	
+	</div><?php
+ }else{
+
       $fullTocken["accessToken"]=$accessToken;
       $fullTocken["refreshToken"]=$refreshToken;
       $fullTocken["refreshTime"]=$refreshTime;
@@ -297,7 +304,10 @@ At this time, AT&T only supports Service Type: Service Indication due to securit
       $fullTocken=check_tocken($FQDN,$api_key,$secret_key,$scope,$fullTocken,$oauth_file);
       $accessToken=$fullTocken["accessToken"];
 
-      $address =  str_replace("-","",$_POST['address']);
+      
+
+     
+	$address =  str_replace("-","",$_POST['address']);
       $address =  str_replace("tel:","",$address);
       $address = "tel:" . $address;
       
@@ -387,12 +397,12 @@ At this time, AT&T only supports Service Type: Service Indication due to securit
 	?>
 	<div class="errorWide">
 	<strong>ERROR:</strong><br />
-	<?php echo $errormsg  ?><?php echo $res; ?>
+	<?php echo $errormsg ?>
 	</div>
 	<?php 
       }
     }
-?>
+}?>
 
 <div id="footer">
 

@@ -1,7 +1,7 @@
 port:             4567
-phone_number:     425-802-8620
+phone_number:     
 api_key:
 secret_key:
-registration_id:  22627096
+registration_id:  
 tokens_file:      tokens
 FQDN:             https://api.att.com

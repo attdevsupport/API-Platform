@@ -1,6 +1,6 @@
 port:             4567
 api_key:
 secret_key:
-registration_id:  80751514
+registration_id:  
 tokens_file:      tokens
 FQDN:             https://api.att.com

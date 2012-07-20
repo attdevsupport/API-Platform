@@ -5,11 +5,11 @@ Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer
 For more information contact developer.support@att.com
 -->
 
-  AT&T API Samples - WAP app 1
+  AT&T API Platform Samples - WAP app 1
  ------------------------------
 
-This file describes how to set up, configure and run the Java Applications of the AT&T HTML5 Program sample applications. 
-It covers all steps required to register the application on DevConnect and, based on the generated API keys and secrets, 
+This file describes how to set-up, configure and run the Java Applications using AT&T API Platform services. 
+It covers all steps required to register the application, based on the generated API keys and secrets, 
 create and run one's own full-fledged sample applications.
 
   1. Configuration
@@ -28,15 +28,10 @@ create and run one's own full-fledged sample applications.
 
   Fill in the form, in particular all fields marked as "required".
 
-  Be careful while filling in the "OAuth Redirect URL" field. It should contain the URL that the oAuth provider will redirect
-  users to when he/she successfully authenticates and authorizes your application. For this application, it should point to 
-  the oauth.jsp file inside this application folder. For example, if running on a local machine in a default Tomcat installation, 
-  your OAuth Redirect URL might be http://localhost:8080/SampleApp/oauth.jsp
-
 NOTE: You MUST select WAP Push in the list of services under field 'Services' in order to use this sample application code. 
 
   Having your application registered, you will get back an important pair of data: an API key and Secret key. They are 
-  necessary to get your applications working with the AT&T HTML5 APIs. See 'Adjusting parameters' below to learn how to use 
+  necessary to get your applications working with the AT&T APIs. See 'Adjusting parameters' below to learn how to use 
   these keys.
 
   Initially your newly registered application is restricted to the "Sandbox" environment only. To move it to production,
@@ -56,8 +51,7 @@ NOTE: You MUST select WAP Push in the list of services under field 'Services' in
 
 ** Setting up multiple sample applications simultaneously
 
-   In case multiple applications need to be run at the same time, make sure to put each app in a separate folder and 
-   adjust your OAuth Redirect URL accordingly.
+   In case multiple applications need to be run at the same time, make sure to put each app in a separate folders.
 
 3. Parameters
    

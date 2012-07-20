@@ -225,7 +225,9 @@ Feature 2: Get Transaction Status</h2>
     <td class="cell" align="left"><input type="radio" name="getTransactionType" value="3" /> Transaction ID:
     </td>
     <td></td>
-    <% if(!trxId.equalsIgnoreCase("")) { %>
+    
+    <% System.out.println("TRANSACTION ID IS:" + trxId);
+    if(!trxId.equalsIgnoreCase("") || !trxId.equalsIgnoreCase("null") || trxId != null) { %>
     <td class="cell" align="left"><%=trxId%></td><% } %>
   </tr>
 
@@ -347,8 +349,8 @@ if(true) {
                     %>
                       <tr>
                         <td class="cell" align="right">
-    					<% if(transaction.getString("transactionId").length() > 4)
-							{ %>
+                        <% if(transaction.getString("transactionId").length() > 4)
+            				{ %>
                             <input type="radio" name="trxIdRefund" value="<%=transaction.getString("transactionId")%>" checked /><%=transaction.getString("transactionId")%>
                         </td>
                         <td></td>
@@ -396,13 +398,13 @@ if(true) {
     HttpClient client = new HttpClient();
     PutMethod method = new PutMethod(url);
     //method.setQueryString("access_token=" + accessToken + "&Action=refund");
-method.addRequestHeader("Authorization", "Bearer " + accessToken);
+    method.addRequestHeader("Authorization", "Bearer " + accessToken);
     method.addRequestHeader("Content-Type","application/json");
     method.addRequestHeader("Accept","application/json");
     JSONObject bodyObject = new JSONObject();
     String reasonCode = "1";
-String status = "Refunded";
-bodyObject.put("TransactionOperationStatus",status);
+    String status = "Refunded";
+    bodyObject.put("TransactionOperationStatus",status);
     bodyObject.put("RefundReasonCode",Double.parseDouble(reasonCode));
     bodyObject.put("RefundReasonText",refundReasonText);
     method.setRequestBody(bodyObject.toString());
@@ -455,7 +457,7 @@ bodyObject.put("TransactionOperationStatus",status);
 
 </div>
 </div>
-<form method="post" name="refreshNotifications" >
+<form method="GET" name="refreshNotifications" >
 <div id="navigation"><br/>
 
 <div align="center"><table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
@@ -464,36 +466,34 @@ bodyObject.put("TransactionOperationStatus",status);
      <th style="width: 100px" class="cell"><strong>Notification ID</strong></th>
         <th style="width: 100px" class="cell"><strong>Notification Type</strong></th>
         <th style="width: 125px" class="cell"><strong>Transaction ID</strong></th>
-        <th style="width: 175px" class="cell"><strong>Merchant Transaction ID</strong></th>
+	
+
 </tr>
 </thead>
+    </br>
+		</br>
+		</br>
 <tbody>
 <%
-if(true) {
-    String url = request.getRequestURL().toString().substring(0,request.getRequestURL().toString().lastIndexOf("/")) + "/getLatestNotifications.jsp";
-    HttpClient client = new HttpClient();
-    GetMethod method = new GetMethod(url);
-    int statusCode = client.executeMethod(method);
+//if(true) 
+//{
+//String notificationId = "";
+String notificationType = "";
+String transactionId = "";
 
-    if(statusCode==200) {
-        JSONObject jsonResponse = new JSONObject(method.getResponseBodyAsString());
-        JSONArray notificationList = new JSONArray(jsonResponse.getString("notificationList"));
-        for(int i=0; i<notificationList.length(); i++) {
-            if(notificationList.length()>0) {
-                JSONObject notification = new JSONObject(notificationList.getString(i));
-%>
-                 <tr>
-                     <td align="center" class="cell"><%=notification.getString("notificationId")%></td>
-                        <td align="center" class="cell"><%=notification.getString("notificationType")%></td>
-                        <td align="center" class="cell"><%=notification.getString("transactionId")%></td>
-                        <td align="center" class="cell"><%=notification.getString("merchantTransactionId")%></td>
-                    </tr>
-<%
-            }
-        }
-        method.releaseConnection();
-    }
-}
+		String url1 = request.getRequestURL().toString().substring(0,request.getRequestURL().toString().lastIndexOf("/")) + "/getLatestNotifications.jsp";
+		HttpClient client1 = new HttpClient();
+		GetMethod method1 = new GetMethod(url1);  
+		int statusCode2 = client1.executeMethod(method1); 
+		//client1.executeMethod(method1);
+		JSONObject jsonResponse1 = new JSONObject(method1.getResponseBodyAsString());
+		JSONArray notificationList = new JSONArray(jsonResponse1.getString("notificationList"));
+		String totalNumberOfNotifications = jsonResponse1.getString("totalNumberOfNotifications");
+        System.out.println("method1.getResponseBodyAsString()"+method1.getResponseBodyAsString());
+       // System.out.println(statusCode2);
+    
+        method1.releaseConnection();
+
 %>
 </tbody>
 </table>
@@ -512,35 +512,90 @@ if(true) {
 <br clear="all" />
 </form></div>
 
-<% if(refreshNotifications!=null) {
+<% 
+String not = "";
+    if(refreshNotifications!=null) {
+            
+			for(int i=0; i<notificationList.length(); i++) 
+            {
+            	JSONObject notification = new JSONObject(notificationList.getString(i));
+            	//THE GET REQUEST///////
+            	notificationId = notification.getString("notificationId");
+                not = notificationId.trim();			
+            	String url = FQDN + "/rest/3/Commerce/Payment/Notifications/" + not;
+                System.out.println(url);
+                HttpClient clients = new HttpClient();
+				GetMethod methods = new GetMethod(url);
+                System.out.println("accessToken"+accessToken);
+            	methods.addRequestHeader("Authorization", "Bearer " + accessToken);
+                methods.addRequestHeader("Accept", "application/json");
+        		int statusCode = clients.executeMethod(methods);
+                
+                //JSONObject jsonParams = new JSONObject(methods.getResponseBodyAsString());
 
-    String url = FQDN + "/Notifications/" + notificationId;
-    HttpClient client = new HttpClient();
-    PutMethod method = new PutMethod(url);
-    
-method.addRequestHeader("Authorization", "Bearer " + accessToken);
-    method.addRequestHeader("Content-Type","application/json");
-    method.addRequestHeader("Accept","application/json");
-    int statusCode = client.executeMethod(method);
-    if(statusCode==200) {
-         JSONObject rpcObject = new JSONObject(method.getResponseBodyAsString());
-      %>
-            <div class="successWide">
-            <strong>SUCCESS:</strong><br />
-            <strong>Transaction ID</strong> <%=trxId%><br />
-		 <%=method.getResponseBodyAsString()%><br />
-            </div><br/>
-<%
-  } else {
-   %>
-            <div class="errorWide">
-            <strong>ERROR:</strong><br />
-            <%=method.getResponseBodyAsString()%>
-            </div><br/>
-<%
-  }
-   method.releaseConnection();
+                //notificationType = jsonParams.getString("NotificationType");
+                //transactionId = jsonParams.getString("OriginalTransactionId");
+                
+                
+            	
+                if (statusCode  == 200 || statusCode == 201)
+                {
+                      %>
+                        <div class="successWide">
+                        <strong>successfull: GETnotification </strong><br />
+                        <%=methods.getResponseBodyAsString()%>
+                        </div><br/>
+            <%
+                }
+                else
+                {
+                     
+                      %>
+                        <div class="errorWide">
+                        <strong>fail: Failed to GET notification </strong><br />
+                        <%=methods.getResponseBodyAsString()%>
+                        </div><br/>
+            <%
+                }
+                
+                 //THE PUT/////////
+                String url2 = FQDN + "/rest/3/Commerce/Payment/Notifications/" + not;
+                System.out.println(url2);
+                HttpClient client2 = new HttpClient();
+    			PutMethod method2 = new PutMethod(url2);
+                method2.addRequestHeader("Authorization", "Bearer " + accessToken);
+                method2.addRequestHeader("Content-Type", "application/json");
+                method2.addRequestHeader("Accept", "application/json"); 
+                int statusCode3 = client2.executeMethod(method2);
+   
+                if(statusCode3==200 || statusCode3==201) {
+                     
+                      %>
+                        <div class="successWide">
+                        <strong>successfull: acknowledge </strong><br />
+                        <%=method2.getResponseBodyAsString()%>
+                        </div><br/>
+            <%
+                }
+                else
+                {
+                     
+                      %>
+                        <div class="errorWide">
+                        <strong>FAIL: failed to acknowledge notification </strong><br />
+                        <%=method2.getResponseBodyAsString()%>
+                        </div><br/>
+            <%
+                
+                    }
+             
+            
+        methods.releaseConnection();    
+        method2.releaseConnection();
+    }
 }
+//}
+
 %>
 
 <div id="footer">
@@ -557,4 +612,3 @@ For more information contact <a href="mailto:developer.support@att.com">develope
 </div>
 </div>
 
-</body></html>

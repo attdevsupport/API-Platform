@@ -1,6 +1,6 @@
 port:             4567
-phone_number:     425-802-8620
-registration_id:  22627096
+phone_number:     
+registration_id:  
 api_key:
 secret_key:
 listener_url:     http://localhost:4567/mmslistener

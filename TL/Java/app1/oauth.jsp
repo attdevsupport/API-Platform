@@ -1,3 +1,10 @@
+<% 
+//Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+//TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+//Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+//For more information contact developer.support@att.com
+%>
+
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML lang=en xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"><HEAD><TITLE>Application 1</TITLE>
 <META content="text/html; charset=windows-1252" http-equiv=Content-Type>
@@ -153,7 +160,7 @@ Refresh Token <input type="text" name="refreshToken" value="<%=refreshToken%>" s
 <br><br><html><body><%=print%></body></html>
 
 <div style="position:absolute;bottom:0px;left:30%;width:40%;font-size:9px;" align="center" >
-? 2011 AT&T Intellectual Property. All rights reserved.  <a href="http://developer.att.com" target="_blank">http://developer.att.com</a>
+? 2012 AT&T Intellectual Property. All rights reserved.  <a href="http://developer.att.com" target="_blank">http://developer.att.com</a>
 <br/>
 The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&T Services and not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br/>

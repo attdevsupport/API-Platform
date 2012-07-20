@@ -5,7 +5,7 @@
 * For more information contact developer.support@att.com<mailto:developer.support@att.com>
 ******************************************************************************************
 
-  AT&T API Samples - SMS app 2
+  AT&T API Platform Samples - SMS app 2
  ------------------------------
 
 SMS voting application with a server component and a web interface. Application

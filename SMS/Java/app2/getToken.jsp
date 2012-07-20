@@ -1,3 +1,10 @@
+<% 
+//Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+//TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+//Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+//For more information contact developer.support@att.com
+%>
+
 <%@ page contentType="text/html; charset=iso-8859-1" language="java" %>
 <%@ page import="org.apache.commons.httpclient.*"%>
 <%@ page import="org.apache.commons.httpclient.methods.*"%>
@@ -48,7 +55,7 @@ Long date = System.currentTimeMillis();
                 int statusCode = client.executeMethod(method);
                 JSONObject rpcObject = new JSONObject(method.getResponseBodyAsString());
                 accessToken = rpcObject.getString("access_token");
-            	refreshToken = rpcObject.getString("refresh_token");
+            	  refreshToken = rpcObject.getString("refresh_token");
                 expires_in = rpcObject.getString("expires_in");
                 savedAccessTokenExpiry = date + (Long.parseLong(expires_in)*1000);
                 savedRefreshTokenExpiry = date + Long.parseLong("86400000");

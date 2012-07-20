@@ -5,7 +5,7 @@
 * For more information contact developer.support@att.com<mailto:developer.support@att.com>
 ******************************************************************************************
 
-  AT&T API Samples - Speech app 1
+  AT&T API Platform Samples - Speech app 1
  --------------------------------
 
 This application allows the user to send an audio file for speech to text 

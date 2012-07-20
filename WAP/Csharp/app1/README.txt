@@ -5,7 +5,7 @@
 * For more information contact developer.support@att.com<mailto:developer.support@att.com>
 ******************************************************************************************
 
-  AT&T API Samples - WAP app 1
+  AT&T API Platform Samples - WAP app 1
  ------------------------------
 
 This application allows a user to send a WAP Push message to a mobile device, by

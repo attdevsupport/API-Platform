@@ -1,5 +1,5 @@
 <!-- 
-Licensed by AT&T under 'Software Development Kit Tools Agreement.'June 2012
+Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 For more information contact developer.support@att.com
@@ -12,6 +12,5 @@ For more information contact developer.support@att.com
     $FQDN = "https://api.att.com";
     $scope = "MMS";
     $oauth_file = "/tmp/mms2oauthtoken.php";
-    $default_address = "425-802-8620,425-802-8620";
     $default_subject = "Use this code for 15% off this week!";
 ?>

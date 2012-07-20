@@ -1,9 +1,15 @@
+<!-- 
+Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+For more information contact developer.support@att.com
+-->
 
   AT&T API Samples - Payment app 2
  ------------------------------
 
-This file describes how to set up, configure and run the Java Applications of the AT&T HTML5 Program sample applications. 
-It covers all steps required to register the application on DevConnect and, based on the generated API keys and secrets, 
+This file describes how to set-up, configure and run the Java Applications using AT&T API Platform services. 
+It covers all steps required to register the application, based on the generated API keys and secrets, 
 create and run one's own full-fledged sample applications.
 
   1. Configuration
@@ -35,7 +41,7 @@ create and run one's own full-fledged sample applications.
 NOTE: You MUST select Payment in the list of services under field 'Services' in order to use this sample application code. 
 
   Having your application registered, you will get back an important pair of data: an API key and Secret key. They are 
-  necessary to get your applications working with the AT&T HTML5 APIs. See 'Adjusting parameters' below to learn how to use 
+  necessary to get your applications working with the AT&T APIs. See 'Adjusting parameters' below to learn how to use 
   these keys.
 
   Initially your newly registered application is restricted to the "Sandbox" environment only. To move it to production,
@@ -84,5 +90,5 @@ application settings, you must update parameters 1-2 as per production applicati
   Depending on your security settings in Apache Tomcat, you might need to enable write access to the OauthStorage.jsp file.
 
   Once you start tomcat, typically using the command "<your-tomcat-root-folder>/bin/startup.sh", your application becomes available 
-  in a web browser, so you may visit: http://localhost:8080/SampleApp/singlepay.jsp to see it working.
+  in a web browser, so you may visit: http://localhost:8080/SampleApp/subscription.jsp to see it working.
 

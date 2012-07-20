@@ -1,12 +1,17 @@
 port:                        4567
-api_key:
-secret_key:
+api_key:                     
+secret_key:                  
 tokens_file:                 tokens
 subscriptions_file:          subscriptions
 recent_subscriptions_stored: 5
+recent_notifications_stored: 5
 notary_app_sign_url:         http://localhost:4568/signPayload
 notary_app_view_payload_url: http://localhost:4568/
 subscription_redirect_url:   http://localhost:4567/callbackSubscription
 FQDN:                        https://api.att.com
-notifications_file:          notifications
-recent_notifications_stored: 5
+listener_url:                http://localhost:4567/subscriptionListener
+notifications_file_dir:      NotificationsFile
+notifications_url:           http://localhost:4567
+notifications_file:          NotificationsFile/notifications
+notifications_url:           http://localhost:4567
+notificationdetails_file:    NotificationsFile/notificationdetails

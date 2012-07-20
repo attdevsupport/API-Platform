@@ -5,7 +5,7 @@
 * For more information contact developer.support@att.com<mailto:developer.support@att.com>
 ******************************************************************************************
 
-  AT&T API Samples - TL app 1
+  AT&T API Platform Samples - TL app 1
  ------------------------------
 
 The TL API enables applications to query the location coordinates of a supported

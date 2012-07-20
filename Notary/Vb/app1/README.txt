@@ -5,7 +5,7 @@
 * For more information contact developer.support@att.com<mailto:developer.support@att.com>
 ******************************************************************************************
 
-  AT&T API Samples - Notary app 1
+  AT&T API Platform Samples - Notary app 1
  ------------------------------
 
 This application allows the user to sign a payload for sending in a New Transaction

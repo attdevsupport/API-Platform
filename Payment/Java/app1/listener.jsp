@@ -25,41 +25,21 @@ while ((letti = is.read(buf)) > 0)
 baos.write(buf, 0, letti);
 
 data = new String(baos.toByteArray());
-String notificationId = data.split("<NotificationId>tel:")[1].split("</NotificationId>")[0].substring(2);
-Date d = new Date();
-DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US);
-df.setTimeZone(TimeZone.getTimeZone("PST"));
-DateFormat tf = DateFormat.getTimeInstance(DateFormat.LONG, Locale.US);
-tf.setTimeZone(TimeZone.getTimeZone("PST"));
-String date = df.format(d) + ", " +tf.format(d);
+String notificationId = data.split("<hub:notificationId>")[1].split("</hub:notificationId>")[0].substring(2);
 
-String[] parts = data.split("--Nokia-mm-messageHandler-BoUnDaRy");
-String[] lowerParts = parts[2].split("BASE64");
-String type = lowerParts[0].split("image/")[1].split(";")[0];
-byte[] outFile = Base64.decodeBase64(lowerParts[1]);
+
+System.out.print("the data is : " + data);
+//String print = data;
+
 int random = (int)(Math.random()*10000000);
-FileOutputStream fous = new FileOutputStream(application.getRealPath("/notifications/"+random+"."+type));
-fous.write(outFile);
-fous.close();
-String decodedText = "";
-if(parts.length>4) {
-    String textPart = parts[3].split("BASE64")[1];
-    decodedText = new String(Base64.decodeBase64(textPart));
-    decodedText = decodedText.trim();
-} 
-StringTokenizer st = new StringTokenizer(data, "&");
-String token;
-while(st.hasMoreTokens()){
-token = st.nextToken();
-paramLinkedMap.put(URLDecoder.decode(token.substring(0, token.indexOf("="))),
-URLDecoder.decode(token.substring(token.indexOf("=")+1, token.length())));
-}
 
-PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/notifications/" + random + "." + type + ".txt"))), false);
-String toSave = senderAddress + "\n" + date + "\n" + decodedText;
+PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/Notifications/" + random + ".txt"))), false);
+String toSave = notificationId;
 outWrite.write(toSave);
+
 outWrite.close();
+    
 }catch(Exception e){
 
-}
+} 
 %>

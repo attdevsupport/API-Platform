@@ -1,5 +1,5 @@
 <!-- 
-Licensed by AT&T under 'Software Development Kit Tools Agreement.' June 2012
+Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 For more information contact developer.support@att.com
@@ -23,9 +23,7 @@ $subject=$_SESSION["mms1_subject"];
 $address=$_SESSION["mms1_address"];
 
 
-if($address==null){
-  $address = $default_address;
- }
+
 if($subject==null){
   $subject = $default_subject;
  }
@@ -190,7 +188,7 @@ function check_token( $FQDN,$api_key,$secret_key,$scope, $fullToken,$oauth_file)
 
 ?>
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
-	<title>AT&amp;T Sample MMS Application 1 - Basic SMS Service Application</title>
+	<title>AT&amp;T Sample MMS Application 1 - Basic MMS Service Application</title>
 	<meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
     <link rel="stylesheet" type="text/css" href="common.css"/ >
 </head>
@@ -290,6 +288,15 @@ total size of all attachments cannot exceed 600 KB.
 <?php
 
     if (!empty($_REQUEST["sendMMS"])) {
+if($address==null){?>
+  	<div class="errorWide">
+	<strong>ERROR: No number entered</strong><br />
+	
+	 
+	
+	</div><?php
+ }else{
+
 
       $fullToken["accessToken"]=$accessToken;
       $fullToken["refreshToken"]=$refreshToken;
@@ -333,7 +340,7 @@ total size of all attachments cannot exceed 600 KB.
       foreach ( $_FILES as $file ){
 	if ($file['name'] != ""){
 	  $data .= "--$boundary\r\n";
-	  $data .= "Content-Disposition: attachment; name=\"".$file['name']."\"\r\n";
+	  $data .= "Content-Disposition: attachment; filename=\"".$file['name']."\"\r\n";
 	  $data .= "Content-Type:".$file['type']."\r\n";
 	  $data .= "Content-ID: <".$file['name'].">\r\n";
 	  $data .= "Content-Transfer-Encoding: binary\r\n\r\n";
@@ -345,7 +352,7 @@ total size of all attachments cannot exceed 600 KB.
       // Form the HTTP headers
       $header = "POST $FQDN/rest/mms/2/messaging/outbox? HTTP/1.0\r\n";
       $header .= "Authorization: BEARER ".$accessToken."\r\n"; 
-      $header .= "Content-type: multipart/form-data; type=\"application/x-www-form-urlencoded\"; start=\"<startpart>\"; boundary=\"$boundary\"\r\n";
+      $header .= "Content-type: multipart/related; boundary=\"$boundary\"\r\n";
       $header .= "MIME-Version: 1.0\r\n";
       $header .= "Host: $server\r\n";
       $dc = strlen($data); //content length
@@ -389,7 +396,7 @@ total size of all attachments cannot exceed 600 KB.
 	    </div>
 
 	<?php }
-}
+}}
 ?>
 <div id="wrapper">
 <div id="content">

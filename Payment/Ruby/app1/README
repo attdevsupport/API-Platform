@@ -1,8 +1,14 @@
+******************************************************************************************
+* Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+* TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+* Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+* For more information contact developer.support@att.com<mailto:developer.support@att.com>
+******************************************************************************************
 
   AT&T API Samples - Payment app 1
  ----------------------------------
 
-This file describes how to set up, configure and run the ruby versions of the AT&T HTML5 Program sample applications. 
+This file describes how to set up, configure and run the Ruby applications using AT&T API Platform services. 
 It covers all steps required to register the application on DevConnect and, based on the generated API keys and secrets, 
 create and run one's own full-fledged sample applications.
 
@@ -26,7 +32,7 @@ create and run one's own full-fledged sample applications.
   users to when he/she successfully authenticates and authorizes your application.
 
   Having your application registered, you will get back an important pair of data: an API key and Secret key. They are 
-  necessary to get your applications working with the AT&T HTML5 APIs. See 'Adjusting parameters' below to learn how to use 
+  necessary to get your applications working with the AT&T Platform APIs. See 'Adjusting parameters' below to learn how to use 
   these keys.
 
   Initially your newly registered application is restricted to the "Sandbox" environment only. To move it to production,
@@ -47,17 +53,25 @@ create and run one's own full-fledged sample applications.
      - sinatra (http://www.sinatrarb.com/) 
        used to construct a simple web application and manage URLs within.
 
+  	 - eventmachine
+  
+	 To ensure installation of the sinatra-contrib gem you must first install the gem eventmachine. Sinatra-contrib has a dependency on eventmachine. 
+	 EventMachine enables programs to easily interface with other programs using TCP/IP, especially if custom protocols are required.
+
      - sinatra-contrib 
-       additional set of useful helpers, including ones used to read settings from external files.
+       Additional set of useful helpers, including ones used to read    settings from external files.
 
-     - also make sure you have rest-client and json gems installed
+     - Also make sure you have rest-client and json gems installed. 
 
-   To install these gems open up a terminal window and invoke:
+   	To install these gems open up a terminal window and invoke:
 
-       gem install sinatra sinatra-contrib rest-client json
+     - gem install sinatra eventmachine sinatra-contrib rest-client json
+
+	If you are experiencing any additional difficulties installing gems, particularly sinatra-contrib, it may prove useful to install the ruby gem thin. This can be installed in the terminal by invoking:
+
+	 - gem install thin
 
    Having them installed, you are almost ready to run the sample applications.
-
 
 ** Setting up on a different port number
 
@@ -71,27 +85,55 @@ create and run one's own full-fledged sample applications.
 
 3. Parameters
 
-   Each application contains a config.yml file. It holds configurable parameters 
-   described in an easy to read YAML format which you are free to adjust to your needs. Following are short descriptions
-   of parameters used by this application:
+   Payment application 1 contains two config files. These files are config.yml and configNotary.yml. The config.yml file holds configurable parameters for the Payment application.
+   The configNotary.yml file holds configurable parameters for the Notary application. Both the config.yml and configNotary.yml files must share the same api_key and secret_key parameter values.
+   
+   The configurable paramteres are described in an easy to read YAML format which you are free to adjust to your needs. Following are short descriptions
+   of parameters used by Payment application 1:
 
-    1) FQDN              : https://api.att.com
+    1) FQDN              				: https://api.att.com
 
-    2) port              : port number that application binds to (default: 4567)
+    2) port              				: port number that application binds to (default: 4567)
 
-    3) api_key           : set the value as per your registered appliaction 'API key' field value
+    3) api_key           				: set the value as per your registered appliaction 'API key' field value
 
-    4) secret_key        : set the value as per your registered appliaction 'Secret key' field value
+    4) secret_key        				: set the value as per your registered appliaction 'Secret key' field value
 
-    5) tokens_file       : file in which OAuth tokens are stored
+    5) tokens_file       				: file in which OAuth tokens are stored
+	
+	6) transactions_file 				: file in which recent transactions are stored
+    
+	7) recent_transactions_stored 		: file which sets the amount of recent transactions you would like to store    
+
+	8) payment_redirect_url 			: URL which redirects to application once transaction has taken place
+
+	9) listener_url 					: set to the URL of the notifications callback
+
+	10) notifications_file_dir			: directory which holds all the notification details
+
+	11) notifications_file				: file in which the Notification IDs are stored
+
+	12) notifications_url				: the URL that will display the notifications
+	
+	13) notificationdetails_file        : file in which the details of the Notification response are stored
+	
+	
+	Following are short descriptions of parameters used by Notary application 1:
+	
+	1) port                              : 4568
+
+	2) api_key                           : set the value as per your registered appliaction 'API key' field value
+
+	3) secret_key                        : set the value as per your registered appliaction 'Secret key' field value
+
+    4) FQDN                              : https://api.att.com
 
 
 4. Running the application
 
-  To run the application, first make sure you have Notary up and running. From Notary/Ruby/app1
-  directory, type in terminal window:
+  To run the application, first make sure you have Notary up and running. The Notary application runs from the same directory as the Payment application, type in terminal window:
 
-    ruby ./notary.rb
+    ruby ./notary.rb &
 
 
   Next, change directory back to the payment application and run it:
@@ -105,3 +147,4 @@ create and run one's own full-fledged sample applications.
   Your application becomes available in a web browser, so you may visit: http://localhost:4567/ to see it working.
 
   You may interrupt the application at any time by pressing ctrl-C.
+

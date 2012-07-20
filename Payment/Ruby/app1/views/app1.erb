@@ -1,3 +1,4 @@
+
 <!-- Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012 
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com 
@@ -91,7 +92,7 @@ For more information contact developer.support@att.com -->
 					<br />
 							<strong>Merchant Transaction ID:</strong> <%= @new_transaction[:merchant_transaction_id] %>
 						<br/>
-							<strong>Transaction Auth Code:</strong> <%= params['TransactionAuthCode'] %>
+							<strong>Transaction Auth Code:</strong> <%= @new_transaction[:transaction_auth_code] %>
 						<br />
 					<br/>
 			</div>
@@ -276,25 +277,35 @@ For more information contact developer.support@att.com -->
                     Feature 4: Notifications</h2>
             </div>
         </div>
-		<form method="get" name="refreshNotifications" action="/refreshNotifications">
+		<form method="post" name="refreshNotifications" action="/refreshNotifications">
         <div class="navigation">
             <br />
             <div align="center">
                 <table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
                     <thead>
                         <tr>
-                            <th style="width: 100px" class="cell">
+                            <th style="width: 100px" class="cell" align="left">
                                 <strong>Notification ID</strong>
-                            </th>
-                            <th style="width: 100px" class="cell">
+                            </th><th></th>
+                            <th style="width: 100px" class="cell" align="left">
                                 <strong>Notification Type</strong>
-                            </th>
-                            <th style="width: 125px" class="cell">
+                            </th><th></th>
+                            <th style="width: 125px" class="cell" align="left">
                                 <strong>Transaction ID</strong>
                             </th>
                         </tr>
                     </thead>
                     <tbody>
+                    <% @notifications.each do |n| %>                       
+    				<tr>
+						<td style="width: 100px" class="cell" align="left">
+								<%= n[:notificationId] %></td><td></td>
+						<td style="width: 100px" td class="cell" align="left"><%= n[:notificationtype]%></td><td></td>
+                        <td style="width: 100px" td class="cell" align="left">
+    							<%= n[:original_trxId] %></td>
+							<td></td>
+					</tr>
+				    <% end %>
 						<tr>
                             <td class="cell">
                                 <button type="submit" name="refreshNotifications">

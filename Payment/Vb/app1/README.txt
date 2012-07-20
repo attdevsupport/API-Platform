@@ -5,7 +5,7 @@
 * For more information contact developer.support@att.com<mailto:developer.support@att.com>
 ******************************************************************************************
 
-  AT&T API Samples - Payment app 1
+  AT&T API Platform Samples - Payment app 1
  ---------------------------------
 This application allows the user to 
 

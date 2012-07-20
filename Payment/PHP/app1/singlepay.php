@@ -1,5 +1,5 @@
 <!-- 
-Licensed by AT&T under 'Software Development Kit Tools Agreement.' June 2012
+Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 For more information contact developer.support@att.com
@@ -15,9 +15,13 @@ if(!is_dir($folder))
     exit();
   }
 
-$db2_filename = $folder . "/". "singlepaylistener.txt";
+$db2_filename = $folder . "/". "singlepaylistener.db";
+$db9_filename = $folder . "/". "singlepaylistener.txt";
 $db3_filename = $folder . "/". "notificationdetails.txt";
+$db10_filename = $folder . "/". "checker.db";
 $db4_filename = $folder . "/". "notificationack.txt";
+$db5_filename = $folder . "/". "notifications.txt";
+
 header("Content-Type: text/html; charset=ISO-8859-1");
 include ("config.php");
 include ($oauth_file);
@@ -652,54 +656,86 @@ if(true) {
 
 
 <h2><br />Feature 4: Notifications</h2>
-
+<?php $responses = array();
+?>
 </div>
 </div>
 <form method="post" name="refreshNotifications" action="singlepay.php">
-<div id="navigation"><br/>
+<div id="navigation" align="center">
 
-<div align="center"><table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
+<table style="width: 750px" cellpadding="1" cellspacing="1" border="0">
 <thead>
     <tr>
-    	<th style="width: 100px" class="cell"><strong>Notification ID</strong></th>
-        <th style="width: 100px" class="cell"><strong>Notification Type</strong></th>
-        <th style="width: 125px" class="cell"><strong>Transaction ID</strong></th>
-        <th style="width: 175px" class="cell"><strong>Merchant Transaction ID</strong></th>
+<th class="cell" align="left"><strong>Notification ID</strong></th>
+        
+<th class="cell" align="left"><strong>Notification Type</strong></th>
+<th style="width: 100px" class="cell"></th>
+<th class="cell" align="left"><strong>Transaction ID</strong></th>
+
+
+</td>
 	</tr>
 </thead>
 <tbody>
 <?php
-$notificationdetails = unserialize(file_get_contents($db3_filename));
-   foreach ( $notificationdetails as $notificationdetail ){
-print_r(var_export($notificationdetails));
+if(true) {
+       $responses = unserialize(file_get_contents($db10_filename)); 
+       $counters = count($responses);
+      for($i = 0;$i <= $counters; $i++){
 
 ?>
-	<tr>
-	  <td align="center" class="cell"><?php echo $notificationdetail["notificationId"]; ?></td>
-        <td align="center" class="cell"><?php echo $notificationdetail["NotificationType"]; ?></td>
-        <td align="center" class="cell"><?php echo $notificationdetail["OriginalTransactionId"]; ?></td>
-    </tr>
-<?php }
+                      <tr>
+                        <td class="cell" align="left">
+	                  <?php echo $responses[$i]; $i = $i + 1;?>
+
+			     </td>
+                         <td class="cell" align="left">
+                         <?php echo $responses[$i]; $i = $i + 1;?>
+</td>
+
+                        </td>
+                        <td></td>
+                        <td class="cell" align="left"><?php echo $responses[$i];?></td>
+                      </tr>  
+<?php 
+      } }?>
+  <tr>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td class="cell"><button type="submit" name="refreshNotifications" value="refreshNotifications">Refresh</button>
+    </td
+  </tr>
+  </tbody></table>
+
+
+</form>
+</div>
+<?php
 $refreshNotifications = $_REQUEST["refreshNotifications"];
+
 if($refreshNotifications != null) {
 
+$notificationlist = array();
+$notifications = file_get_contents($db9_filename);
+
+    preg_match_all("'<hub:notificationId>(.*?)</hub:notificationId>'si", $notifications, $match);
+
+    foreach($match[1] as $val) {
+   $notificationId = $val;
+   array_push($notificationlist, $notificationId);
+
+    
 $fullToken=check_token($FQDN,$api_key,$secret_key,$scope,$fullToken,$oauth_file);
   $accessToken=$fullToken["accessToken"];
 
 
-$notifications = unserialize(file_get_contents($db2_filename));
-foreach ( $notifications as $notification ){
-
-
-
-
   
 
   
-    $url = $FQDN."/rest/3/Commerce/Payment/Notifications/".$notification["notificationId"];
+    $url = $FQDN."/rest/3/Commerce/Payment/Notifications/".$notificationId;
 
   
-
   $accept = "Accept: application/json";
   $authorization = "Authorization: Bearer ".$accessToken;
   $content = "Content-Type: application/json";
@@ -717,31 +753,44 @@ foreach ( $notifications as $notification ){
 
   $responseCode=curl_getinfo($request,CURLINFO_HTTP_CODE);
 
-  if($responseCode==200) {
-    $jsonResponse = json_decode($response,true);
-   $originalTrxId = $jsonResponse["OriginalTransactionId"];
-   $notificationType = $jsonResponse["NotificationType"];
-   $notificationId = $notification["notificationId"];
-   
+if($responseCode==200) {
+	$jsonResponse = json_decode($response,true);
+    $originaltrxId = $jsonResponse["GetNotificationResponse"]["OriginalTransactionId"];
+    $notificationtype = $jsonResponse["GetNotificationResponse"]["NotificationType"];
+    $responses["NotificationType"] = $notificationtype;
+    $responses["NotificationID"] = $notificationId;
+   $responses["OriginalTransactionId"] = $originaltrxId;
 
-    
-    $notificationdetail["$originalTrxId"] = $originalTrxId;
-    $notificationdetail["notificationType"] = $notificationType;
-    $transaction["notificationId"] = $notificationId;
-    
 
-    if ( file_exists( $db3_filename) ){
+
+
+
+$details = array();
+  if ( file_exists( $db3_filename) ){
             $notificationdetails = unserialize(file_get_contents($db3_filename));
+            array_push($details, $response); 
+            $fp = fopen($db3_filename, 'a+') or die("I could not open $db3_filename.");
+            fwrite($fp, serialize($response));
             
-            $fp = fopen($db3_filename, 'w+') or die("I could not open $db3_filename.");
-            fwrite($fp,$response, $notificationId);
-            fclose($fp);
    }
-}
+
+if ( file_exists( $db10_filename) ){
+            $responses = unserialize(file_get_contents($db10_filename));
+            
+            $fp = fopen($db10_filename, 'a+') or die("I could not open $db10_filename.");
+            array_push($responses, $notificationtype, $notificationId, $originaltrxId);
+            fwrite($fp, serialize($responses));
+           
+            
+            
+           
+   }
+
+
 if($refreshNotifications != null) {
         if($responseCode==200) {
 
-   $url = $FQDN."/rest/3/Commerce/Payment/Notifications/".$notification["notificationId"];
+   $url = $FQDN."/rest/3/Commerce/Payment/Notifications/".$notificationId;
 
   
 
@@ -774,14 +823,14 @@ $accept = "Accept: application/json";
 
   if($responseCode==200) {
     $jsonResponse = json_decode($response,true);
-    //echo $response;
-
+    $acknowledgements = array();
     if ( file_exists( $db4_filename) ){
-            $notificationacks = unserialize(file_get_contents($db4_filename));
+            $acknowledgements = unserialize(file_get_contents($db4_filename));
             
-            $fp = fopen($db4_filename, 'w+') or die("I could not open $db4_filename.");
-            fwrite($fp,$response);
-            fclose($fp);
+            $fp = fopen($db4_filename, 'a+') or die("I could not open $db4_filename.");
+            array_push($acknowledgements, $response); 
+            fwrite($fp, $acknowledgements);
+           
    }
 }
 
@@ -791,19 +840,16 @@ $accept = "Accept: application/json";
 
 } } 
 
+ if ( file_exists( $db5_filename) ){
+            $nootificationlist = unserialize(file_get_contents($db5_filename));
+            
+            $fp = fopen($db5_filename, 'w+') or die("I could not open $db5_filename.");
+            fwrite($fp, serialize($notificationlist));
+fclose($fp);}}
 } ?>
 </tbody>
 </table>
 </div>
-<div id="extra"><br/>
-
-<table border="0" width="100%">
-  <tbody>
-  <tr>
-    <td class="cell"><button type="submit" name="refreshNotifications" value="refreshNotifications">Refresh</button>
-    </td>
-  </tr>
-  </tbody></table>
 
 </div>
 <br clear="all" />
@@ -824,6 +870,7 @@ For more information contact <a href="mailto:developer.support@att.com">develope
 </div>
 
 </body></html>
+
 
 
 

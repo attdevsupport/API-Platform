@@ -1,5 +1,5 @@
 <!-- 
-Licensed by AT&T under 'Software Development Kit Tools Agreement.' June 2012
+Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 For more information contact developer.support@att.com
@@ -13,7 +13,6 @@ For more information contact developer.support@att.com
     $scope = "MMS";
     $attachment_dir = "attachment";
     $oauth_file = "/tmp/mmsoauthtoken.php";
-    $default_address = "425-802-8620";
     $default_subject = "simple message to myself";
 
 ?>

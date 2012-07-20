@@ -1,3 +1,10 @@
+<% 
+//Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+//TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+//Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+//For more information contact developer.support@att.com
+%>
+
 <%@ page contentType="text/html; charset=iso-8859-1" language="java" %>
 <%@ page import="org.apache.commons.httpclient.*"%>
 <%@ page import="org.apache.commons.httpclient.methods.*"%>
@@ -37,7 +44,6 @@ Long date = System.currentTimeMillis();
 				{
 					savedAccessTokenExpiry = date + (Long.parseLong("3155692597470")); //100 years
 				}
-               //savedAccessTokenExpiry = date + (Long.parseLong(expires_in)*1000);
                 savedRefreshTokenExpiry = date + Long.parseLong("86400000");
                 method.releaseConnection();
                 PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/OauthStorage.jsp"))), false);
@@ -62,7 +68,6 @@ Long date = System.currentTimeMillis();
 					savedRefreshTokenExpiry = date + (Long.parseLong("86400000")); //24 hours
 				}
                 savedAccessTokenExpiry = date + (Long.parseLong(expires_in)*1000);
-                //savedRefreshTokenExpiry = date + Long.parseLong("86400000");
                 method.releaseConnection();
                 PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/OauthStorage.jsp"))), false);
        	        String toSave = "\u003C\u0025\nString savedAccessToken = \"" + accessToken + "\";\nLong savedAccessTokenExpiry = Long.parseLong(\"" + savedAccessTokenExpiry + "\");\nString savedRefreshToken = \"" + refreshToken + "\";\nLong savedRefreshTokenExpiry = Long.parseLong(\"" + savedRefreshTokenExpiry + "\");\n\u0025\u003E";
