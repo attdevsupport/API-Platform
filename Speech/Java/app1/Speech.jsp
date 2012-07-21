@@ -285,7 +285,7 @@ if(SpeechToText!=null){
 					</table>
 					</div><br/>
 						<%
-					}			 
+						}
 					else {
 							JSONObject jsonResponse = new JSONObject();
 						%>
