@@ -77,7 +77,7 @@ Partial Public Class SMS_App2
             If Not Page.IsPostBack Then
                 shortCodeLabel.Text = Me.shortCode
                 Me.UpdateVoteCount()
-                'Me.drawMessages()
+                Me.drawMessages()
             End If
         Catch ex As Exception
             Me.DrawPanelForFailure(statusPanel, ex.ToString())

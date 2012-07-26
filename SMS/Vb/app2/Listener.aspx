@@ -5,7 +5,7 @@ Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer
 For more information contact developer.support@att.com
 -->
 
-<%@ Page Language="VB" AutoEventWireup="false" CodeFile="Listener.aspx.vb" Inherits="Listener" %>
+<%@ Page Language="VB" AutoEventWireup="true" CodeFile="Listener.aspx.vb" Inherits="Listener" %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
