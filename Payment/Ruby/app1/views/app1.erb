@@ -295,18 +295,15 @@ For more information contact developer.support@att.com -->
                             </th><th></th>
                             <th style="width: 125px" class="cell" align="left">
                                 <strong>Transaction ID</strong>
-                            </th>
+                            </th><th></th>
                         </tr>
                     </thead>
                     <tbody>
                     <% @notifications.each do |n| %>                       
     				<tr>
-						<td style="width: 100px" class="cell" align="left">
-								<%= n[:notificationId] %></td><td></td>
+						<td style="width: 100px" td class="cell" align="left"><%= n[:notificationId] %></td><td></td>
 						<td style="width: 100px" td class="cell" align="left"><%= n[:notificationtype]%></td><td></td>
-                        <td style="width: 100px" td class="cell" align="left">
-    							<%= n[:original_trxId] %></td>
-							<td></td>
+                       				<td style="width: 100px" td class="cell" align="left"><%= n[:original_trxId] %></td><td></td>
 					</tr>
 				    <% end %>
 						<tr>

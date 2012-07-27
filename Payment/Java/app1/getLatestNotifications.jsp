@@ -1,3 +1,10 @@
+<% 
+//Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+//TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+//Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+//For more information contact developer.support@att.com
+%>
+
 <%@ page contentType="application/json" language="java" %><%@ page import="java.io.*" %><%@ page import="java.util.Arrays" %><%@ page import="java.util.Collections" %><%@ page import="java.util.Comparator" %><%@ include file="config.jsp" %><%
 
 String notificationId = "";
@@ -16,7 +23,6 @@ Collections.reverse(Arrays.asList(files));
 
 
 if(directory.listFiles().length>0) {
-//if(total> 0) {
     int i = 0;
     for(File notificationFile : files){  
           String notificationFileName = notificationFile.getName(); 
@@ -24,14 +30,14 @@ if(directory.listFiles().length>0) {
             notificationId = (inFile1.readLine()).trim(); 
             inFile1.close();
       
-            if((i==directory.listFiles().length-1)) {    // || (i==9)
+            if((i==directory.listFiles().length-1)) {    
                   %>{"path":"Notifications/<%=notificationFileName%>","notificationId":"<%=notificationId%>"}]}<%
             } else {
                   %>{"path":"Notifications/<%=notificationFileName%>","notificationId":"<%=notificationId%>"},<%
             }
         i += 1;
-       // if(i==9 )
-        //    break;
+        if(i==9 )
+            break;
     }
 }
 %>

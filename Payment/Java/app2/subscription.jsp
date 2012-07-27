@@ -37,6 +37,7 @@
 <%@ page import="java.io.*" %>
 <%@ page import="java.util.Random" %>
 <%@ include file="getToken.jsp" %>
+<%@ page import="java.util.Arrays" %><%@ page import="java.util.Collections" %><%@ page import="java.util.Comparator" %>
 <%
 
 String newSubscription = request.getParameter("newSubscription");
@@ -44,6 +45,7 @@ String getSubscriptionStatus = request.getParameter("getSubscriptionStatus");
 String getSubscriptionDetails = request.getParameter("getSubscriptionDetails");
 String refundSubscription = request.getParameter("refundSubscription");
 String refundReasonText = "User did not like product";
+String refreshNotifications = request.getParameter("refreshNotifications");
 
 String trxId = (String) session.getAttribute("trxId");
 if(trxId==null || trxId.equalsIgnoreCase("null"))
@@ -51,6 +53,10 @@ if(trxId==null || trxId.equalsIgnoreCase("null"))
 String subscriptionId = request.getParameter("subscriptionId");
 if(subscriptionId==null || subscriptionId.equalsIgnoreCase("null"))
     subscriptionId = "";
+	
+String notificationId = request.getParameter("notificationId");
+if(notificationId==null || notificationId.equalsIgnoreCase("null"))
+    notificationId = "";
 
 String merchantTrxId = request.getParameter("merchantTrxId");
 if(merchantTrxId==null || merchantTrxId.equalsIgnoreCase("null"))
@@ -614,51 +620,168 @@ if(true) {
 <div id="content">
 
 <h2><br />Feature 5: Notifications</h2>
-
 </div>
 </div>
-<form method="post" name="refreshNotifications" >
-<div id="navigation"><br/>
+<form method="post" name="refreshNotifications" action="subscription.jsp">
+<div id="navigation" align="center">
 
-<div align="center"><table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
+<table style="width: 750px" cellpadding="1" cellspacing="1" border="0">
 <thead>
     <tr>
-    	<th style="width: 100px" class="cell"><strong>Notification ID</strong></th>
-        <th style="width: 100px" class="cell"><strong>Notification Type</strong></th>
-        <th style="width: 125px" class="cell"><strong>Subscription ID</strong></th>
-        <th style="width: 175px" class="cell"><strong>Merchant Subscription ID</strong></th>
+<th class="cell" align="left"><strong>Notification ID</strong></th>
+        
+<th class="cell" align="left"><strong>Notification Type</strong></th>
+<th style="width: 100px" class="cell"></th>
+<th class="cell" align="left"><strong>Transaction ID</strong></th>
+
+</td>
 	</tr>
 </thead>
 <tbody>
+<%
+if(true) 
+{
+				File directory = new File(application.getRealPath("/CallBack/")); 
+				File[] files = directory.listFiles();
+				Arrays.sort(files, new Comparator<File>(){
+					public int compare(File f1, File f2)
+					{
+						return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
+					} });
+				Collections.reverse(Arrays.asList(files));
+				
+				if(directory.listFiles().length>0) {
+					int i = 0;
+				
+					String notID="";
+					String notType="";
+					String transID="";
+					
+					for(File callbackFile : files){  
+						  String callbackFileName = callbackFile.getName(); 
+							RandomAccessFile inFile1 = new RandomAccessFile(application.getRealPath("CallBack/" + callbackFileName),"r");
+							notID = (inFile1.readLine()).trim(); 
+							notType=(inFile1.readLine()).trim();
+							transID=(inFile1.readLine()).trim();
+							
+							inFile1.close();			
+							i += 1;	
+							 %>
+						<tr>
+							<td class="cell" align="left">
+						  <%=notID%>
 
+					 </td>
+							 <td class="cell" align="left">
+							 <%=notType%>
+					 </td>
 
-
-
-
-
-</tbody>
-</table>
-</div>
-<div id="extra"><br/>
-
-<table border="0" width="100%">
-  <tbody>
-  <tr>
-    <td class="cell"><button type="submit" name="refreshNotifications">Refresh</button>
-    </td>
+							</td>
+							<td></td>
+							<td class="cell" align="left"><%=transID%></td> 
+					   </tr>		 
+				  
+					<%
+						
+					    if(i==5 )			//Print latest 5 transactions
+						    break;
+					}
+					%> 
+ <tr>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td class="cell"><button type="submit" name="refreshNotifications" value="refreshNotifications">Refresh</button>
+    </td
   </tr>
   </tbody></table>
 
+
+</form>
 </div>
 <br clear="all" />
 </form></div>
 
+<% 
+				}
+				
+String notificationType = "";
+String transactionId = "";
+
+		String url1 = request.getRequestURL().toString().substring(0,request.getRequestURL().toString().lastIndexOf("/")) + "/getLatestNotifications.jsp";
+		HttpClient client1 = new HttpClient();
+		GetMethod method1 = new GetMethod(url1);  
+		int statusCode2 = client1.executeMethod(method1); 
+		JSONObject jsonResponse1 = new JSONObject(method1.getResponseBodyAsString());
+		JSONArray notificationList = new JSONArray(jsonResponse1.getString("notificationList"));
+		String totalNumberOfNotifications = jsonResponse1.getString("totalNumberOfNotifications");
+        System.out.println("method1.getResponseBodyAsString()"+method1.getResponseBodyAsString());
+      
+        method1.releaseConnection();
+
+
+	String not = "";
+    if(refreshNotifications!=null) {
+            
+			for(int i=0; i<notificationList.length(); i++) 
+            {
+            	JSONObject notification = new JSONObject(notificationList.getString(i));
+            	
+            	notificationId = notification.getString("notificationId");
+                not = notificationId.trim();			
+            	
+				String url = FQDN + "/rest/3/Commerce/Payment/Notifications/" + not;		//Builds the Get Request
+                HttpClient clients = new HttpClient();
+				GetMethod methods = new GetMethod(url);
+                System.out.println("accessToken"+accessToken);
+            	methods.addRequestHeader("Authorization", "Bearer " + accessToken);
+                methods.addRequestHeader("Accept", "application/json");
+        		int statusCode = clients.executeMethod(methods);
+                 
+ 
+                if (statusCode  == 200 || statusCode == 201)
+                {
+					 JSONObject jsonResponse = new JSONObject(methods.getResponseBodyAsString());
+					 JSONObject getNotificationResponse = jsonResponse.getJSONObject("GetNotificationResponse");
+					 
+					 String noType = getNotificationResponse.getString("NotificationType");
+					 String originalTrxId = getNotificationResponse.getString("OriginalTransactionId");
+					 
+					int random = (int)(Math.random()*10000000);
+					PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/CallBack/" + random + ".txt"))), false);		//Print Successfull notification details to a file.
+					outWrite.println(not);
+					outWrite.println(noType);
+					outWrite.println(originalTrxId);
+					
+					outWrite.close();
+								
+					HttpClient client2 = new HttpClient(); 		//Acknowledge the notification
+					PutMethod method2 = new PutMethod(url);
+					method2.addRequestHeader("Authorization", "Bearer " + accessToken);
+					method2.addRequestHeader("Content-Type", "application/json");
+					method2.addRequestHeader("Accept", "application/json"); 
+					int statusCode3 = client2.executeMethod(method2);
+	   
+					if(statusCode3==200 || statusCode3==201) 
+					System.out.println("Acknowlegement success ");
+					
+					methods.releaseConnection();    
+					method2.releaseConnection();
+				}
+                     			
+			}	
+    }
+	
+}
+
+%>
+
 <div id="footer">
 
-	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
-    <p>&#169; 2012 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
+    <p>&#169; 2012 AT&amp;T Intellectual Property. All rights reserved. <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
 <br>
-The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
+The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and not meant to be used as part of your product. The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br>
 For download of tools and documentation, please go to <a href="https://devconnect-api.att.com/" target="_blank">https://devconnect-api.att.com</a>
 <br>
@@ -666,6 +789,4 @@ For more information contact <a href="mailto:developer.support@att.com">develope
 
 </div>
 </div>
-
-</body></html>
 

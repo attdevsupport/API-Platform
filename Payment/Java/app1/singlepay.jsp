@@ -37,6 +37,8 @@
 <%@ page import="java.io.*" %>
 <%@ page import="java.util.Random" %>
 <%@ include file="getToken.jsp" %>
+<%@ page import="java.util.Arrays" %><%@ page import="java.util.Collections" %><%@ page import="java.util.Comparator" %>
+
 <%
 
 String newTransaction = request.getParameter("newTransaction");
@@ -263,7 +265,6 @@ if(getTransactionType==3)
     url = FQDN + "/rest/3/Commerce/Payment/Transactions/TransactionId/" + trxId;
 HttpClient client = new HttpClient();
 GetMethod method = new GetMethod(url);
-//method.setQueryString("access_token=" + accessToken);
 method.addRequestHeader("Authorization", "Bearer " + accessToken);
 method.addRequestHeader("Accept","application/json");
 int statusCode = client.executeMethod(method);
@@ -357,7 +358,7 @@ if(true) {
                       <tr>
                         <td class="cell" align="right">
                         <% if(transaction.getString("transactionId").length() > 4)
-            				{ %>
+                			{ %>
                             <input type="radio" name="trxIdRefund" value="<%=transaction.getString("transactionId")%>" checked /><%=transaction.getString("transactionId")%>
                         </td>
                         <td></td>
@@ -404,7 +405,6 @@ if(true) {
     String url = FQDN + "/rest/3/Commerce/Payment/Transactions/" + trxIdRefund;
     HttpClient client = new HttpClient();
     PutMethod method = new PutMethod(url);
-    //method.setQueryString("access_token=" + accessToken + "&Action=refund");
     method.addRequestHeader("Authorization", "Bearer " + accessToken);
     method.addRequestHeader("Content-Type","application/json");
     method.addRequestHeader("Accept","application/json");
@@ -461,30 +461,91 @@ if(true) {
 <div id="content">
 
 <h2><br />Feature 4: Notifications</h2>
-
 </div>
 </div>
-<form method="GET" name="refreshNotifications" >
-<div id="navigation"><br/>
+<form method="post" name="refreshNotifications" action="singlepay.jsp">
+<div id="navigation" align="center">
 
-<div align="center"><table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
+<table style="width: 750px" cellpadding="1" cellspacing="1" border="0">
 <thead>
     <tr>
-     <th style="width: 100px" class="cell"><strong>Notification ID</strong></th>
-        <th style="width: 100px" class="cell"><strong>Notification Type</strong></th>
-        <th style="width: 125px" class="cell"><strong>Transaction ID</strong></th>
-	
+<th class="cell" align="left"><strong>Notification ID</strong></th>
+        
+<th class="cell" align="left"><strong>Notification Type</strong></th>
+<th style="width: 100px" class="cell"></th>
+<th class="cell" align="left"><strong>Transaction ID</strong></th>
 
-</tr>
+</td>
+	</tr>
 </thead>
-    </br>
-		</br>
-		</br>
 <tbody>
 <%
-//if(true) 
-//{
-//String notificationId = "";
+if(true) 
+{
+				File directory = new File(application.getRealPath("/CallBack/")); 
+				File[] files = directory.listFiles();
+				Arrays.sort(files, new Comparator<File>(){
+					public int compare(File f1, File f2)
+					{
+						return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
+					} });
+				Collections.reverse(Arrays.asList(files));
+				
+				if(directory.listFiles().length>0) {
+					int i = 0;
+				
+					String notID="";
+					String notType="";
+					String transID="";
+					
+					for(File callbackFile : files){  
+						  String callbackFileName = callbackFile.getName(); 
+							RandomAccessFile inFile1 = new RandomAccessFile(application.getRealPath("CallBack/" + callbackFileName),"r");
+							notID = (inFile1.readLine()).trim(); 
+							notType=(inFile1.readLine()).trim();
+							transID=(inFile1.readLine()).trim();
+							
+							inFile1.close();			
+							i += 1;	
+							 %>
+						<tr>
+							<td class="cell" align="left">
+						  <%=notID%>
+
+					 </td>
+							 <td class="cell" align="left">
+							 <%=notType%>
+					 </td>
+
+							</td>
+							<td></td>
+							<td class="cell" align="left"><%=transID%></td> 
+					   </tr>		 
+				  
+					<%
+						
+					    if(i==5 )			//Print latest 5 transactions
+						    break;
+					}
+					%> 
+ <tr>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td class="cell"><button type="submit" name="refreshNotifications" value="refreshNotifications">Refresh</button>
+    </td
+  </tr>
+  </tbody></table>
+
+
+</form>
+</div>
+<br clear="all" />
+</form></div>
+
+<% 
+				}
+				
 String notificationType = "";
 String transactionId = "";
 
@@ -492,116 +553,67 @@ String transactionId = "";
 		HttpClient client1 = new HttpClient();
 		GetMethod method1 = new GetMethod(url1);  
 		int statusCode2 = client1.executeMethod(method1); 
-		//client1.executeMethod(method1);
 		JSONObject jsonResponse1 = new JSONObject(method1.getResponseBodyAsString());
 		JSONArray notificationList = new JSONArray(jsonResponse1.getString("notificationList"));
 		String totalNumberOfNotifications = jsonResponse1.getString("totalNumberOfNotifications");
         System.out.println("method1.getResponseBodyAsString()"+method1.getResponseBodyAsString());
-       // System.out.println(statusCode2);
-    
+      
         method1.releaseConnection();
 
-%>
-</tbody>
-</table>
-</div>
-<div id="extra"><br/>
 
-<table border="0" width="100%">
-  <tbody>
-  <tr>
-    <td class="cell"><button type="submit" name="refreshNotifications">Refresh</button>
-    </td>
-  </tr>
-  </tbody></table>
-
-</div>
-<br clear="all" />
-</form></div>
-
-<% 
-String not = "";
+	String not = "";
     if(refreshNotifications!=null) {
             
 			for(int i=0; i<notificationList.length(); i++) 
             {
             	JSONObject notification = new JSONObject(notificationList.getString(i));
-            	//THE GET REQUEST///////
+            	
             	notificationId = notification.getString("notificationId");
                 not = notificationId.trim();			
-            	String url = FQDN + "/rest/3/Commerce/Payment/Notifications/" + not;
-                System.out.println(url);
+            	
+				String url = FQDN + "/rest/3/Commerce/Payment/Notifications/" + not;		//Builds the Get Request
                 HttpClient clients = new HttpClient();
 				GetMethod methods = new GetMethod(url);
                 System.out.println("accessToken"+accessToken);
             	methods.addRequestHeader("Authorization", "Bearer " + accessToken);
                 methods.addRequestHeader("Accept", "application/json");
         		int statusCode = clients.executeMethod(methods);
-                
-                //JSONObject jsonParams = new JSONObject(methods.getResponseBodyAsString());
-
-                //notificationType = jsonParams.getString("NotificationType");
-                //transactionId = jsonParams.getString("OriginalTransactionId");
-                
-                
-            	
+                 
+ 
                 if (statusCode  == 200 || statusCode == 201)
                 {
-                      %>
-                        <div class="successWide">
-                        <strong>successfull: GETnotification </strong><br />
-                        <%=methods.getResponseBodyAsString()%>
-                        </div><br/>
-            <%
-                }
-                else
-                {
-                     
-                      %>
-                        <div class="errorWide">
-                        <strong>fail: Failed to GET notification </strong><br />
-                        <%=methods.getResponseBodyAsString()%>
-                        </div><br/>
-            <%
-                }
-                
-                 //THE PUT/////////
-                String url2 = FQDN + "/rest/3/Commerce/Payment/Notifications/" + not;
-                System.out.println(url2);
-                HttpClient client2 = new HttpClient();
-    			PutMethod method2 = new PutMethod(url2);
-                method2.addRequestHeader("Authorization", "Bearer " + accessToken);
-                method2.addRequestHeader("Content-Type", "application/json");
-                method2.addRequestHeader("Accept", "application/json"); 
-                int statusCode3 = client2.executeMethod(method2);
-   
-                if(statusCode3==200 || statusCode3==201) {
-                     
-                      %>
-                        <div class="successWide">
-                        <strong>successfull: acknowledge </strong><br />
-                        <%=method2.getResponseBodyAsString()%>
-                        </div><br/>
-            <%
-                }
-                else
-                {
-                     
-                      %>
-                        <div class="errorWide">
-                        <strong>FAIL: failed to acknowledge notification </strong><br />
-                        <%=method2.getResponseBodyAsString()%>
-                        </div><br/>
-            <%
-                
-                    }
-             
-            
-        methods.releaseConnection();    
-        method2.releaseConnection();
+					 JSONObject jsonResponse = new JSONObject(methods.getResponseBodyAsString());
+					 JSONObject getNotificationResponse = jsonResponse.getJSONObject("GetNotificationResponse");
+					 
+					 String noType = getNotificationResponse.getString("NotificationType");
+					 String originalTrxId = getNotificationResponse.getString("OriginalTransactionId");
+					 
+					int random = (int)(Math.random()*10000000);
+					PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/CallBack/" + random + ".txt"))), false);		//Print Successfull notification details to a file.
+					outWrite.println(not);
+					outWrite.println(noType);
+					outWrite.println(originalTrxId);
+					
+					outWrite.close();
+								
+					HttpClient client2 = new HttpClient(); 		//Acknowledge the notification
+					PutMethod method2 = new PutMethod(url);
+					method2.addRequestHeader("Authorization", "Bearer " + accessToken);
+					method2.addRequestHeader("Content-Type", "application/json");
+					method2.addRequestHeader("Accept", "application/json"); 
+					int statusCode3 = client2.executeMethod(method2);
+	   
+					if(statusCode3==200 || statusCode3==201) 
+					System.out.println("Acknowlegement success ");
+					
+					methods.releaseConnection();    
+					method2.releaseConnection();
+				}
+                     			
+			}	
     }
+	
 }
-//}
 
 %>
 

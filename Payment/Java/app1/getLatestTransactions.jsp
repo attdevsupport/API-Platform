@@ -1,3 +1,10 @@
+<% 
+//Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+//TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+//Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+//For more information contact developer.support@att.com
+%>
+
 <%@ page contentType="application/json" language="java" %><%@ page import="java.io.*" %><%@ page import="java.util.Arrays" %><%@ page import="java.util.Collections" %><%@ page import="java.util.Comparator" %><%@ include file="config.jsp" %><%
 String transactionId = "";
 String merchantTransactionId = "";
@@ -49,7 +56,7 @@ if(directory.listFiles().length>0) {
                   %>{"transactionId":"<%=transactionId%>","merchantTransactionId":"<%=merchantTransactionId%>","transactionAuthCode":"<%=transactionAuthCode%>","consumerId":"<%=consumerId%>"},<%
             }
         i += 1;
-        if(i==5)
+        if(i==9)
             break;
     } 
 } else {

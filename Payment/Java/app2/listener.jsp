@@ -22,7 +22,6 @@
 try{
 	String data=null;
 
-
 	InputStream is = request.getInputStream();
 	ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
