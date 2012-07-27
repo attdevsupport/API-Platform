@@ -765,6 +765,7 @@ if($responseCode==200) {
 
 
 
+
 $details = array();
   if ( file_exists( $db3_filename) ){
             $notificationdetails = unserialize(file_get_contents($db3_filename));
@@ -775,10 +776,9 @@ $details = array();
    }
 
 if ( file_exists( $db10_filename) ){
-            $responses = unserialize(file_get_contents($db10_filename));
-            
+            $responsetest = unserialize(file_get_contents($db10_filename));
+            array_push($responses, $notificationId, $notificationtype, $originaltrxId);
             $fp = fopen($db10_filename, 'a+') or die("I could not open $db10_filename.");
-            array_push($responses, $notificationtype, $notificationId, $originaltrxId);
             fwrite($fp, serialize($responses));
            
             
@@ -829,7 +829,7 @@ $accept = "Accept: application/json";
             
             $fp = fopen($db4_filename, 'a+') or die("I could not open $db4_filename.");
             array_push($acknowledgements, $response); 
-            fwrite($fp, $acknowledgements);
+            fwrite($fp, $response);
            
    }
 }

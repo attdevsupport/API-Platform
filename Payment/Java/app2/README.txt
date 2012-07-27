@@ -5,7 +5,7 @@ Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer
 For more information contact developer.support@att.com
 -->
 
-  AT&T API Samples - Payment app 2
+  AT&T API Platform Samples - Payment app 2
  ------------------------------
 
 This file describes how to set-up, configure and run the Java Applications using AT&T API Platform services. 

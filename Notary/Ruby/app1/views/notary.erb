@@ -6,7 +6,7 @@ For more information contact developer.support@att.com -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
-	<head>
+    <head>
 		<title>AT&T Sample Notary Application - Sign Payload Application</title>
 		<meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
 		<link rel="stylesheet" type="text/css" href="style/common.css"/ >
@@ -60,43 +60,33 @@ For more information contact developer.support@att.com -->
 						Feature 1: Sign Payload</h2>
 					</div>
 				</div>
-				<form method="post" name="signContent" enctype="multipart/form-data" action="/signPayload">
+				<form method="post" name="signContent" enctype="multipart/form-data" action="/submit">
 					<div id="navigation">
-						<table border="0" width="100%">
+						<table border="0" width="950px">
 							<tbody>
 								<tr>
-									<td width="20%" valign="top" class="label">Request:</td>
-                                                                        <td class="cell">
-                                                                            <textarea rows="12" name="payload" style="width: 90%"><%= settings.notary_payload %></textarea>
-                                                                        </td>
-								</tr>
-								<tr>
-									<td></td>
-									<td class="cell" align="right">
-									<button type="submit" name="submit">
-										Sign Payload
-									</button></td>
-								</tr>
+									<td valign="top" class="label">Request:</td>
+                                        <td class="cell" ><textarea rows="20" cols="60" name="payload" ><%= settings.notary_payload %></textarea>
+                                    </td>
+                                    <td width="50px"></td>
+                                        <td  valign="top" class="label">Signed Payload:</td>
+                                        <td class="cell" width="400px" ><%= settings.notary_result[:signed_payload] %></td>
+							    </tr>
+							    <tr>
+                                <td></td>
+                                <td></td>
+                                    <td width="50px"></td>
+                                    <td valign="top" class="label">Signature:</td>
+                                    <td class="cell"><%= settings.notary_result[:signature] %></td>
+							    </tr>
+                                <tr>
+                                    <td></td>
+                                    <td class="cell" align="right"><button type="submit" name="signPayload" value="signPayload">Sign Payload</button></td>
+                                </tr>
 							</tbody>
 						</table>
 					</div>
 				</form>
-				<div id="extra">
-					<% if session[:notary_result] %>
-					<table border="0" width="100%">
-						<tbody>
-							<tr>
-								<td width="20%" valign="top" class="label">Signed Payload:</td>
-								<td class="cell"><%= settings.notary_result[:signed_payload] %></td>
-							</tr>
-							<tr>
-								<td valign="top" class="label">Signature:</td>
-								<td class="cell"><%= settings.notary_result[:signature] %></td>
-							</tr>
-						</tbody>
-					</table>
-					<% end %>
-				</div>
 				<br clear="all" />
 				<div id="footer">
 					<div style="float: right; width: 20%; font-size: 9px; text-align: right">
@@ -114,3 +104,4 @@ For more information contact developer.support@att.com -->
 			</div>
 		</body>
 </html>
+

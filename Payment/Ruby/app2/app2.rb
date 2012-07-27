@@ -64,8 +64,8 @@ post '/refreshNotifications' do
   refresh_notifications
 end
 
-post '/transactionListener'  do
-  transaction_listener
+post '/subscriptionListener'  do
+  subscription_listener
 end
 
 # URL handlers go here
@@ -146,7 +146,7 @@ def callback_subscription
 
   @new_subscription[:merchant_transaction_id] = session[:merchant_transaction_id]
   @new_subscription[:subscription_auth_code] = params['SubscriptionAuthCode']
-  params['SubscriptionAuthCode'] = session[:subscription_auth_code]
+  session[:subscription_auth_code] = params['SubscriptionAuthCode']
   @subscriptions.push @new_subscription
 
   @subscriptions.delete_at 0 if @subscriptions.length > settings.recent_subscriptions_stored
@@ -161,7 +161,7 @@ def get_subscription_status
   if params['getSubscriptionType'] == '1'
     u = settings.FQDN + "/rest/3/Commerce/Payment/Subscriptions/MerchantTransactionId/" + session[:merchant_transaction_id]
   elsif params['getSubscriptionType'] == '2'
-    u = settings.FQDN + "/rest/3/Commerce/Payment/Subscriptions/SubscriptionAuthCode/" + @subscriptions.last[:subscription_auth_code]
+    u = settings.FQDN + "/rest/3/Commerce/Payment/Subscriptions/SubscriptionAuthCode/" + session[:subscription_auth_code]
   elsif params['getSubscriptionType'] == '3'
     u = settings.FQDN + "/rest/3/Commerce/Payment/Subscriptions/SubscriptionId/" + @subscriptions.last[:subscription_id]
   end
@@ -267,7 +267,7 @@ def refresh_notifications
   end
  end
  read_recent_notifications
- erb :app1
+ erb :app2
 end
  
 def acknowledge_notifications
@@ -290,11 +290,11 @@ def acknowledge_notifications
   end
   end
 ensure
-  return erb :app1
+  return erb :app2
   read_recent_notifications
 end
 
-def transaction_listener
+def subscription_listener
   # make the API call
   input   = request.env["rack.input"].read
   notificationId = /\<hub:notificationId\>(.*?)<\/hub:notificationId>/.match(input)[1]
@@ -303,7 +303,7 @@ def transaction_listener
   File.open("#{settings.notifications_file_dir}/notifications", 'a+') { |f| f.puts notificationId }
  
 ensure
-  return erb :app1
+  return erb :app2
 end
 
 

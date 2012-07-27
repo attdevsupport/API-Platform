@@ -5,7 +5,7 @@
 * For more information contact developer.support@att.com<mailto:developer.support@att.com>
 ******************************************************************************************
 
-  AT&T API Samples - Payment app 2
+  AT&T API Platform Samples - Payment app 2
  ----------------------------------
 
 This file describes how to set up, configure and run the Ruby applications using AT&T API Platform services. 
@@ -126,8 +126,9 @@ create and run one's own full-fledged sample applications.
 
 	3) secret_key                        : set the value as per your registered appliaction 'Secret key' field value
 
-    4) FQDN                              : https://api.att.com
+    	4) FQDN                              : https://api.att.com
 
+	5) payment_redirect	             : URL which redirects back to payment application after notary details have been viewed
 
 4. Running the application
 

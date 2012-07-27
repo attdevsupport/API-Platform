@@ -2,4 +2,4 @@ port:             4568
 api_key:          
 secret_key:       
 FQDN:             https://api.att.com
-
+payment_redirect: http://localhost:4567/

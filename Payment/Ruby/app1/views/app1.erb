@@ -95,6 +95,9 @@ For more information contact developer.support@att.com -->
 							<strong>Transaction Auth Code:</strong> <%= @new_transaction[:transaction_auth_code] %>
 						<br />
 					<br/>
+					<form name="getNotaryDetails" action="<%= settings.notary_app_view_payload_url %>">
+    						<input type="submit" name="submit" value="View Notary Details" />
+				</form>
 			</div>
 		<br/>
 		<% end %>

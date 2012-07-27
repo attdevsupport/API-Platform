@@ -92,9 +92,12 @@ For more information contact developer.support@att.com -->
 					<br />
 							<strong>Merchant Transaction ID:</strong> <%= @new_subscription[:merchant_transaction_id] %>
 						<br/>
-							<strong>Subscription Auth Code:</strong> <%= params['SubscriptionAuthCode'] %>
+							<strong>Subscription Auth Code:</strong> <%= @new_subscription[:subscription_auth_code] %>
 						<br />
 					<br/>
+					<form name="getNotaryDetails" action="<%= settings.notary_app_view_payload_url %>">
+    						<input type="submit" name="submit" value="View Notary Details" />
+					</form>
 			</div>
 		<br/>
 		<% end %>
@@ -120,12 +123,12 @@ For more information contact developer.support@att.com -->
 						<tr>
 							<td class="cell">
 								<input type="radio" name="getSubscriptionType" value="1" checked="checked" />
-								Merchant Transaction ID: <%= @subscriptions.last ? @subscriptions.last[:merchant_transaction_id] : '' %></td>
+								Merchant Transaction ID: <%= session[:merchant_transaction_id] %></td>
 						</tr>
 						<tr>
 							<td class="cell">
 								<input type="radio" name="getSubscriptionType" value="2" />
-								Auth Code: <%= @subscriptions.last ? @subscriptions.last[:subscription_auth_code] : '' %></td>
+								Auth Code: <%= session[:subscription_auth_code] %></td>
 						</tr>
 							<tr>
 								<td class="cell">

@@ -49,6 +49,7 @@ def sign_payload payload
   result = Hash.new
   result[:signed_payload] = from_json['SignedDocument']
   result[:signature] = from_json['Signature']
+  
   return result
 
 end
@@ -91,3 +92,4 @@ post '/signPayload' do
 
   return r.to_json
 end
+

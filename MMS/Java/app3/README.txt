@@ -74,9 +74,12 @@ Please populate the following parameters in config.jsp as specified below:
 
 2) clientSecretAut                    : {set the value as per your registered appliaction 'Secret key' field value} 
 
-3) FQDN        	  	          : https://api.att.com
+3) shortCode1                         : short-code 1
 
-4) shortCode1                         : short-code 1
+4) shortCode2                         : short-code 2
+
+5) FQDN        	  	          : https://api.att.com
+
 
 Note: If your application is promoted from Sandbox environment to Production environment and you decide to use production 
 application settings, you must update parameters 1-2 as per production application details.

@@ -49,13 +49,6 @@ document.write("" + navigator.userAgent);
 
 </div>
 </div>
-
-<br />
-<br />
-<p>Photos sent to short code <?php echo $short_code; ?>:</p>
-
-<div id="gallerywrapper">
-
 <?php
 $path_is = __FILE__;
 $folder = dirname($path_is);
@@ -67,11 +60,26 @@ if(!is_dir($folder))
   }
 $db_filename = $folder . "/". "mmslistner.db";
 $messages = unserialize(file_get_contents($db_filename)); 
+$count = 0;
+foreach ( $messages as $message ){
+$count = $count + 1;
+}
+?>
+<br />
+<br />
+<p>Photos sent to short code <?php echo $short_code; ?>:<?php echo $count; ?></p>
 
+<div id="gallerywrapper">
+
+<?php
+$db_filename = $folder . "/". "mmslistner.db";
+$messages = unserialize(file_get_contents($db_filename)); 
+$count = 0;
 foreach ( $messages as $message ){
   $message_txt =  file_get_contents( $folder.'/'.$message["text"]);
   $message_image =  "MoMessages/".$message['image'];
   $address = $message['address'];
+$count = $count + 1;
   ?>
     <div id="gallery"><img src="<?php echo $message_image ; ?>" width="150" border="0"  /><br /><strong>Sent from:</strong> <?php echo $address; ?> <br /><strong>On:</strong> <?php echo $message['date']; ?><div><?php echo $message_txt; ?></div></div>
 

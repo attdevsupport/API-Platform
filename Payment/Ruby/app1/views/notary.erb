@@ -1,98 +1,97 @@
+
 <!-- Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012 
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com 
 For more information contact developer.support@att.com -->
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
     <head>
-		<title>AT&T Sample Notary Application - Sign Payload Application</title>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-    <link rel="stylesheet" type="text/css" href="css/common.css" />
-	</head>
+    	<title>AT&T Sample Notary Application - Sign Payload Application</title>
+		<meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
+		<link rel="stylesheet" type="text/css" href="style/common.css"/ >
 		<body>
 			<div id="container">
-			<!-- open HEADER -->
-			<div id="header">
-            <div>
-                <div class="hcRight">
-                   <%= Time.now.utc.strftime("%a, %B %d, %Y %H:%M:%S UTC") %>
-            </div>
-                <div class="hcLeft">
-                    Server Time:</div>
-            </div>
-            <div>
-                <div class="hcRight">
-                    <script language="JavaScript" type="text/javascript">
-                        var myDate = new Date();
-                        document.write(myDate);
-                    </script>
-                </div>
-                <div class="hcLeft">
-                    Client Time:</div>
-            </div>
-            <div>
-                <div class="hcRight">
-                    <script language="JavaScript" type="text/javascript">
-                        document.write("" + navigator.userAgent);
-                    </script>
-                </div>
-                <div class="hcLeft">
-                    User Agent:</div>
-            </div>
-            <br clear="all" />
-			</div>
-			<!-- close HEADER -->
-				<div>
+				<!-- open HEADER -->
+				<div id="header">
+					<div>
+						<div id="hcRight">
+							<%= Time.now.utc.strftime("%a, %B %d, %Y %H:%M:%S UTC") %>
+						</div>
+						<div id="hcLeft">
+							Server Time:
+						</div>
+					</div>
+					<div>
+						<div id="hcRight">
+							<script language="JavaScript" type="text/javascript">
+								var myDate = new Date();
+								document.write(myDate);
+
+							</script>
+						</div>
+						<div id="hcLeft">
+							Client Time:
+						</div>
+					</div>
+					<div>
+						<div id="hcRight">
+							<script language="JavaScript" type="text/javascript">
+								document.write("" + navigator.userAgent);
+
+							</script>
+						</div>
+						<div id="hcLeft">
+							User Agent:
+						</div>
+					</div>
+					<br clear="all" />
+				</div><!-- close HEADER -->
+				<div id="wrapper">
 					<div id="content">
-					<h1>
-						AT&T Sample Notary Application - Sign Payload Application</h1>
-					<h2>	
-						Feature 1: Sign Payload</h2>
-						<br />
+						<h1>AT&T Sample Notary Application - Sign Payload Application</h1>
 					</div>
 				</div>
-				<form method="post" name="signContent" enctype="multipart/form-data" action="/signPayload">
+				<div id="wrapper">
+					<div id="content">
+						<h2>
+						<br />
+						Feature 1: Sign Payload</h2>
+					</div>
+				</div>
+				
 					<div id="navigation">
-						<table border="0" width="100%">
+						<table border="0" width="950px">
 							<tbody>
 								<tr>
-									<td width="20%" valign="top" class="label">Request:</td>
-										<td class="cell">
-                                        <textarea rows="12" name="payload" style="width: 90%"><%= settings.notary_payload %></textarea>
+									<td valign="top" class="label">Request:</td>
+                                        <td class="cell" ><textarea rows="20" cols="60" name="payload" ><%= settings.notary_payload %></textarea>
                                     </td>
-								</tr>
-								<tr>
-									<td></td>
-									<td class="cell" align="right">
-									<button type="submit" name="submit">
-										Sign Payload
-									</button></td>
-								</tr>
+                                    <td width="50px"></td>
+                                        <td  valign="top" class="label">Signed Payload:</td>
+                                        <td class="cell" width="400px" ><%= settings.notary_result[:signed_payload] %></td>
+							    </tr>
+							    <tr>
+                                <td></td>
+                                <td></td>
+                                    <td width="50px"></td>
+                                    <td valign="top" class="label">Signature:</td>
+                                    <td class="cell"><%= settings.notary_result[:signature] %></td>
+							    </tr>
+                                <tr>
+                                    <td></td>
+                                    
+                                    <form name="returnPayment" action="<%= settings.payment_redirect %>">
+        						        <td class="cell" align="right"><input type="submit" name="signNotary" value="Back" /></td>
+							        </form>
+                                </tr>
 							</tbody>
 						</table>
 					</div>
-				</form>
-				<div id="extra">
-					<% if session[:notary_result] %>
-					<table border="0" width="100%">
-						<tbody>
-							<tr>
-								<td width="20%" valign="top" class="label">Signed Payload:</td>
-								<td class="cell"><%= settings.result[:signed_payload] %></td>
-							</tr>
-							<tr>
-								<td valign="top" class="label">Signature:</td>
-								<td class="cell"><%= settings.result[:signature] %></td>
-							</tr>
-						</tbody>
-					</table>
-					<% end %>
-				</div>
 				<br clear="all" />
 				<div id="footer">
 					<div style="float: right; width: 20%; font-size: 9px; text-align: right">
-						Powered by AT&amp;T Virtual Mobile
+						Powered by AT&amp;T Cloud Architecture
 					</div>
 					<p>
 						&copy; 2012 AT&amp;T Intellectual Property. All rights reserved. <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
