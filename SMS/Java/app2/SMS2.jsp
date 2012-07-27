@@ -8,7 +8,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
     <title>AT&amp;T Sample SMS Application - SMS app 2 - Voting</title>
-	<meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
+    <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
     <link rel="stylesheet" type="text/css" href="style/common.css"/ >
     <script type="text/javascript" src="js/helper.js">
 </script>
@@ -20,28 +20,10 @@
 <%@ page import="org.json.*"%>
 <%@ page import="java.io.*" %>
 <%@ include file="getToken.jsp" %>
-
 <%
-
-String responseFormat = "json";
 String getReceivedSms = request.getParameter("getReceivedSms");
-int numberOfMessagesInBatch = 0;
-JSONObject jsonResponse = new JSONObject();
-JSONObject smsList = new JSONObject();
-JSONArray messages = new JSONArray();
-String invalidMessagePresent = null;
-String url2 = request.getRequestURL().toString().substring(0,request.getRequestURL().toString().lastIndexOf("/")) + "/getVotes.jsp";
-HttpClient client2 = new HttpClient();
-GetMethod method2 = new GetMethod(url2);  
-int statusCode2 = client2.executeMethod(method2); 
-JSONObject jsonResponse2 = new JSONObject(method2.getResponseBodyAsString());
-Integer totalNumberOfVotes = Integer.parseInt(jsonResponse2.getString("totalNumberOfVotes"));
-Integer footballVotes = Integer.parseInt(jsonResponse2.getString("footballVotes"));
-Integer baseballVotes = Integer.parseInt(jsonResponse2.getString("baseballVotes"));
-Integer basketballVotes = Integer.parseInt(jsonResponse2.getString("basketballVotes"));
-method2.releaseConnection();
-%>
 
+%>
 <div id="container">
 <!-- open HEADER --><div id="header">
 
@@ -49,7 +31,7 @@ method2.releaseConnection();
     <div id="hcRight">
         <%=new java.util.Date()%>
     </div>
-	<div id="hcLeft">Server Time:</div>
+    <div id="hcLeft">Server Time:</div>
 </div>
 <div>
 	<div id="hcRight"><script language="JavaScript" type="text/javascript">
@@ -77,73 +59,29 @@ document.write("" + navigator.userAgent);
 </div>
 <form method="post" name="getReceivedSms" action="">
 
-   <%  
-    //If Update Totals button was clicked, do this.
-       if(getReceivedSms!=null) {
 
-           String url = FQDN + "/rest/sms/2/messaging/inbox";   
-           HttpClient client = new HttpClient();
-           GetMethod method = new GetMethod(url);  
-           method.setQueryString("access_token=" + accessToken + "&RegistrationID=" + shortCode1);
-           method.addRequestHeader("Accept","application/" + responseFormat);
-           session.setAttribute("registrationID", shortCode1);
-           int statusCode = client.executeMethod(method); 
-           
-        if(statusCode==200) {
-          	jsonResponse = new JSONObject(method.getResponseBodyAsString());
-      		smsList = new JSONObject(jsonResponse.getString("InboundSmsMessageList"));
-      		numberOfMessagesInBatch = Integer.parseInt(smsList.getString("NumberOfMessagesInThisBatch"));
-      		int numberOfMessagesInBatch1 = 0;
-      		int numberOfMessagesInBatch2 = 0;
-      		int numberOfMessagesInBatch3 = 0;
-      		int numberOfMessagesPending = Integer.parseInt(smsList.getString("TotalNumberOfPendingMessages"));
-      		messages = new JSONArray(smsList.getString("InboundSmsMessage"));
-      		if(messages.length()!=0) {
-				for(int i=0;i<numberOfMessagesInBatch; i++) {
-					JSONObject msg = new JSONObject(messages.getString(i));
-					String messageText = msg.getString("Message");
-					if(messageText.equalsIgnoreCase("football")) {
-						numberOfMessagesInBatch1 += 1;
-					} else if(messageText.equalsIgnoreCase("baseball")) {
-						numberOfMessagesInBatch2 += 1;
-					} else if(messageText.equalsIgnoreCase("basketball")) {
-						numberOfMessagesInBatch3 += 1;
-					} else {
-						invalidMessagePresent = "yes";
-					}
-					
-				}
-      		}
-           
-    	   footballVotes = footballVotes + numberOfMessagesInBatch1;
-    	   PrintWriter outWrite1 = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/WEB-INF/tally1.txt"))), false);
-   		   outWrite1.write(footballVotes.toString());
-   		   outWrite1.close();
-   		   
-    	   baseballVotes = baseballVotes + numberOfMessagesInBatch2;
-    	   PrintWriter outWrite2 = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/WEB-INF/tally2.txt"))), false);
-   		   outWrite2.write(baseballVotes.toString());
-   		   outWrite2.close();
-   		   
-    	   basketballVotes = basketballVotes + numberOfMessagesInBatch3;
-    	   PrintWriter outWrite3 = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/WEB-INF/tally3.txt"))), false);
-   		   outWrite3.write(basketballVotes.toString());
-   		   outWrite3.close();
+<%		
+			String url = request.getRequestURL().toString().substring(0,request.getRequestURL().toString().lastIndexOf("/")) + "/getVoteData.jsp";
+			HttpClient client = new HttpClient();
+			GetMethod method = new GetMethod(url);  
+			int statusCode = client.executeMethod(method); 
+			//client.executeMethod(method);
+			RandomAccessFile inFile2 = new RandomAccessFile(application.getRealPath("VoteTotals/voteTotals.txt"),"r");		
+	
+			String footTotal = inFile2.readLine();
+			String baseTotal = inFile2.readLine();
+			String basketTotal = inFile2.readLine();
+			String total = inFile2.readLine();
+			
+			inFile2.close();
+
             %>
-                <div id="navigation">
-                <br /><br />
-                <div class="success">
-                <strong>SUCCESS:</strong><br />
-                <strong>Total votes:</strong> <%=totalNumberOfVotes%>
-                </div>
-            <%
-        } else {
-        	%><%=method.getResponseBodyAsString()%><%
-        }
-        method.releaseConnection();
-       }
-              	%>
-
+ <br/> 
+						<div id = "extraleft">
+						<div class="success">
+                        <strong>Success:</strong><br />
+                        <strong>Total Votes: </strong><%=total%>
+                        </div><br/>
 <br/>
 <table style="width: 300px" cellpadding="1" cellspacing="1" border="0">
 <thead>
@@ -155,16 +93,17 @@ document.write("" + navigator.userAgent);
 <tbody>
 	<tr>
         <td align="center" class="cell">Football</td>
-        <td align="center" class="cell"><%=footballVotes%></td>
+        <td align="center" class="cell"><%=footTotal%></td>
     </tr>
 	<tr>
         <td align="center" class="cell">Baseball</td>
-        <td align="center" class="cell"><%=baseballVotes%></td>
+        <td align="center" class="cell"><%=baseTotal%></td>
     </tr>
 	<tr>
         <td align="center" class="cell">Basketball</td>
-        <td align="center" class="cell"><%=basketballVotes%></td>
+        <td align="center" class="cell"><%=basketTotal%></td>
     </tr>
+	
 </tbody>
 </table>
 
@@ -174,46 +113,75 @@ document.write("" + navigator.userAgent);
   <table>
   <tbody>
   <tr>
-  	<td><br /><br /><br /><br /><br /><br /><br /><br /><button type="submit" name="getReceivedSms">Update Vote Totals</button></td>
+	<td><br /><button type="submit" name="getReceivedSms">Update Vote Totals</button></td>
   </tr>
-  </tbody></table>
+  </tbody>
+  </table>
 
 </div>
+<br></br><br></br><br></br>
 <br clear="all" />
 <div align="center"></div>
-</form>
 
 <%
-if(invalidMessagePresent!=null) {
+
+if(getReceivedSms!=null)
+{
+	String dateTime = "";
+	String messageId = "";
+	String message = "";
+	String senderAdd = "";
+	String destinationAdd = "";	
+	JSONObject jsonResponse = new JSONObject(method.getResponseBodyAsString());
+	JSONArray voteList = new JSONArray(jsonResponse.getString("voteList"));
+
+		
+	for(int i = 0;i < voteList.length(); i++){
+	JSONObject vote = new JSONObject(voteList.getString(i));
 %>
-    <br/>
-    <div class="errorWide">
-    <strong>INVALID TEXT PRESENT:</strong><br />
-    </div>
-    <div align="center"><table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
-    <thead>
-        <tr>
-            <th style="width: 100px" class="cell"><strong>Message Index</strong></th>
-            <th style="width: 275px" class="cell"><strong>Message Text</strong></th>
-            <th style="width: 125px" class="cell"><strong>Sender Address</strong></th>
-        </tr>
-    </thead>
-    <tbody>
-    		<%if(messages.length()!=0) {
-            for(int i=0;i<numberOfMessagesInBatch; i++) {
-			JSONObject msg = new JSONObject(messages.getString(i));
-            if((!msg.getString("Message").equalsIgnoreCase("Football")) && (!msg.getString("Message").equalsIgnoreCase("Basketball")) && (!msg.getString("Message").equalsIgnoreCase("Baseball"))) {
-            %>
-            <tr>
-                <td class="cell"><%=msg.getString("MessageId")%></td>
-                <td align="center" class="cell"><%=msg.getString("Message")%></td>
-                <td align="center" class="cell"><%=msg.getString("SenderAddress")%></td>
-            </tr>
-				<%}}}%>
-	</tbody>
-    </table>
-    </div><br/>
-<% } %>
+<table width="100%" cellpadding="1" cellspacing="1" border="0">
+<%if(i==0){%>
+<tbody>
+    <tr>
+<th class="cell" width="30%" align="left"><strong>Date & Time </strong></th>
+<th class="cell" width="10%" align="left"><strong>MessageID</strong></th>
+<th class="cell" width="20%" align="left"><strong>Message</strong></th>
+<th class="cell" width="20%" align="left"><strong>SenderAddress</strong></th>
+<th class="cell" width="20%" align="left"><strong>DestinationAddress</strong></th>
+</td>
+	</tr>
+<%}%>
+<tr>
+                        <td class="cell" width="30%" align="left">
+	                    <%=vote.getString("Date&Time")%>
+			            </td>
+						 <td class="cell" width="10%" align="left">
+                         <%=vote.getString("MessageID")%>
+				        </td>
+						 <td class="cell" width="20%" align="left">
+                         <%=vote.getString("Message")%>
+				         </td>
+						 <td class="cell" width="20%" align="left">
+                         <%=vote.getString("SenderAddress")%>
+				         </td>
+						 <td class="cell" width="20%" align="left">
+	                     <%=vote.getString("DestinationAddress")%>
+			             </td>
+</tr>  
+<% 							
+		if (i==10) {
+			break;
+		}
+      }  
+ } %>   
+  </tbody></table>
+
+
+</form>
+</div>
+<br clear="all" />
+</div>
+
 
 
 <div id="footer">
