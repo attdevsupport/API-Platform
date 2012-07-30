@@ -226,6 +226,7 @@ public partial class SMS_App2 : System.Web.UI.Page
         string srcFile = Request.MapPath(ConfigurationManager.AppSettings["MessagesFilePath"]);
         string destFile = Request.MapPath(ConfigurationManager.AppSettings["MessagesTempFilePath"]);
         string messagesLine = String.Empty;
+        receiveMessagePanel.Controls.Clear();
         if (File.Exists(srcFile))
         {
             File.Move(srcFile, destFile);
