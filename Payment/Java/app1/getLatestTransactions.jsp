@@ -5,11 +5,16 @@
 //For more information contact developer.support@att.com
 %>
 
-<%@ page contentType="application/json" language="java" %><%@ page import="java.io.*" %><%@ page import="java.util.Arrays" %><%@ page import="java.util.Collections" %><%@ page import="java.util.Comparator" %><%@ include file="config.jsp" %><%
+<%@ page contentType="application/json" language="java"%><%@ page
+	import="java.io.*"%><%@ page import="java.util.Arrays"%><%@ page
+	import="java.util.Collections"%><%@ page import="java.util.Comparator"%><%@ include
+	file="config.jsp"%>
+<%
 String transactionId = "";
 String merchantTransactionId = "";
 String transactionAuthCode = "";
 String consumerId = "";
+String MerchantSubscriptionIdList = "";
 
 File directory = new File(application.getRealPath("/transactionData/")); 
 File[] files = directory.listFiles();
@@ -33,6 +38,7 @@ if(directory.listFiles().length>0) {
             merchantTransactionId = inFile1.readLine();
             transactionAuthCode = inFile1.readLine();
             consumerId = inFile1.readLine();
+    		MerchantSubscriptionIdList = inFile1.readLine();
             if(transactionId==null || transactionId.equalsIgnoreCase("null"))
                 transactionId = "";
             if(transactionId.indexOf(194)!=-1)
@@ -49,14 +55,20 @@ if(directory.listFiles().length>0) {
                 consumerId = "";
             if(consumerId.indexOf(194)!=-1)
                 consumerId = consumerId.substring(0, consumerId.length()-2);
+				
+			if(MerchantSubscriptionIdList==null || MerchantSubscriptionIdList.equalsIgnoreCase("null"))
+                MerchantSubscriptionIdList = "";
+            if(MerchantSubscriptionIdList.indexOf(194)!=-1)
+                MerchantSubscriptionIdList = MerchantSubscriptionIdList.substring(0, MerchantSubscriptionIdList.length()-2);	
+			
             inFile1.close();
-            if((i==directory.listFiles().length-1) || (i==4)) {
-                  %>{"transactionId":"<%=transactionId%>","merchantTransactionId":"<%=merchantTransactionId%>","transactionAuthCode":"<%=transactionAuthCode%>","consumerId":"<%=consumerId%>"}]}<%
+            if((i==directory.listFiles().length-1) || (i==5)) {
+                  %>{"transactionId":"<%=transactionId%>","merchantTransactionId":"<%=merchantTransactionId%>","transactionAuthCode":"<%=transactionAuthCode%>","consumerId":"<%=consumerId%>","MerchantSubscriptionIdList":"<%=MerchantSubscriptionIdList%>"}]}<%
             } else {
-                  %>{"transactionId":"<%=transactionId%>","merchantTransactionId":"<%=merchantTransactionId%>","transactionAuthCode":"<%=transactionAuthCode%>","consumerId":"<%=consumerId%>"},<%
+                  %>{"transactionId":"<%=transactionId%>","merchantTransactionId":"<%=merchantTransactionId%>","transactionAuthCode":"<%=transactionAuthCode%>","consumerId":"<%=consumerId%>","MerchantSubscriptionIdList":"<%=MerchantSubscriptionIdList%>"},<%
             }
         i += 1;
-        if(i==9)
+        if(i==6)
             break;
     } 
 } else {

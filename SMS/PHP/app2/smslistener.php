@@ -15,53 +15,37 @@ if(!is_dir($folder))
     exit();
   }
 $db_filename = $folder . "/". "smslistner.db";
+$db1_filename = $folder . "/". "smslistner2.db";
+$db2_filename = $folder . "/". "counter.txt";
 $post_body = file_get_contents('php://input');
-//$post_body = file_get_contents( "full_message3.mm");
+$jsonresponse = json_decode($post_body, true);
+$senderaddress = $jsonresponse["SenderAddress"];
+$datetime = $jsonresponse["DateTime"];
+$destinationaddress = $jsonresponse["DestinationAddress"];
+$messageId = $jsonresponse["MessageId"];
+$message = $jsonresponse["Message"];
+$votes = array();
 
-if ( file_exists( $db_filename) ){
-  $messages = unserialize(file_get_contents($db_filename)); 
- }else{
-  $messages = null;
- }
-
-$local_post_body = $post_body;
-$ini = strpos($local_post_body,"<SenderAddress>tel:+");
-if ($ini == 0 )
-  {
-    exit();
-  }else{
-  preg_match("@<SenderAddress>tel:(.*)</SenderAddress>@i",$local_post_body,$matches);
-  $message["address"] = $matches[1];
-  preg_match("@<subject>(.*)</subject>@i",$local_post_body,$matches);
-  $message["subject"] = $matches[1];
-  $message["date"]= date("D M j G:i:s T Y");
- }
-
-if( $messages !=null ){
-  $last=end($messages);
-  $message['id']=$last['id']+1;
- }else{
-    $message['id'] = 0;
- }
-
-mkdir($folder.'/'.$message['id']);
-
-
-if( $messages !=null ){
-  $messages_stored=array_push($messages,$message);
-  if ( $messages_stored > 10 ){
-    $old_message = array_shift($messages);
-    // remove old message folder 
-  }
- }else{
-    $messages = array($message);
- }
+if ( file_exists( $db1_filename) ){
+            $voters = unserialize(file_get_contents($db1_filename));
+            array_push($votes,$jsonresponse);
+            $fp = fopen($db1_filename, 'w') or die("I could not open $db1_filename.");
+            fwrite($fp, serialize($votes));
+           
+            
+            
+           
+   }
 
 $fp = fopen($db_filename, 'w+') or die("I could not open $filename.");
-fwrite($fp, serialize($messages));
+fwrite($fp, $post_body);
 fclose($fp);
+//$fp = fopen($db1_filename, 'a+') or die("I could not open $filename.");
+//fwrite($fp, serialize($votes));
+//fclose($fp);
 //print_r($messages);
 
 
 ?>
+
 

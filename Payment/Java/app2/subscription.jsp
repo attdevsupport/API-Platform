@@ -1,3 +1,4 @@
+
 <% 
 //Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
 //TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
@@ -6,39 +7,47 @@
 %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
-    <title>AT&T Sample Payment Application - Subscription Application</title>
-    <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
-    <link rel="stylesheet" type="text/css" href="style/common.css"/ >
-    <script type="text/javascript" src="js/helper.js">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<title>AT&T Sample Payment Application - Subscription
+	Application</title>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
+<link rel="stylesheet" type="text/css" href="style/common.css"/ >
+<script type="text/javascript" src="js/helper.js">
+	
 </script>
 <head>
 <script type="text/javascript">
+	var _gaq = _gaq || [];
+	_gaq.push([ '_setAccount', 'UA-28378273-1' ]);
+	_gaq.push([ '_trackPageview' ]);
 
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-28378273-1']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
+	(function() {
+		var ga = document.createElement('script');
+		ga.type = 'text/javascript';
+		ga.async = true;
+		ga.src = ('https:' == document.location.protocol ? 'https://ssl'
+				: 'http://www')
+				+ '.google-analytics.com/ga.js';
+		var s = document.getElementsByTagName('script')[0];
+		s.parentNode.insertBefore(ga, s);
+	})();
 </script>
 </head>
 <body>
 
-<%@ page contentType="text/html; charset=iso-8859-1" language="java" %>
-<%@ page import="org.apache.commons.httpclient.*"%>
-<%@ page import="org.apache.commons.httpclient.methods.*"%>
-<%@ page import="org.json.JSONObject"%>
-<%@ page import="org.json.JSONArray"%>
-<%@ page import="java.io.*" %>
-<%@ page import="java.util.Random" %>
-<%@ include file="getToken.jsp" %>
-<%@ page import="java.util.Arrays" %><%@ page import="java.util.Collections" %><%@ page import="java.util.Comparator" %>
-<%
+	<%@ page contentType="text/html; charset=iso-8859-1" language="java"%>
+	<%@ page import="org.apache.commons.httpclient.*"%>
+	<%@ page import="org.apache.commons.httpclient.methods.*"%>
+	<%@ page import="org.json.JSONObject"%>
+	<%@ page import="org.json.JSONArray"%>
+	<%@ page import="java.io.*"%>
+	<%@ page import="java.util.Random"%>
+	<%@ include file="getToken.jsp"%>
+	<%@ page import="java.util.Arrays"%><%@ page
+		import="java.util.Collections"%><%@ page
+		import="java.util.Comparator"%>
+	<%
 
 String newSubscription = request.getParameter("newSubscription");
 String getSubscriptionStatus = request.getParameter("getSubscriptionStatus");
@@ -106,70 +115,87 @@ if(product==1) {
 }
 %>
 
-<div id="container">
-<!-- open HEADER --><div id="header">
+	<div id="container">
+		<!-- open HEADER -->
+		<div id="header">
 
-<div>
-    <div id="hcRight">
-        <%=new java.util.Date()%>
-    </div>
-    <div id="hcLeft">Server Time:</div>
-</div>
-<div>
-    <div id="hcRight"><script language="JavaScript" type="text/javascript">
-var myDate = new Date();
-document.write(myDate);
-</script></div>
-    <div id="hcLeft">Client Time:</div>
-</div>
-<div>
-    <div id="hcRight"><script language="JavaScript" type="text/javascript">
-document.write("" + navigator.userAgent);
-</script></div>
-    <div id="hcLeft">User Agent:</div>
-</div>
-<br clear="all" />
-</div><!-- close HEADER -->
+			<div>
+				<div id="hcRight">
+					<%=new java.util.Date()%>
+				</div>
+				<div id="hcLeft">Server Time:</div>
+			</div>
+			<div>
+				<div id="hcRight">
+					<script language="JavaScript" type="text/javascript">
+						var myDate = new Date();
+						document.write(myDate);
+					</script>
+				</div>
+				<div id="hcLeft">Client Time:</div>
+			</div>
+			<div>
+				<div id="hcRight">
+					<script language="JavaScript" type="text/javascript">
+						document.write("" + navigator.userAgent);
+					</script>
+				</div>
+				<div id="hcLeft">User Agent:</div>
+			</div>
+			<br clear="all" />
+		</div>
+		<!-- close HEADER -->
 
-<div id="wrapper">
-<div id="content">
+		<div id="wrapper">
+			<div id="content">
 
-<h1>AT&T Sample Payment Application - Subscription Application</h1>
-<h2>Feature 1: Create New Subscription</h2><br/>
+				<h1>AT&T Sample Payment Application - Subscription Application</h1>
+				<h2>Feature 1: Create New Subscription</h2>
+				<br />
 
-</div>
-</div>
-<form method="post" name="newSubscription" >
-<div id="navigation">
+			</div>
+		</div>
+		<form method="post" name="newSubscription">
+			<div id="navigation">
 
-<table border="0" width="100%">
-  <tbody>
-  <tr>
-    <td width="50%" valign="top" class="label"><input type="radio" name="product" value="1" checked> Subscribe for $1.99 per month:</td>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top" class="label"><input type="radio" name="product" value="2"> Subscribe for $3.99 per month:</td>
-    </td></tr>
-  </tbody></table>
+				<table border="0" width="100%">
+					<tbody>
+						<tr>
+							<td width="50%" valign="top" class="label"><input
+								type="radio" name="product" value="1" checked> Subscribe
+								for $1.99 per month:</td>
+							</td>
+						</tr>
+						<tr>
+							<td width="50%" valign="top" class="label"><input
+								type="radio" name="product" value="2"> Subscribe for
+								$3.99 per month:</td>
+							</td>
+						</tr>
+					</tbody>
+				</table>
 
-</div>
-<div id="extra">
+			</div>
+			<div id="extra">
 
-  <table>
-  <tbody>
-  <tr>
-      <td><br /><br /><button type="submit" name="newSubscription">Subscribe</button></td>
-  </tr>
-  </tbody></table>
+				<table>
+					<tbody>
+						<tr>
+							<td><br />
+							<br />
+							<button type="submit" name="newSubscription">Subscribe</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
 
 
-</div>
-<br clear="all" />
-<div align="center"></div>
-</form>
+			</div>
+			<br clear="all" />
+			<div align="center"></div>
+		</form>
 
-<% if(newSubscription!=null) { 
+		<% if(newSubscription!=null) { 
 merchantTrxId = "user" + randomGenerator.nextInt(100000) + "subscription" + randomGenerator.nextInt(1000000);
 session.setAttribute("merchantTrxId", merchantTrxId);
 session.setAttribute("trxId", null);
@@ -199,87 +225,96 @@ String forNotary = "notary.jsp?signPayload=true&return=subscription.jsp&payload=
 response.sendRedirect(forNotary);
 } %>
 
-<% if(request.getParameter("SubscriptionAuthCode")!=null) { 
+		<% if(request.getParameter("SubscriptionAuthCode")!=null) { 
 PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/transactionData/" + merchantTrxId + ".txt"))), false);
 String toSave = trxId + "\n" + merchantTrxId + "\n" + authCode;
 outWrite.write(toSave);
 outWrite.close();    
 session.setAttribute("authCode", authCode);
 %>
-<div class="successWide">
-<strong>SUCCESS:</strong><br />
-<strong>Merchant Subscription ID</strong> <%=(String) session.getAttribute("merchantTrxId")%><br/>
-<strong>Subscription Auth Code</strong> <%=authCode%><br /><br/>
-<form name="getNotaryDetails" action="notary.jsp">
-    <input type="submit" name="getNotaryDetails" value="View Notary Details" />
-</form>
-</div><br/>
-<% } %>
+		<div class="successWide">
+			<strong>SUCCESS:</strong><br /> <strong>Merchant
+				Subscription ID</strong>
+			<%=(String) session.getAttribute("merchantTrxId")%><br /> <strong>Subscription
+				Auth Code</strong>
+			<%=authCode%><br />
+			<br />
+			<form name="getNotaryDetails" action="notary.jsp">
+				<input type="submit" name="getNotaryDetails"
+					value="View Notary Details" />
+			</form>
+		</div>
+		<br />
+		<% } %>
 
-<%
+		<%
 if(request.getParameter("signedPayload")!=null && request.getParameter("signature")!=null){
     response.sendRedirect(FQDN + "/rest/3/Commerce/Payment/Subscriptions?clientid=" + clientIdAut + "&SignedPaymentDetail=" + request.getParameter("signedPayload") + "&Signature=" + request.getParameter("signature"));
 }
 %>
 
-<div id="wrapper">
-<div id="content">
+		<div id="wrapper">
+			<div id="content">
 
-<h2><br />
-Feature 2: Get Subscription Status</h2>
+				<h2>
+					<br /> Feature 2: Get Subscription Status
+				</h2>
 
-</div>
-</div>
-<form method="post" name="getSubscriptionStatus" action="subscription.jsp">
-<div id="navigation" align="center">
+			</div>
+		</div>
+		<form method="post" name="getSubscriptionStatus"
+			action="subscription.jsp">
+			<div id="navigation" align="center">
 
-<table style="width: 750px" cellpadding="1" cellspacing="1" border="0">
-<thead>
-    <tr>
-        <th style="width: 150px" class="cell" align="right"></th>
-        <th style="width: 100px" class="cell"></th>
-        <th style="width: 240px" class="cell" align="left"></th>
-    </tr>
-</thead>
-  <tbody>
-  <tr>
-    <td class="cell" align="left">
-        <input type="radio" name="getTransactionType" value="1" checked /> Merchant Subscription ID:
-    </td>
-    <td></td>
-    <td class="cell" align="left"><%=merchantTrxId%></td>
-  </tr>
-  <tr>
-    <td class="cell" align="left">
-        <input type="radio" name="getTransactionType" value="2" /> Auth Code:
-    <td></td>
-    <td class="cell" align="left"><%=authCode%></td>
-    </td>
-  </tr>
+				<table style="width: 750px" cellpadding="1" cellspacing="1"
+					border="0">
+					<thead>
+						<tr>
+							<th style="width: 150px" class="cell" align="right"></th>
+							<th style="width: 100px" class="cell"></th>
+							<th style="width: 240px" class="cell" align="left"></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="cell" align="left"><input type="radio"
+								name="getTransactionType" value="1" checked /> Merchant
+								Subscription ID:</td>
+							<td></td>
+							<td class="cell" align="left"><%=merchantTrxId%></td>
+						</tr>
+						<tr>
+							<td class="cell" align="left"><input type="radio"
+								name="getTransactionType" value="2" /> Auth Code:
+							<td></td>
+							<td class="cell" align="left"><%=authCode%></td>
+							</td>
+						</tr>
 
-  <tr>
-    <td class="cell" align="left">
-        <input type="radio" name="getTransactionType" value="3" /> Subscription ID:
-    <td></td><% if(!trxId.equalsIgnoreCase("")) { %>
-    <td class="cell" align="left"><%=trxId%></td><% } %>
-    </td>
-  </tr>
+						<tr>
+							<td class="cell" align="left"><input type="radio"
+								name="getTransactionType" value="3" /> Subscription ID:
+							<td></td>
+							<% if(!trxId.equalsIgnoreCase("")) { %>
+							<td class="cell" align="left"><%=trxId%></td>
+							<% } %>
+							</td>
+						</tr>
 
-  <tr>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td class="cell"><button  type="submit" name="getSubscriptionStatus">Get Subscription Status</button>
-    </td>
-  </tr>
-  </tbody></table>
+						<tr>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td class="cell"><button type="submit"
+									name="getSubscriptionStatus">Get Subscription Status</button></td>
+						</tr>
+					</tbody>
+				</table>
+		</form>
+	</div>
+	<br clear="all" />
 
-
-</form>
-</div>
-<br clear="all" />
-
-<% if(getSubscriptionStatus!=null) { 
+	<% if(getSubscriptionStatus!=null) { 
 int getTransactionType = Integer.parseInt(request.getParameter("getTransactionType"));
 String url = "";
 if(getTransactionType==1)
@@ -305,70 +340,85 @@ if(statusCode==200) {
     session.setAttribute("merchantSubscriptionId", merchantSubscriptionId);
     JSONArray parameters = jsonResponse.names();
     PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/transactionData/" + merchantTrxId + ".txt"))), false);
-    String toSave = trxId + "\n" + merchantTrxId + "\n" + authCode + "\n" + consumerId;
+    String toSave = trxId + "\n" + merchantTrxId + "\n" + authCode + "\n" + consumerId + "\n" + MerchantSubscriptionIdList;
     outWrite.write(toSave);
     outWrite.close();
     %>
-        <div class="successWide">
-        <strong>SUCCESS</strong><br />
-   
-        </div><br/>
-        <div align="center"><table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
-        <thead>
-            <tr>
-                <th style="width: 100px" class="cell" align="right"><strong>Parameter</strong></th>
-                <th style="width: 100px" class="cell"><strong></strong></th>
-                <th style="width: 275px" class="cell" align="left"><strong>Value</strong></th>
-            </tr>
-        </thead>
-        <tbody>
-            <% for(int i=0; i<parameters.length(); i++) { %>
-                <tr>
-                    <td align="right" class="cell"><%=parameters.getString(i)%></td>
-                    <td align="center" class="cell"></td>
-                    <td align="left" class="cell"><%=jsonResponse.getString(parameters.getString(i))%></td>
-                </tr>
-            <% } %>
-        </tbody>
-        </table>
-        </div><br/>
-    <%
+	<div class="successWide">
+		<strong>SUCCESS</strong><br />
+
+	</div>
+	<br />
+	<div align="center">
+		<table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
+			<thead>
+				<tr>
+					<th style="width: 100px" class="cell" align="right"><strong>Parameter</strong>
+					</th>
+					<th style="width: 100px" class="cell"><strong></strong>
+					</th>
+					<th style="width: 275px" class="cell" align="left"><strong>Value</strong>
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<% for(int i=0; i<parameters.length(); i++) { %>
+				<tr>
+					<td align="right" class="cell"><%=parameters.getString(i)%></td>
+					<td align="center" class="cell"></td>
+					<td align="left" class="cell"><%=jsonResponse.getString(parameters.getString(i))%></td>
+				</tr>
+				<% } %>
+			</tbody>
+		</table>
+	</div>
+	<br />
+	<%
 } else {
 %>
-    <div class="errorWide">
-    <strong>ERROR:</strong><br />
-    <%=method.getResponseBodyAsString()%>
-    </div><br/>
-<%
+	<div class="errorWide">
+		<strong>ERROR:</strong><br />
+		<%=method.getResponseBodyAsString()%>
+	</div>
+	<br />
+	<%
 }
 method.releaseConnection();
 } %>
 
-<div id="wrapper">
-<div id="content">
+	<div id="wrapper">
+		<div id="content">
 
-<h2><br />Feature 3: Get Subscription Details</h2>
+			<h2>
+				<br />Feature 3: Get Subscription Details
+			</h2>
 
-</div>
-</div>
-<br/>
-<form method="post" name="getSubscriptionDetails" >
-<div id="navigation" align="center">
+		</div>
+	</div>
+	<br />
+	<form method="post" name="getSubscriptionDetails">
+		<div id="navigation" align="center">
 
-<table style="width: 900px" cellpadding="1" cellspacing="1" border="0">
-<thead>
-    <tr>
-        <th style="width: 150px" class="cell" align="right"><strong>Consumer ID</strong></th>
-        <th style="width: 50px" class="cell"></th>
-        <th style="width: 240px" class="cell" align="left"><strong>Merchant Subscription ID</strong></th>
-    <td><div class="warning">
-<strong>WARNING:</strong><br />
-You must use Get Subscription Status to get the Consumer ID before you can get details.
-</div></td>
-    </tr>
-</thead>
-  <tbody>
-<%
+			<table style="width: 900px" cellpadding="1" cellspacing="1"
+				border="0">
+				<thead>
+					<tr>
+						<th style="width: 150px" class="cell" align="right"><strong>Consumer
+								ID</strong>
+						</th>
+						<th style="width: 50px" class="cell"></th>
+						<th style="width: 240px" class="cell" align="left"><strong>Merchant
+								Subscription ID</strong>
+						</th>
+						<td><div class="warning">
+								<strong>WARNING:</strong><br /> You must use Get Subscription
+								Status to get the Consumer ID before you can get details.
+							</div>
+						</td>
+					</tr>
+				</thead>
+				<tbody>
+					<%
 if(true) {
     String url = request.getRequestURL().toString().substring(0,request.getRequestURL().toString().lastIndexOf("/")) + "/getLatestTransactions.jsp";
     HttpClient client = new HttpClient();
@@ -384,28 +434,30 @@ if(true) {
                     trxIdGetDetails = transaction.getString("merchantTransactionId");
                 if(i==0) {
                     %>
-                      <tr>
-                        <td class="cell" align="right">
-    					<% if(transaction.getString("consumerId").length() > 4)
-						{%>
-                            <input type="radio" name="trxIdGetDetails" value="<%=transaction.getString("consumerId")%>" checked /><%=transaction.getString("consumerId")%>
-                        </td>
-                        <td></td>
-                        <td class="cell" align="left"><%=transaction.getString("merchantTransactionId")%></td>
-                      </tr> <% } %> 
-                    <%
+					<tr>
+						<td class="cell" align="right">
+							<% if(transaction.getString("consumerId").length() > 5)
+						{%> <input type="radio" name="trxIdGetDetails"
+							value="<%=transaction.getString("consumerId")%>" checked /><%=transaction.getString("consumerId")%>
+						</td>
+						<td></td>
+						<td class="cell" align="left"><%=transaction.getString("MerchantSubscriptionIdList")%></td>
+					</tr>
+					<% } %>
+					<%
                 } else {
                     %>
-                      <tr>
-                        <td class="cell" align="right">
-						<% if(transaction.getString("consumerId").length() > 4)
-						{%>
-                            <input type="radio" name="trxIdGetDetails" value="<%=transaction.getString("consumerId")%>" /><%=transaction.getString("consumerId")%>
-                        </td>
-                        <td></td>
-                        <td class="cell" align="left"><%=transaction.getString("merchantTransactionId")%></td>
-                      </tr>  <% } %> 
-                    <%
+					<tr>
+						<td class="cell" align="right">
+							<% if(transaction.getString("consumerId").length() > 5)
+						{%> <input type="radio" name="trxIdGetDetails"
+							value="<%=transaction.getString("consumerId")%>" /><%=transaction.getString("consumerId")%>
+						</td>
+						<td></td>
+						<td class="cell" align="left"><%=transaction.getString("MerchantSubscriptionIdList")%></td>
+					</tr>
+					<% } %>
+					<%
                 }
             }
         }
@@ -414,94 +466,108 @@ if(true) {
 }
 %>
 
-  <tr>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td class="cell"><button  type="submit" name="getSubscriptionDetails">Get Subscription Details</button>
-    </td>
-  </tr>
-  </tbody></table>
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td class="cell"><button type="submit"
+								name="getSubscriptionDetails">Get Subscription Details</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+	</form>
+	</div>
+	<br clear="all" />
 
 
-</form>
-</div>
-<br clear="all" />
-
-
-<% if(getSubscriptionDetails!=null) { %>
-<%
-    String url = FQDN + "/rest/3/Commerce/Payment/Subscriptions/" + merchantSubscriptionId + "/Detail/" + consumerId;  
+	<% if(getSubscriptionDetails!=null) { %>
+	<%
+    String url = FQDN + "/rest/3/Commerce/Payment/Subscriptions/" + MerchantSubscriptionIdList + "/Detail/" + consumerId;  
     HttpClient client = new HttpClient();
     GetMethod method = new GetMethod(url);  
-    //method.setQueryString("access_token=" + accessToken);
-	method.addRequestHeader("Authorization","Bearer " + accessToken);
+    method.addRequestHeader("Authorization","Bearer " + accessToken);
     method.addRequestHeader("Accept","application/json");
     int statusCode = client.executeMethod(method);
     if(statusCode==200) {
     JSONObject jsonResponse = new JSONObject(method.getResponseBodyAsString());
     JSONArray parameters = jsonResponse.names();
     %>
-        <div class="successWide">
-        <strong>SUCCESS</strong><br />
- 
-        </div><br/>
-        <div align="center"><table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
-        <thead>
-            <tr>
-                <th style="width: 100px" class="cell" align="right"><strong>Parameter</strong></th>
-                <th style="width: 100px" class="cell"><strong></strong></th>
-                <th style="width: 275px" class="cell" align="left"><strong>Value</strong></th>
-            </tr>
-        </thead>
-        <tbody>
-            <% for(int i=0; i<parameters.length(); i++) { %>
-                <tr>
-                	<td align="right" class="cell"><%=parameters.getString(i)%></td>
-                    <td align="center" class="cell"></td>
-                    <td align="left" class="cell"><%=jsonResponse.getString(parameters.getString(i))%></td>
-                </tr>
-        	<% } %>
-        </tbody>
-        </table>
-        </div><br/>
-    <%
+	<div class="successWide">
+		<strong>SUCCESS</strong><br />
+
+	</div>
+	<br />
+	<div align="center">
+		<table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
+			<thead>
+				<tr>
+					<th style="width: 100px" class="cell" align="right"><strong>Parameter</strong>
+					</th>
+					<th style="width: 100px" class="cell"><strong></strong>
+					</th>
+					<th style="width: 275px" class="cell" align="left"><strong>Value</strong>
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<% for(int i=0; i<parameters.length(); i++) { %>
+				<tr>
+					<td align="right" class="cell"><%=parameters.getString(i)%></td>
+					<td align="center" class="cell"></td>
+					<td align="left" class="cell"><%=jsonResponse.getString(parameters.getString(i))%></td>
+				</tr>
+				<% } %>
+			</tbody>
+		</table>
+	</div>
+	<br />
+	<%
   } else {
   	%>
-            <div class="errorWide">
-            <strong>ERROR:</strong><br />
-            <%=method.getResponseBodyAsString()%>
-            </div><br/>
+	<div class="errorWide">
+		<strong>ERROR:</strong><br />
+		<%=method.getResponseBodyAsString()%>
+	</div>
+	<br />
 	<%
   }
    method.releaseConnection();
 }
 %>
 
-<div id="wrapper">
-<div id="content">
+	<div id="wrapper">
+		<div id="content">
 
-<h2><br />Feature 4: Refund Subscription</h2>
+			<h2>
+				<br />Feature 4: Refund Subscription
+			</h2>
 
-</div>
-</div>
-<form method="post" name="refundSubscription" action="subscription.jsp">
-<div id="navigation" align="center">
+		</div>
+	</div>
+	<form method="post" name="refundSubscription" action="subscription.jsp">
+		<div id="navigation" align="center">
 
-<table style="width: 750px" cellpadding="1" cellspacing="1" border="0">
-<thead>
-    <tr>
-        <th style="width: 150px" class="cell" align="right"><strong>Subscription ID</strong></th>
-        <th style="width: 100px" class="cell"></th>
-        <th style="width: 240px" class="cell" align="left"><strong>Merchant Subscription ID</strong></th>
-    <td><div class="warning">
-<strong>WARNING:</strong><br />
-You must use Get Subscription Status to get the Subscription ID before you can refund it.
-</div></td>
-	</tr>
-</thead>
-  <tbody>
-<%
+			<table style="width: 750px" cellpadding="1" cellspacing="1"
+				border="0">
+				<thead>
+					<tr>
+						<th style="width: 150px" class="cell" align="right"><strong>Subscription
+								ID</strong>
+						</th>
+						<th style="width: 100px" class="cell"></th>
+						<th style="width: 240px" class="cell" align="left"><strong>Merchant
+								Subscription ID</strong>
+						</th>
+						<td><div class="warning">
+								<strong>WARNING:</strong><br /> You must use Get Subscription
+								Status to get the Subscription ID before you can refund it.
+							</div>
+						</td>
+					</tr>
+				</thead>
+				<tbody>
+					<%
 if(true) {
     String url = request.getRequestURL().toString().substring(0,request.getRequestURL().toString().lastIndexOf("/")) + "/getLatestTransactions.jsp";
     HttpClient client = new HttpClient();
@@ -515,28 +581,30 @@ if(true) {
                 JSONObject transaction = new JSONObject(transactionList.getString(i));
                 if(i==0) {
                     %>
-                      <tr>
-                        <td class="cell" align="right">
-						<% if(transaction.getString("transactionId").length() > 4)
-							{ %>
-                            <input type="radio" name="trxIdRefund" value="<%=transaction.getString("transactionId")%>" checked /><%=transaction.getString("transactionId")%>
-                        </td>
-                        <td></td>
-                        <td class="cell" align="left"><%=transaction.getString("merchantTransactionId")%></td>
-                      </tr>  <% } %> 
-                    <%
+					<tr>
+						<td class="cell" align="right">
+							<% if(transaction.getString("transactionId").length() > 5)
+							{ %> <input type="radio" name="trxIdRefund"
+							value="<%=transaction.getString("transactionId")%>" checked /><%=transaction.getString("transactionId")%>
+						</td>
+						<td></td>
+						<td class="cell" align="left"><%=transaction.getString("MerchantSubscriptionIdList")%></td>
+					</tr>
+					<% } %>
+					<%
                 } else {
                     %>
-                      <tr>
-                        <td class="cell" align="right">
-						<% if(transaction.getString("transactionId").length() > 4)
-							{ %>
-                            <input type="radio" name="trxIdRefund" value="<%=transaction.getString("transactionId")%>" /><%=transaction.getString("transactionId")%>
-                        </td>
-                        <td></td>
-                        <td class="cell" align="left"><%=transaction.getString("merchantTransactionId")%></td>
-                      </tr>  <% } %> 
-                    <%
+					<tr>
+						<td class="cell" align="right">
+							<% if(transaction.getString("transactionId").length() > 5)
+							{ %> <input type="radio" name="trxIdRefund"
+							value="<%=transaction.getString("transactionId")%>" /><%=transaction.getString("transactionId")%>
+						</td>
+						<td></td>
+						<td class="cell" align="left"><%=transaction.getString("MerchantSubscriptionIdList")%></td>
+					</tr>
+					<% } %>
+					<%
                 }
             }
         }
@@ -545,22 +613,21 @@ if(true) {
 }
 %>
 
-  <tr>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td class="cell"><button  type="submit" name="refundSubscription">Refund Subscription</button>
-    </td>
-  </tr>
-  </tbody></table>
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td class="cell"><button type="submit"
+								name="refundSubscription">Refund Subscription</button></td>
+					</tr>
+				</tbody>
+			</table>
+	</form>
+	</div>
+	<br clear="all" />
 
 
-</form>
-</div>
-<br clear="all" />
-
-
-<% if(refundSubscription!=null) { 
+	<% if(refundSubscription!=null) { 
 
     String url = FQDN + "/rest/3/Commerce/Payment/Transactions/" + trxId;  
     HttpClient client = new HttpClient();
@@ -580,65 +647,81 @@ if(true) {
         JSONObject rpcObject = new JSONObject(method.getResponseBodyAsString());
 		JSONArray refundParameters = rpcObject.names();
 		%>
-            <div class="successWide">
-            <strong>SUCCESS</strong><br />
-       
-            </div><br/>
-        <div align="center"><table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
-        <thead>
-            <tr>
-                <th style="width: 100px" class="cell" align="right"><strong>Parameter</strong></th>
-                <th style="width: 100px" class="cell"><strong></strong></th>
-                <th style="width: 275px" class="cell" align="left"><strong>Value</strong></th>
-            </tr>
-        </thead>
-        <tbody>
-            <% for(int i=0; i<refundParameters.length(); i++) { %>
-            	<tr>
-                	<td align="right" class="cell"><%=refundParameters.getString(i)%></td>
-                    <td align="center" class="cell"></td>
-                    <td align="left" class="cell"><%=rpcObject.getString(refundParameters.getString(i))%></td>
-                </tr>
-        	<% } %>
-        </tbody>
-        </table>
-        </div><br/>
-		<%
+	<div class="successWide">
+		<strong>SUCCESS</strong><br />
+
+	</div>
+	<br />
+	<div align="center">
+		<table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
+			<thead>
+				<tr>
+					<th style="width: 100px" class="cell" align="right"><strong>Parameter</strong>
+					</th>
+					<th style="width: 100px" class="cell"><strong></strong>
+					</th>
+					<th style="width: 275px" class="cell" align="left"><strong>Value</strong>
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<% for(int i=0; i<refundParameters.length(); i++) { %>
+				<tr>
+					<td align="right" class="cell"><%=refundParameters.getString(i)%></td>
+					<td align="center" class="cell"></td>
+					<td align="left" class="cell"><%=rpcObject.getString(refundParameters.getString(i))%></td>
+				</tr>
+				<% } %>
+			</tbody>
+		</table>
+	</div>
+	<br />
+	<%
   } else {
   	%>
-            <div class="errorWide">
-            <strong>ERROR:</strong><br />
-            <%=method.getResponseBodyAsString()%>
-            </div><br/>
+	<div class="errorWide">
+		<strong>ERROR:</strong><br />
+		<%=method.getResponseBodyAsString()%>
+	</div>
+	<br />
 	<%
   }
    method.releaseConnection();
 }
 %>
 
-<div id="wrapper">
-<div id="content">
+	<div id="wrapper">
+		<div id="content">
 
-<h2><br />Feature 5: Notifications</h2>
-</div>
-</div>
-<form method="post" name="refreshNotifications" action="subscription.jsp">
-<div id="navigation" align="center">
+			<h2>
+				<br />Feature 5: Notifications
+			</h2>
+		</div>
+	</div>
+	<form method="post" name="refreshNotifications"
+		action="subscription.jsp">
+		<div id="navigation" align="center">
 
-<table style="width: 750px" cellpadding="1" cellspacing="1" border="0">
-<thead>
-    <tr>
-<th class="cell" align="left"><strong>Notification ID</strong></th>
-        
-<th class="cell" align="left"><strong>Notification Type</strong></th>
-<th style="width: 100px" class="cell"></th>
-<th class="cell" align="left"><strong>Transaction ID</strong></th>
+			<table style="width: 750px" cellpadding="1" cellspacing="1"
+				border="0">
+				<thead>
+					<tr>
+						<th class="cell" align="left"><strong>Notification
+								ID</strong>
+						</th>
 
-</td>
-	</tr>
-</thead>
-<tbody>
-<%
+						<th class="cell" align="left"><strong>Notification
+								Type</strong>
+						</th>
+						<th style="width: 100px" class="cell"></th>
+						<th class="cell" align="left"><strong>Transaction ID</strong>
+						</th>
+
+						</td>
+					</tr>
+				</thead>
+				<tbody>
+					<%
 if(true) 
 {
 				File directory = new File(application.getRealPath("/CallBack/")); 
@@ -667,42 +750,38 @@ if(true)
 							inFile1.close();			
 							i += 1;	
 							 %>
-						<tr>
-							<td class="cell" align="left">
-						  <%=notID%>
+					<tr>
+						<td class="cell" align="left"><%=notID%></td>
+						<td class="cell" align="left"><%=notType%></td>
 
-					 </td>
-							 <td class="cell" align="left">
-							 <%=notType%>
-					 </td>
+						</td>
+						<td></td>
+						<td class="cell" align="left"><%=transID%></td>
+					</tr>
 
-							</td>
-							<td></td>
-							<td class="cell" align="left"><%=transID%></td> 
-					   </tr>		 
-				  
 					<%
 						
 					    if(i==5 )			//Print latest 5 transactions
 						    break;
 					}
-					%> 
- <tr>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td class="cell"><button type="submit" name="refreshNotifications" value="refreshNotifications">Refresh</button>
-    </td
-  </tr>
-  </tbody></table>
+					%>
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td class="cell"><button type="submit"
+								name="refreshNotifications" value="refreshNotifications">Refresh</button>
+						</td
+					</tr>
+				</tbody>
+			</table>
+	</form>
+	</div>
+	<br clear="all" />
+	</form>
+	</div>
 
-
-</form>
-</div>
-<br clear="all" />
-</form></div>
-
-<% 
+	<% 
 				}
 				
 String notificationType = "";
@@ -776,17 +855,22 @@ String transactionId = "";
 
 %>
 
-<div id="footer">
+	<div id="footer">
 
-<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
-    <p>&#169; 2012 AT&amp;T Intellectual Property. All rights reserved. <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
-<br>
-The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and not meant to be used as part of your product. The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
-<br>
-For download of tools and documentation, please go to <a href="https://devconnect-api.att.com/" target="_blank">https://devconnect-api.att.com</a>
-<br>
-For more information contact <a href="mailto:developer.support@att.com">developer.support@att.com</a>
-
-</div>
-</div>
-
+		<div
+			style="float: right; width: 20%; font-size: 9px; text-align: right">Powered
+			by AT&amp;T Cloud Architecture</div>
+		<p>
+			&#169; 2012 AT&amp;T Intellectual Property. All rights reserved. <a
+				href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+			<br> The Application hosted on this site are working examples
+			intended to be used for reference in creating products to consume
+			AT&amp;T Services and not meant to be used as part of your product.
+			The data in these pages is for test purposes only and intended only
+			for use as a reference in how the services perform. <br> For
+			download of tools and documentation, please go to <a
+				href="https://devconnect-api.att.com/" target="_blank">https://devconnect-api.att.com</a>
+			<br> For more information contact <a
+				href="mailto:developer.support@att.com">developer.support@att.com</a>
+	</div>
+	</div>

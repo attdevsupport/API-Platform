@@ -48,7 +48,7 @@ For more information contact developer.support@att.com -->
         </div>
       </div>
 
-      <form name="getReceivedSms" action="/getReceivedSms" method="get">
+      <form name="receiveSms" action="/receiveSms" method="get">
         <div id="navigation">
           <br/>
           <br/>
@@ -95,36 +95,80 @@ For more information contact developer.support@att.com -->
           <table>
             <tbody>
               <tr>
-  	            <td><br><br><br><br><br><br><br><br><button type="submit" name="getReceivedSms">Update Vote Totals</button></td>
+  	            <td><br><br><br><br><br><br><br><br><button type="submit" name="receiveSms">Update Vote Totals</button></td>
               </tr>
             </tbody>
           </table>
         </div>
 
         <br clear="all"/>
-        <div align="center"></div>
-
+        <div align="center">
+        <% if @votes && !@votes.empty?  %>
+        <% @votes.each do |n| %>
+        <table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
+            <thead>
+                <tr>
+                    <th style="width: 250px" class="cell" align="left">
+                        <strong>DateTime</strong>
+                    </th><th></th>
+                    <th style="width: 100px" class="cell" align="left">
+                        <strong>MessageId</strong>
+                    </th><th></th>
+                    <th style="width: 150px" class="cell" align="left">
+                        <strong>Message</strong>
+                    </th><th></th>
+                    <th style="width: 100px" class="cell" align="left">
+                        <strong>Sender Address</strong>
+                    </th><th></th>
+                    <th style="width: 50px" class="cell" align="left">
+                        <strong>DestinationAddress</strong>
+                    </th><th></th>
+                </tr>
+            </thead>
+            <tbody>                      
+        		<tr>
+			    	<td style="width: 250px" td class="cell" align="left"><%= n[:date_time] %></td><td></td>
+					<td style="width: 50px" td class="cell" align="left"><%= n[:message_id] %></td><td></td>
+                    <td style="width: 150px" td class="cell" align="left"><%= n[:message]%></td><td></td>
+                    <td style="width: 100px" td class="cell" align="left"><%= n[:sender]%></td><td></td>
+                    <td style="width: 100px" td class="cell" align="left"><%= n[:destination]%></td><td></td>
+				</tr>
+        <% end %>
+        </table>
+        <% end %>
+        </div>      
         <% if @invalid_messages && !@invalid_messages.empty?  %>
-          <table border="1" style="background: #f00; border-collapse: collapse">
-		    <tr>
-              <th>
-                Invalid Vote Text
-              </th>
-              <th>
-                Sender Address
-              </th>
-            </tr>
-            <% @invalid_messages.each do |message|
-              text = message['message']
+            <% @invalid_messages.each do |n|
+              text = n[:message]
             if (text != 'football') && (text != 'baseball') && (text != 'basketball') %>
-    	    <tr>
-              <td align="center">
-                <%= text %>
-              </td>
-              <td align="center">
-                <%= message['senderAddress'] %>
-              </td>
-            </tr>
+    	       <table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
+            <thead>
+                <tr>
+                    <th style="width: 250px" class="cell" align="left">
+                        <strong>DateTime</strong>
+                    </th><th></th>
+                    <th style="width: 100px" class="cell" align="left">
+                        <strong>MessageId</strong>
+                    </th><th></th>
+                    <th style="width: 150px" class="cell" align="left">
+                        <strong>Message</strong>
+                    </th><th></th>
+                    <th style="width: 100px" class="cell" align="left">
+                        <strong>Sender Address</strong>
+                    </th><th></th>
+                    <th style="width: 50px" class="cell" align="left">
+                        <strong>DestinationAddress</strong>
+                    </th><th></th>
+                </tr>
+            </thead>
+            <tbody>                      
+            	<tr>
+			    	<td style="width: 250px" td class="cell" align="left" bgcolor="#fcc"><%= n[:date_time] %></td><td></td>
+					<td style="width: 50px" td class="cell" align="left" bgcolor="#fcc"><%= n[:message_id] %></td><td></td>
+                    <td style="width: 150px" td class="cell" align="left" bgcolor="#fcc"><%= n[:message]%></td><td></td>
+                    <td style="width: 100px" td class="cell" align="left" bgcolor="#fcc"><%= n[:sender]%></td><td></td>
+                    <td style="width: 100px" td class="cell" align="left" bgcolor="#fcc"><%= n[:destination]%></td><td></td>
+				</tr>
 	      <% end %>
 	    <% end %>
 		  </table>
@@ -144,3 +188,4 @@ For more information contact developer.support@att.com -->
     </div>
   </body>
 </html>
+

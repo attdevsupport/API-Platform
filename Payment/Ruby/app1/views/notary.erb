@@ -4,67 +4,60 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.a
 Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com 
 For more information contact developer.support@att.com -->
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
-    <head>
-    	<title>AT&T Sample Notary Application - Sign Payload Application</title>
-		<meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
-		<link rel="stylesheet" type="text/css" href="style/common.css"/ >
-		<body>
-			<div id="container">
-				<!-- open HEADER -->
-				<div id="header">
-					<div>
-						<div id="hcRight">
-							<%= Time.now.utc.strftime("%a, %B %d, %Y %H:%M:%S UTC") %>
-						</div>
-						<div id="hcLeft">
-							Server Time:
-						</div>
-					</div>
-					<div>
-						<div id="hcRight">
-							<script language="JavaScript" type="text/javascript">
-								var myDate = new Date();
-								document.write(myDate);
-
-							</script>
-						</div>
-						<div id="hcLeft">
-							Client Time:
-						</div>
-					</div>
-					<div>
-						<div id="hcRight">
-							<script language="JavaScript" type="text/javascript">
-								document.write("" + navigator.userAgent);
-
-							</script>
-						</div>
-						<div id="hcLeft">
-							User Agent:
-						</div>
-					</div>
-					<br clear="all" />
-				</div><!-- close HEADER -->
-				<div id="wrapper">
-					<div id="content">
-						<h1>AT&T Sample Notary Application - Sign Payload Application</h1>
-					</div>
-				</div>
-				<div id="wrapper">
-					<div id="content">
-						<h2>
-						<br />
-						Feature 1: Sign Payload</h2>
-					</div>
-				</div>
-				
-					<div id="navigation">
-						<table border="0" width="950px">
-							<tbody>
-								<tr>
-									<td valign="top" class="label">Request:</td>
+<head>
+    <title>AT&T Sample Notary Application - Sign Payload Application</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <link rel="stylesheet" type="text/css" href="css/common.css" />
+</head>
+<body>
+    <div id="container">
+        <!-- open HEADER -->
+        <div id="header">
+            <div>
+                <div class="hcRight">
+                    <%= Time.now.utc.strftime("%a, %B %d, %Y %H:%M:%S UTC") %>
+                </div>
+                <div class="hcLeft">
+                    Server Time:</div>
+            </div>
+            <div>
+                <div class="hcRight">
+                    <script language="JavaScript" type="text/javascript">
+                        var myDate = new Date();
+                        document.write(myDate);
+                    </script>
+                </div>
+                <div class="hcLeft">
+                    Client Time:</div>
+            </div>
+            <div>
+                <div class="hcRight">
+                    <script language="JavaScript" type="text/javascript">
+                        document.write("" + navigator.userAgent);
+                    </script>
+                </div>
+                <div class="hcLeft">
+                    User Agent:</div>
+            </div>
+            <br clear="all" />
+        </div>
+        <!-- close HEADER -->
+        <div>
+            <div class="content">
+                <h1>
+                    AT&T Sample Notary Application - Sign Payload Application</h1>
+                <h2>
+                    Feature 1: Sign Payload</h2>
+                <br />
+            </div>
+        </div>			
+	<div id="navigation">
+		<table border="0" width="950px">
+			<tbody>
+				<tr>		
+				<td valign="top" class="label">Request:</td>
                                         <td class="cell" ><textarea rows="20" cols="60" name="payload" ><%= settings.notary_payload %></textarea>
                                     </td>
                                     <td width="50px"></td>

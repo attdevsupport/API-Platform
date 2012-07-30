@@ -20,13 +20,12 @@ set :port, settings.port
 
 SCOPE = 'SMS'
 
-
 # setup filter fired before reaching our urls
 # this is to ensure we are o-authenticated before actual action (like getReceivedSms)
 
 # autonomous version
 
-['/getReceivedSms', '/getVotes'].each do |path|
+['/receiveSms'].each do |path|
   before path do
     obtain_tokens(settings.FQDN, settings.api_key, settings.secret_key, SCOPE, settings.tokens_file)
   end
@@ -50,12 +49,12 @@ get '/' do
   erb :sms2
 end
 
-get '/getReceivedSms' do
-  get_received_sms
+post '/smslistener' do
+  sms_listener
 end
 
-get '/getVotes' do
-  get_votes
+get '/receiveSms' do
+  receive_sms
 end
   
 # use this URL to clear token file
@@ -64,53 +63,70 @@ get '/clear' do
   redirect '/'
 end
 
+def receive_sms
+  @votes = Array.new
+  File.open settings.votes_file, 'r' do |f| 
+    while (line = f.gets)
+      a = line.split
+      n = Hash.new
+      n[:date_time] = a[0]
+      n[:message_id] = a[1] 
+      n[:message] = a[2]
+      n[:sender] = a[3]
+      n[:destination] = a[4]
+      
+      @invalid_messages = []
+      
+      text = n[:message]
+      if text.downcase.eql? 'football'
+         session[:batch1] = session[:batch1]+1
+         @votes.push n
+      elsif text.downcase.eql? 'baseball' 
+         session[:batch2] = session[:batch2]+1
+         @votes.push n
+      elsif text.downcase.eql? 'basketball' 
+         session[:batch3] = session[:batch3]+1
+         @votes.push n
+      else 
+         @invalid_messages.push n
+      end
+      
+      @received_total = session[:batch1]+session[:batch2]+session[:batch3]
 
-def get_received_sms
-  response = RestClient.get "#{settings.FQDN}/rest/sms/2/messaging/inbox?RegistrationID=#{settings.registration_id}", :Authorization => "Bearer #{@access_token}", :Accept => "application/json"
-
-  sms_list = JSON.parse(response)['InboundSmsMessageList']
-
-  @messages_in_this_batch = sms_list['NumberOfMessagesInThisBatch'].to_i
-  @total_pending_messages = sms_list['TotalNumberOfPendingMessages'].to_i
-  @messages = sms_list['InboundSmsMessage']
-
-  @invalid_messages = []
-
-  @messages.each do |message|
-    text = message['message']
-    if text.downcase.eql? 'football'
-      session[:batch1] = session[:batch1]+1
-    elsif text.downcase.eql? 'baseball' 
-      session[:batch2] = session[:batch2]+1
-    elsif text.downcase.eql? 'basketball' 
-      session[:batch3] = session[:batch3]+1
-    else 
-      @invalid_messages.push message
+      File.open 'tally1.txt', 'w' do |f|
+        f.write(session[:batch1])
+      end
+      File.open 'tally2.txt', 'w' do |f|
+        f.write(session[:batch2])
+      end
+      File.open 'tally3.txt', 'w' do |f|
+        f.write(session[:batch3])
+      end
     end
   end
-
-  @received_total = session[:batch1]+session[:batch2]+session[:batch3]
-
-  File.open 'tally1.txt', 'w' do |f|
-    f.write(session[:batch1])
-  end
-  File.open 'tally2.txt', 'w' do |f|
-    f.write(session[:batch2])
-  end
-  File.open 'tally3.txt', 'w' do |f|
-    f.write(session[:batch3])
-  end
-rescue => e
+  rescue => e
   @received_error = e.response
 ensure
   return erb :sms2
 end
 
-def get_votes
-  get_received_sms
 
-  { :totalNumberOfVotes => @received_total, 
-    :footballVotes => session[:batch1], 
-    :baseballVotes => session[:batch2], 
-    :basketballVotes => session[:batch3] }.to_json
+def sms_listener
+  input   = request.env["rack.input"].read
+
+  File.open("#{settings.mosms_file_dir}/notifications", 'a+') { |f| f.puts input }
+  
+  sms_list = JSON.parse input
+  
+  @date_time = sms_list['DateTime']
+  @message_id = sms_list['MessageId']
+  @message = sms_list['Message']
+  @sender = sms_list['SenderAddress']
+  @destination = sms_list['DestinationAddress']
+  
+  File.open("#{settings.mosms_file_dir}/vote_data", 'w+') { |f| f.puts @date_time + ' ' + @message_id + ' ' + @message + ' ' + @sender + ' ' + @destination }
+  
+  ensure
+  return erb :sms2
 end
+

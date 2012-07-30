@@ -1,5 +1,5 @@
 <!-- 
-Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
+Licensed by AT&T under 'Software Development Kit Tools Agreement.'2012
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 For more information contact developer.support@att.com
@@ -11,161 +11,10 @@ include ("config.php");
 include ($oauth_file);
 
 session_start();
-$accessToken = '82dbe2315d77da8e6ddd22e7fd4352e'; 
-
-function RefreshToken($FQDN,$api_key,$secret_key,$scope,$fullToken){
-
-  $refreshToken=$fullToken["refreshToken"];
-  $accessTok_Url = $FQDN."/oauth/token";
-
-  //http header values
-  $accessTok_headers = array(
-			     'Content-Type: application/x-www-form-urlencoded'
-			     );
-
-  //Invoke the URL
-  $post_data="client_id=".$api_key."&client_secret=".$secret_key."&refresh_token=".$refreshToken."&grant_type=refresh_token";
-$proxy = "http://proxy.entp.attws.com";
-  $accessTok = curl_init();
-  curl_setopt($accessTok, CURLOPT_URL, $accessTok_Url);
-  curl_setopt($accessTok, CURLOPT_HTTPGET, 1);
-  curl_setopt($accessTok, CURLOPT_HEADER, 0);
-  curl_setopt($accessTok, CURLINFO_HEADER_OUT, 0);
-  //curl_setopt($accessTok, CURLOPT_HTTPHEADER, $accessTok_headers);
-  curl_setopt($accessTok, CURLOPT_RETURNTRANSFER, 1);
-  curl_setopt($accessTok, CURLOPT_SSL_VERIFYPEER, false);
-  curl_setopt($accessTok, CURLOPT_PROXY, $proxy);
-  curl_setopt($accessTok, CURLOPT_PROXYPORT, "8080");
-  curl_setopt($accessTok, CURLOPT_POST, 1);
-  curl_setopt($accessTok, CURLOPT_POSTFIELDS,$post_data);
-  $accessTok_response = curl_exec($accessTok);
-  $currentTime=time();
-
-  $responseCode=curl_getinfo($accessTok,CURLINFO_HTTP_CODE);
-  if($responseCode==200){
-    $jsonObj = json_decode($accessTok_response);
-    $accessToken = $jsonObj->{'access_token'};//fetch the access token from the response.
-    $refreshToken = $jsonObj->{'refresh_token'};
-    $expiresIn = $jsonObj->{'expires_in'};
-	      
-    $refreshTime=$currentTime+(int)($expiresIn); // Time for token refresh
-    $updateTime=$currentTime + ( 24*60*60); // Time to get for a new token update, current time + 24h 
-	      
-    $fullToken["accessToken"]=$accessToken;
-    $fullToken["refreshToken"]=$refreshToken;
-    $fullToken["refreshTime"]=$refreshTime;
-    $fullToken["updateTime"]=$updateTime;
-                        
-  }
-  else{
-    $fullToken["accessToken"]=null;
-    $fullToken["errorMessage"]=curl_error($accessTok).$accessTok_response;
-
-			
-  }
-  curl_close ($accessTok);
-  return $fullToken;
-
-}
-function GetAccessToken($FQDN,$api_key,$secret_key,$scope){
-
-  $accessTok_Url = $FQDN."/oauth/token";
-	    
-  //http header values
-  $accessTok_headers = array(
-			     'Content-Type: application/x-www-form-urlencoded'
-			     );
-
-  //Invoke the URL
-  $post_data = "client_id=".$api_key."&client_secret=".$secret_key."&scope=".$scope."&grant_type=client_credentials";
-$proxy = "http://proxy.entp.attws.com";
-  $accessTok = curl_init();
-  curl_setopt($accessTok, CURLOPT_URL, $accessTok_Url);
-  curl_setopt($accessTok, CURLOPT_HTTPGET, 1);
-  curl_setopt($accessTok, CURLOPT_HEADER, 0);
-  curl_setopt($accessTok, CURLINFO_HEADER_OUT, 0);
-  //  curl_setopt($accessTok, CURLOPT_HTTPHEADER, $accessTok_headers);
-  curl_setopt($accessTok, CURLOPT_RETURNTRANSFER, 1);
-  curl_setopt($accessTok, CURLOPT_SSL_VERIFYPEER, false);
-  curl_setopt($accessTok, CURLOPT_POST, 1);
-  curl_setopt($accessTok, CURLOPT_POSTFIELDS,$post_data);
-  $accessTok_response = curl_exec($accessTok);
-  
-  $responseCode=curl_getinfo($accessTok,CURLINFO_HTTP_CODE);
-  $currentTime=time();
-  /*
-   If URL invocation is successful fetch the access token and store it in session,
-   else display the error.
-  */
-  if($responseCode==200)
-    {
-      $jsonObj = json_decode($accessTok_response);
-      $accessToken = $jsonObj->{'access_token'};//fetch the access token from the response.
-      $refreshToken = $jsonObj->{'refresh_token'};
-      $expiresIn = $jsonObj->{'expires_in'};
-
-      $refreshTime=$currentTime+(int)($expiresIn); // Time for token refresh
-      $updateTime=$currentTime + ( 24*60*60); // Time to get a new token update, current time + 24h
-
-      $fullToken["accessToken"]=$accessToken;
-      $fullToken["refreshToken"]=$refreshToken;
-      $fullToken["refreshTime"]=$refreshTime;
-      $fullToken["updateTime"]=$updateTime;
-      
-    }else{
- 
-    $fullToken["accessToken"]=null;
-    $fullToken["errorMessage"]=curl_error($accessTok).$accessTok_response;
-
-  }
-  curl_close ($accessTok);
-  return $fullToken;
-}
-function SaveToken( $fullToken,$oauth_file ){
-
-  $accessToken=$fullToken["accessToken"];
-  $refreshToken=$fullToken["refreshToken"];
-  $refreshTime=$fullToken["refreshTime"];
-  $updateTime=$fullToken["updateTime"];
-      
-
-  $tokenfile = $oauth_file;
-  $fh = fopen($tokenfile, 'w');
-  $tokenfile="<?php \$accessToken=\"".$accessToken."\"; \$refreshToken=\"".$refreshToken."\"; \$refreshTime=".$refreshTime."; \$updateTime=".$updateTime."; ?>";
-  fwrite($fh,$tokenfile);
-  fclose($fh);
-}
-
-function check_token( $FQDN,$api_key,$secret_key,$scope, $fullToken,$oauth_file){
-
-  $currentTime=time();
-
-  if ( ($fullToken["updateTime"] == null) || ($fullToken["updateTime"] <= $currentTime)){
-    $fullToken=GetAccessToken($FQDN,$api_key,$secret_key,$scope);
-    if(  $fullToken["accessToken"] == null ){
-      //      echo $fullToken["errorMessage"];
-    }else{
-      //      echo $fullToken["accessToken"];
-      SaveToken( $fullToken,$oauth_file );
-    }
-  }
-  elseif ($fullToken["refreshTime"]<= $currentTime){
-    $fullToken=RefreshToken($FQDN,$api_key,$secret_key,$scope, $fullToken);
-    if(  $fullToken["accessToken"] == null ){
-      //      echo $fullToken["errorMessage"];
-    }else{
-      //      echo $fullToken["accessToken"];
-      SaveToken( $fullToken,$oauth_file );
-    }
-  }
-  
-  return $fullToken;
-  
-}
-
+$getReceivedSms = $_REQUEST["getReceivedSms"];   
 ?>
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
-<title>AT&amp;T Sample SMS Application . SMS app 2 . Voting</title>
+<title>AT&T Sample SMS Application - SMS app 2 - Voting</title>
 	<meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
     <link rel="stylesheet" type="text/css" href="common.css"/ >
 
@@ -198,7 +47,7 @@ document.write("" + navigator.userAgent);
 <div id="wrapper">
 <div id="content">
 
-  <h1>AT&amp;T Sample SMS Application - SMS app 2 - Voting</h1>
+  <h1>AT&T Sample SMS Application - SMS app 2 - Voting</h1>
 <h2>Feature 1: Calculate Votes sent via SMS to <?php echo $short_code ?> with text "Football", "Basketball", or "Baseball"</h2>
 
 </div>
@@ -209,13 +58,12 @@ document.write("" + navigator.userAgent);
 	<form name="getReceivedSms" method="post">
 
 <?php
-        /*
-	  If Receive SMS request is submitted, then invoke the URL to get the inbox messages
-	  by using the registrationID i.e. short code, along with the access token.
-	*/
+      
 	$path_is = __FILE__;
         $folder = dirname ($path_is);
         $folder = $folder . "/" . "tally";
+        $db4_filename = $folder . "/". "smslistner.db";
+        $db3_filename = $folder . "/". "smslistner2.db";     
         if (!is_dir($folder))
         {
            echo "$folder tally folder is missing";
@@ -249,66 +97,31 @@ document.write("" + navigator.userAgent);
              fclose($footBallFileHandle);
              fclose($baseBallFileHandle);
              fclose($basketBallFileHandle);
-	     /*if (!empty($_REQUEST["getReceivedSms"] )) {
 
-	       $fullToken["accessToken"]=$accessToken;
-	       $fullToken["refreshToken"]=$refreshToken;
-	       $fullToken["refreshTime"]=$refreshTime;
-	       $fullToken["updateTime"]=$updateTime;
 
-	       $fullToken=check_token($FQDN,$api_key,$secret_key,$scope,$fullToken,$oauth_file);
-	       $accessToken=$fullToken["accessToken"];
-
-	       $receiveSMS_Url = "$FQDN/rest/sms/2/messaging/inbox?access_token=".$accessToken."&RegistrationID=".$short_code;
-	       $receiveSMS_headers = array(
-					   'Content-Type: application/x-www-form-urlencoded'
-					   );
-		  $proxy = "http://proxy.entp.attws.com";
-	      $receiveSMS = curl_init();
-	       curl_setopt($receiveSMS, CURLOPT_URL, $receiveSMS_Url);
-	       curl_setopt($receiveSMS, CURLOPT_HTTPGET, 1);
-	       curl_setopt($receiveSMS, CURLOPT_HEADER, 0);
-	       curl_setopt($receiveSMS, CURLINFO_HEADER_OUT, 0);
-	       curl_setopt($receiveSMS, CURLOPT_HTTPHEADER, $receiveSMS_headers);
-	       curl_setopt($receiveSMS, CURLOPT_RETURNTRANSFER, 1);
-	       curl_setopt($receiveSMS, CURLOPT_SSL_VERIFYPEER, false);
-
-	       $receiveSMS_response = curl_exec($receiveSMS);
-	      $responseCode=curl_getinfo($receiveSMS,CURLINFO_HTTP_CODE);
-       /*
-	  If URL invocation is successful fetch all the received sms,else display the error.
-	*/
-             /*if($responseCode==200 || $responseCode==300)
-             {
-	               	print "Receive SMS Messages : <br/>";
-		//decode the response and display the messages.
-		$jsonObj = json_decode($receiveSMS_response,true);
-		$smsMsgList = $jsonObj['InboundSmsMessageList'];
-		$noOfReceivedSMSMsg = $smsMsgList['NumberOfMessagesInThisBatch'];
-		$totalVotes = $noOfReceivedSMSMsg + $footBallTotalCount +  $baseBallTotalCount + $basketBallTotalCount;
-		?>
-		     <div class="success">
-		     <strong>SUCCESS:</strong><br />
-			<strong>Total votes:</strong> <?php echo $totalVotes ; ?>
-		     </div>
-		     
-
-		     <?php
+	       //        	print "Receive SMS Messages : <br/>";
                 $invalidMsg=false;
-		if ($noOfReceivedSMSMsg == 0) {
-		} else {
-		    foreach($smsMsgList["InboundSmsMessage"] as $smsTag=>$val) {
-                      if(strtolower($val["Message"])=="football")
+		
+		   $responses = unserialize(file_get_contents($db3_filename));
+			foreach($responses as $response) {
+ 
+                      if(strtolower($response["Message"])=="football")
                         {
                             $footBallTotalCount += 1;
+                            $validmsg = true;
+                            $totalVotes+= 1;
                         }
-                        elseif(strtolower($val["Message"])=="baseball")
+                        elseif(strtolower($response["Message"])=="baseball")
                         {
                             $baseBallTotalCount += 1;
+                            $validmsg = true;
+				$totalVotes+= 1;
                         }
-                        elseif(strtolower($val["Message"])=="basketball")
+                        elseif(strtolower($response["Message"])=="basketball")
                         {
                             $basketBallTotalCount += 1;
+                            $validmsg = true;
+				$totalVotes+= 1;
                         }
                         else{
                             $invalidMsg=true;
@@ -323,43 +136,22 @@ document.write("" + navigator.userAgent);
                     fclose($footBallFileHandle);
                     fclose($baseBallBallFileHandle);
                     fclose($basketBallFileHandle);
-                } 
-             } else{
-		$msghead="Error";
-		$msgdata=curl_error($receiveSMS);
-		$errormsg= $msgdata.$receiveSMS_response;
-		?>
-                <div class="errorWide">
-                <strong>ERROR:</strong><br />
-                <?php echo $errormsg  ?>
-                </div>
-        <?php }
-	//curl_close ($receiveSMS);
-     }
-      }
-      }*/
-	  
-	  $path_is = __FILE__;
-$folder = dirname($path_is);
-$folder = $folder. "/tally";
-if(!is_dir($folder))
-  {
-    echo "MoMessages folder is missing ( $folder )";
-    exit();
-  }
-$db_filename = $folder . "/". "smslistner.db";
-$messages = file_get_contents($db_filename); 
+                 
+             }
+$totalVotes = $footBallTotalCount +  $baseBallTotalCount + $basketBallTotalCount;
+ 
+	
+      }  
+?>
 
-foreach ( $messages as $message ){
-  $message_txt =  file_get_contents( $folder.'/'.$message["text"]);
-  $address = $message['address'];
-  ?>
-    <div id width="150" border="0"  /><br /><strong>Sent from:</strong> <?php echo $address; ?> <br /><strong>On:</strong> <?php echo $message['date']; ?><div><?php echo $message_txt; ?></div></div>
+		     <div class="success">
+		     <strong>SUCCESS:</strong><br />
+			<strong>Total votes:</strong> <?php echo $totalVotes ; ?>
+		     </div>
+		     
 
-<?php  
-																													}
-}}
- ?>
+		     
+
 <table style="width: 300px" cellpadding="1" cellspacing="1" border="0">
 <thead>
 	<tr>
@@ -392,35 +184,112 @@ foreach ( $messages as $message ){
   	<td><br /><br /><br /><br /><br /><br /><br /><br /><button type="submit" name="getReceivedSms" value="Update" >Update Vote Totals</button></td>
 	</tr>
 	</tbody>
-	</table>
+	</table> </form>
+<?php
+	if($getReceivedSms != null) {
+
+ ?>
 </div>
 <br clear="all" />
-<div align="center"></div>
+<div align="center">
 </div>
- </form>
+
 <?php
-if($invalidMsg)
+ if($invalidMsg)
 {
-    ?>
-    <table border="1" bgcolor="#ff3300">
-        <tr><td>Invalid Vote Text</td><td>Sender Address</td></tr>
-        <?php
-        foreach($smsMsgList["InboundSmsMessage"] as $smsTag=>$val) {
-            if((strtolower($val["Message"])!="football") && (strtolower($val["Message"])!="baseball") && (strtolower($val["Message"])!="basketball")){
+
+        foreach($responses as $response) {
+            if((strtolower($response["Message"])!="football") && (strtolower($response["Message"])!="baseball") && (strtolower($response["Message"])!="basketball")){
                 ?>
-                <tr><td><?php echo $val["Message"]; ?></td><td><?php echo $val["SenderAddress"]; ?></td></tr>
-                <?php
-            }
-        }
-        ?>
+                <table style="width: 750px" cellpadding="1" cellspacing="1" border="0">
+<thead>
+    <tr>
+<th class="cell" align="left"><strong>DateTime</strong></th>
+        
+<th class="cell" align="left"><strong>SenderAddress</strong></th>
+<th class="cell" align="left"><strong>Message</strong></th>
+<th class="cell" align="left"><strong>DestinationAddress</strong></th>      
+<th class="cell" align="left"><strong>MessageId</strong></th>
+
+
+
+</td>
+	</tr>
+</thead>
+<tbody>
+<tr>
+                        <td class="cell" align="left" bgcolor = "#fcc">
+	                  <?php echo $response["DateTime"];?>
+
+			     </td>
+                         <td class="cell" align="left" bgcolor = "#fcc">
+                         <?php echo $response["SenderAddress"];?>
+</td>
+
+                        </td>
+                        <td class="cell" align="left" bgcolor = "#fcc"><?php echo $response["Message"];?></td>
+                        <td class="cell" align="left" bgcolor = "#fcc"><?php echo $response["DestinationAddress"];?></td>
+                        <td class="cell" align="left" bgcolor = "#fcc"><?php echo $response["MessageId"];?></td>
+                      </tr>  
+
     </table>
     <?php
+} 
 }
+}
+
+if($validmsg) {
+foreach($responses as $response) {
+            if((strtolower($response["Message"])=="football") || (strtolower($response["Message"])=="baseball") || (strtolower($response["Message"])=="basketball")){
+                ?>
+               
+<table style="width: 750px" cellpadding="1" cellspacing="1" border="0">
+<thead>
+    <tr>
+<th class="cell" align="left"><strong>DateTime</strong></th>
+        
+<th class="cell" align="left"><strong>SenderAddress</strong></th>
+<th class="cell" align="left"><strong>Message</strong></th>
+<th class="cell" align="left"><strong>DestinationAddress</strong></th>      
+<th class="cell" align="left"><strong>MessageId</strong></th>
+
+
+
+</td>
+	</tr>
+</thead>
+<tbody><?php
+foreach($responses as $response) {
+
+
 ?>
+<tr>
+                        <td class="cell" align="left">
+	                  <?php echo $response["DateTime"];?>
+
+			     </td>
+                         <td class="cell" align="left">
+                         <?php echo $response["SenderAddress"];?>
+</td>
+
+                        </td>
+                        <td class="cell" align="left"><?php echo $response["Message"];?></td>
+                        <td class="cell" align="left"><?php echo $response["DestinationAddress"];?></td>
+                        <td class="cell" align="left"><?php echo $response["MessageId"];?></td>
+                      </tr></table>  
+<?php 
+
+ }
+ } }
+} }
+foreach($responses as $response) {
+ $fp = fopen($db3_filename, 'w+') or die("I could not open $db3_filename.");
+            unset($response["DateTime"], $response["SenderAddress"], $response["Message"], $response["DestinationAddress"], $response["MessageId"]);}
+?></div>
 <div id="footer">
 
 	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
-    <p> &#169; 2012 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+    <p> 2012 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
 <br>
 The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
 <br>
@@ -434,5 +303,3 @@ For more information contact <a href="mailto:developer.support@att.com">develope
 
 </body>
 </html>
-
-

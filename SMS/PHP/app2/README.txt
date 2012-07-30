@@ -59,15 +59,10 @@ create and run one's own full-fledged sample applications.
    
     $api_key                                : Client API key
     $secret_key                             : Client secret key
-    $short_code                             : Short code
-    $short_code2                            : Second short code if configured 
+    $short_code                             : Short code 
     $FQDN = "https://api.att.com";          : Endpoint 
-    $oauth_file = "/tmp/smsoauthtoken.php"; : Oauth Token persistance location,should be writable by apache server  
-    $authorize_redirect_uri = "";	        : Url where oAuth provider will redirect to in case of successful authentication. 
-                                              Needs to be exactly the same as one used while registering application in DevConnect.
+    $oauth_file = "/tmp/sms2oauthtoken.php"; : Oauth Token persistance location,should be writable by apache server  
     $scope = "SMS";                         : Oauth scope ( SMS ) 
-    $default_address                        : Default phone number 
-    $default_smsMsg                         : Default text message
 
 
 

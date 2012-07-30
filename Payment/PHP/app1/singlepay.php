@@ -679,6 +679,7 @@ if(true) {
 <tbody>
 <?php
 if(true) {
+
        $responses = unserialize(file_get_contents($db10_filename)); 
        $counters = count($responses);
       for($i = 0;$i <= $counters; $i++){
@@ -698,7 +699,9 @@ if(true) {
                         <td class="cell" align="left"><?php echo $responses[$i];?></td>
                       </tr>  
 <?php 
-      } }?>
+      }
+
+}?>
   <tr>
     <td></td>
     <td></td>
@@ -870,6 +873,7 @@ For more information contact <a href="mailto:developer.support@att.com">develope
 </div>
 
 </body></html>
+
 
 
 

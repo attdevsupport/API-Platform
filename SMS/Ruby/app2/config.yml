@@ -1,6 +1,10 @@
 port:             4567
-api_key:
-secret_key:
+api_key:          
+secret_key:       
 registration_id:  
 tokens_file:      tokens
 FQDN:             https://api.att.com
+listener_url:     http://localhost:4567/smslistener
+mosms_file_dir:   MoSmsData
+votes_file:       MoSmsData/vote_data
+

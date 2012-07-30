@@ -5,7 +5,11 @@
 //For more information contact developer.support@att.com
 %>
 
-<%@ page contentType="application/json" language="java" %><%@ page import="java.io.*" %><%@ page import="java.util.Arrays" %><%@ page import="java.util.Collections" %><%@ page import="java.util.Comparator" %><%@ include file="config.jsp" %><%
+<%@ page contentType="application/json" language="java"%><%@ page
+	import="java.io.*"%><%@ page import="java.util.Arrays"%><%@ page
+	import="java.util.Collections"%><%@ page import="java.util.Comparator"%><%@ include
+	file="config.jsp"%>
+<%
 
 String notificationId = "";
 
@@ -27,7 +31,12 @@ if(directory.listFiles().length>0) {
     for(File notificationFile : files){  
           String notificationFileName = notificationFile.getName(); 
             RandomAccessFile inFile1 = new RandomAccessFile(application.getRealPath("Notifications/" + notificationFileName),"r");
-            notificationId = (inFile1.readLine()).trim(); 
+            if (i > 9)
+			{
+				File f = new File(application.getRealPath("Notifications/" + notificationFileName));
+				f.delete();	
+			}
+			notificationId = (inFile1.readLine()).trim(); 
             inFile1.close();
       
             if((i==directory.listFiles().length-1)) {    
@@ -36,8 +45,6 @@ if(directory.listFiles().length>0) {
                   %>{"path":"Notifications/<%=notificationFileName%>","notificationId":"<%=notificationId%>"},<%
             }
         i += 1;
-        if(i==9 )
-            break;
     }
 }
 %>
