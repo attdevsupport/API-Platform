@@ -207,6 +207,7 @@ Partial Public Class SMS_App2
         Dim srcFile As String = Request.MapPath(ConfigurationManager.AppSettings("MessagesFilePath"))
         Dim destFile As String = Request.MapPath(ConfigurationManager.AppSettings("MessagesTempFilePath"))
         Dim messagesLine As String = [String].Empty
+        receiveMessagePanel.Controls.Clear()
         If File.Exists(srcFile) Then
             File.Move(srcFile, destFile)
             Dim secondTable As New Table()
