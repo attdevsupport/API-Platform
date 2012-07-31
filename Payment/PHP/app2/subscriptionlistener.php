@@ -14,7 +14,7 @@ if(!is_dir($folder))
     echo "Notifications folder is missing";
     exit();
   }
-$db9_filename = $folder . "/". "singlepaylistener.txt";
+$db9_filename = $folder . "/". "subscriptionlistener.txt";
 $post_body = file_get_contents('php://input');
 
 $fp = fopen($db9_filename, 'w+') or die("I could not open $filename.");

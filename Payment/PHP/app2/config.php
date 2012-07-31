@@ -9,6 +9,6 @@ For more information contact developer.support@att.com
 $oauth_file = "/tmp/paytoken.php";
 $api_key = "";
 $secret_key = "";
-$FQDN = "https://api-uat.san1.attcompute.com/";
+$FQDN = "https://api.att.com";
 $subscriptionRedirect = "";
 ?>

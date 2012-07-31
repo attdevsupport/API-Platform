@@ -95,6 +95,12 @@ create and run one's own full-fledged sample applications.
 
    6) tokens_file       : file containing authorization and refresh tokens
 
+   7) listener_url 	: set to the URL of the sms callback listener
+
+   8) mosms_file_dir	: directory which holds all the message details
+
+   9) votes_file	: file in which the vote details are stored
+
    Note: If your application is promoted from Sandbox environment to Production environment and you decide to use
    production application settings, you must update parameters 1-2 as per production application details.
 

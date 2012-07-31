@@ -21,10 +21,12 @@ if(!is_dir($folder))
     exit();
   }
 
-$db2_filename = $folder . "/". "subscriptionlistener.txt";
+$db2_filename = $folder . "/". "singlepaylistener.db";
+$db9_filename = $folder . "/". "subscriptionlistener.txt";
 $db3_filename = $folder . "/". "notificationdetails.txt";
-$db4_filename = $folder . "/". "notificationack.txt";
 $db10_filename = $folder . "/". "checker.db";
+$db4_filename = $folder . "/". "notificationack.txt";
+$db5_filename = $folder . "/". "notifications.txt";
 
 
 session_start();
@@ -836,8 +838,7 @@ if(true) {
 <div id="wrapper">
 <div id="content">
 <h2><br />Feature 4: Notifications</h2>
-<?php $responses = array();
-?>
+
 </div>
 </div>
 <form method="post" name="refreshNotifications" action="subscription.php">
@@ -859,26 +860,29 @@ if(true) {
 <tbody>
 <?php
 if(true) {
-       $responses = unserialize(file_get_contents($db10_filename)); 
-       $counters = count($responses);
-      for($i = 0;$i <= $counters; $i++){
+
+              $responses = unserialize(file_get_contents($db10_filename));
+      foreach($responses as $response){
+        
 
 ?>
                       <tr>
                         <td class="cell" align="left">
-	                  <?php echo $responses[$i]; $i = $i + 1;?>
+	                  <?php echo $response["NotificationID"];?>
 
 			     </td>
                          <td class="cell" align="left">
-                         <?php echo $responses[$i]; $i = $i + 1;?>
+                         <?php echo $response["NotificationType"]?>
 </td>
 
                         </td>
                         <td></td>
-                        <td class="cell" align="left"><?php echo $responses[$i];?></td>
+                        <td class="cell" align="left"><?php echo $response["OriginalTransactionId"]?></td>
                       </tr>  
 <?php 
-      } }?>
+      }
+
+}?>
   <tr>
     <td></td>
     <td></td>
@@ -945,21 +949,22 @@ if($responseCode==200) {
 
 
 
+
 $details = array();
   if ( file_exists( $db3_filename) ){
             $notificationdetails = unserialize(file_get_contents($db3_filename));
             array_push($details, $response); 
-            $fp = fopen($db3_filename, 'a+') or die("I could not open $db3_filename.");
+            $fp = fopen($db3_filename, 'w+') or die("I could not open $db3_filename.");
             fwrite($fp, serialize($response));
             
    }
 
 if ( file_exists( $db10_filename) ){
-            $responses = unserialize(file_get_contents($db10_filename));
-            
-            $fp = fopen($db10_filename, 'a+') or die("I could not open $db10_filename.");
-            array_push($responses, $notificationtype, $notificationId, $originaltrxId);
-            fwrite($fp, serialize($responses));
+            $responsetest = unserialize(file_get_contents($db10_filename));
+            $responsetest = array($responses);
+            //array_push($responsetest,$responses);
+            $fp = fopen($db10_filename, 'w+') or die("I could not open $db10_filename.");
+            fwrite($fp, serialize($responsetest));
            
             
             
@@ -1009,7 +1014,7 @@ $accept = "Accept: application/json";
             
             $fp = fopen($db4_filename, 'a+') or die("I could not open $db4_filename.");
             array_push($acknowledgements, $response); 
-            fwrite($fp, $acknowledgements);
+            fwrite($fp, $response);
            
    }
 }
@@ -1034,7 +1039,6 @@ fclose($fp);}}
 </div>
 <br clear="all" />
 </form></div>
-
 <div id="footer">
 
 	<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
@@ -1050,7 +1054,6 @@ For more information contact <a href="mailto:developer.support@att.com">develope
 </div>
 
 </body></html>
-
 
 
 

@@ -1,4 +1,3 @@
-
 <% 
 //Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
 //TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
@@ -14,7 +13,7 @@
 <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
 <link rel="stylesheet" type="text/css" href="style/common.css"/ >
 <script type="text/javascript" src="js/helper.js">
-	
+
 </script>
 <head>
 <script type="text/javascript">
@@ -62,7 +61,7 @@ if(trxId==null || trxId.equalsIgnoreCase("null"))
 String subscriptionId = request.getParameter("subscriptionId");
 if(subscriptionId==null || subscriptionId.equalsIgnoreCase("null"))
     subscriptionId = "";
-	
+
 String notificationId = request.getParameter("notificationId");
 if(notificationId==null || notificationId.equalsIgnoreCase("null"))
     notificationId = "";
@@ -195,7 +194,8 @@ if(product==1) {
 			<div align="center"></div>
 		</form>
 
-		<% if(newSubscription!=null) { 
+<% 
+if(newSubscription!=null) { 
 merchantTrxId = "user" + randomGenerator.nextInt(100000) + "subscription" + randomGenerator.nextInt(1000000);
 session.setAttribute("merchantTrxId", merchantTrxId);
 session.setAttribute("trxId", null);
@@ -223,14 +223,20 @@ String forNotary = "notary.jsp?signPayload=true&return=subscription.jsp&payload=
 "\"SubscriptionPeriod\":\"MONTHLY\","+
 "\"SubscriptionPeriodAmount\":1}";
 response.sendRedirect(forNotary);
-} %>
+	
+}
 
-		<% if(request.getParameter("SubscriptionAuthCode")!=null) { 
-PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/transactionData/" + merchantTrxId + ".txt"))), false);
-String toSave = trxId + "\n" + merchantTrxId + "\n" + authCode;
-outWrite.write(toSave);
-outWrite.close();    
-session.setAttribute("authCode", authCode);
+ %>
+
+		<%
+if(request.getParameter("SubscriptionAuthCode")!=null) { 
+		
+	PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/transactionData/" + merchantTrxId + ".txt"))), false);
+	String toSave = trxId + "\n" + merchantTrxId + "\n" + authCode;
+	outWrite.write(toSave);
+	outWrite.close();    
+	session.setAttribute("authCode", authCode);
+
 %>
 		<div class="successWide">
 			<strong>SUCCESS:</strong><br /> <strong>Merchant
@@ -248,9 +254,32 @@ session.setAttribute("authCode", authCode);
 		<% } %>
 
 		<%
+		
+		
 if(request.getParameter("signedPayload")!=null && request.getParameter("signature")!=null){
     response.sendRedirect(FQDN + "/rest/3/Commerce/Payment/Subscriptions?clientid=" + clientIdAut + "&SignedPaymentDetail=" + request.getParameter("signedPayload") + "&Signature=" + request.getParameter("signature"));
-}
+	System.out.println("BODY1: " + response);
+	}
+	
+if(request.getParameter("getTransactionType") != null)
+	{
+		int getTransactionType = Integer.parseInt(request.getParameter("getTransactionType"));
+		String url = "";
+		if(getTransactionType==1)
+			url = FQDN + "/rest/3/Commerce/Payment/Subscriptions/MerchantTransactionId/" + merchantTrxId;   
+		if(getTransactionType==2)
+			url = FQDN + "/rest/3/Commerce/Payment/Subscriptions/SubscriptionAuthCode/" + authCode;
+		if(getTransactionType==3)
+			url = FQDN + "/rest/3/Commerce/Payment/Subscriptions/SubscriptionId/" + trxId;
+		HttpClient client = new HttpClient();
+		GetMethod method = new GetMethod(url);  
+		method.addRequestHeader("Authorization","Bearer " + accessToken);
+		method.addRequestHeader("Accept","application/json");
+		int statusCode = client.executeMethod(method);   
+		JSONObject jsonResponse = new JSONObject(method.getResponseBodyAsString());
+		trxId = jsonResponse.getString("SubscriptionId");
+		session.setAttribute("trxId", trxId);
+	}	
 %>
 
 		<div id="wrapper">
@@ -291,15 +320,15 @@ if(request.getParameter("signedPayload")!=null && request.getParameter("signatur
 							</td>
 						</tr>
 
+						 <% if(!trxId.equalsIgnoreCase("")) { %>
 						<tr>
-							<td class="cell" align="left"><input type="radio"
-								name="getTransactionType" value="3" /> Subscription ID:
-							<td></td>
-							<% if(!trxId.equalsIgnoreCase("")) { %>
-							<td class="cell" align="left"><%=trxId%></td>
-							<% } %>
-							</td>
-						</tr>
+						   <td class="cell" align="left"><input type="radio"
+							name="getTransactionType" value="3" /> Subscription ID:
+						   <td></td>
+						   <td class="cell" align="left"><%=trxId%></td>
+						   </td>
+						  </tr>
+						  <% } %>
 
 						<tr>
 							<td></td>
@@ -314,7 +343,9 @@ if(request.getParameter("signedPayload")!=null && request.getParameter("signatur
 	</div>
 	<br clear="all" />
 
-	<% if(getSubscriptionStatus!=null) { 
+	<% 
+
+if(getSubscriptionStatus!=null) { 
 int getTransactionType = Integer.parseInt(request.getParameter("getTransactionType"));
 String url = "";
 if(getTransactionType==1)
@@ -327,7 +358,8 @@ HttpClient client = new HttpClient();
 GetMethod method = new GetMethod(url);  
 method.addRequestHeader("Authorization","Bearer " + accessToken);
 method.addRequestHeader("Accept","application/json");
-int statusCode = client.executeMethod(method);    
+int statusCode = client.executeMethod(method);  
+  
 if(statusCode==200) {
     JSONObject jsonResponse = new JSONObject(method.getResponseBodyAsString());
     trxId = jsonResponse.getString("SubscriptionId");
@@ -628,7 +660,7 @@ if(true) {
 
 
 	<% if(refundSubscription!=null) { 
-
+	trxId = request.getParameter("trxIdRefund"); // Gets value for the checked radio button
     String url = FQDN + "/rest/3/Commerce/Payment/Transactions/" + trxId;  
     HttpClient client = new HttpClient();
     PutMethod method = new PutMethod(url);  
@@ -732,21 +764,21 @@ if(true)
 						return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
 					} });
 				Collections.reverse(Arrays.asList(files));
-				
+
 				if(directory.listFiles().length>0) {
 					int i = 0;
-				
+
 					String notID="";
 					String notType="";
 					String transID="";
-					
+
 					for(File callbackFile : files){  
 						  String callbackFileName = callbackFile.getName(); 
 							RandomAccessFile inFile1 = new RandomAccessFile(application.getRealPath("CallBack/" + callbackFileName),"r");
 							notID = (inFile1.readLine()).trim(); 
 							notType=(inFile1.readLine()).trim();
 							transID=(inFile1.readLine()).trim();
-							
+
 							inFile1.close();			
 							i += 1;	
 							 %>
@@ -760,7 +792,7 @@ if(true)
 					</tr>
 
 					<%
-						
+
 					    if(i==5 )			//Print latest 5 transactions
 						    break;
 					}
@@ -783,7 +815,7 @@ if(true)
 
 	<% 
 				}
-				
+
 String notificationType = "";
 String transactionId = "";
 
@@ -822,35 +854,35 @@ String transactionId = "";
                 {
 					 JSONObject jsonResponse = new JSONObject(methods.getResponseBodyAsString());
 					 JSONObject getNotificationResponse = jsonResponse.getJSONObject("GetNotificationResponse");
-					 
+
 					 String noType = getNotificationResponse.getString("NotificationType");
 					 String originalTrxId = getNotificationResponse.getString("OriginalTransactionId");
-					 
+
 					int random = (int)(Math.random()*10000000);
 					PrintWriter outWrite = new PrintWriter(new BufferedWriter(new FileWriter(application.getRealPath("/CallBack/" + random + ".txt"))), false);		//Print Successfull notification details to a file.
 					outWrite.println(not);
 					outWrite.println(noType);
 					outWrite.println(originalTrxId);
-					
+
 					outWrite.close();
-								
+
 					HttpClient client2 = new HttpClient(); 		//Acknowledge the notification
 					PutMethod method2 = new PutMethod(url);
 					method2.addRequestHeader("Authorization", "Bearer " + accessToken);
 					method2.addRequestHeader("Content-Type", "application/json");
 					method2.addRequestHeader("Accept", "application/json"); 
 					int statusCode3 = client2.executeMethod(method2);
-	   
+
 					if(statusCode3==200 || statusCode3==201) 
 					System.out.println("Acknowlegement success ");
-					
+
 					methods.releaseConnection();    
 					method2.releaseConnection();
 				}
                      			
 			}	
     }
-	
+
 }
 
 %>
@@ -870,7 +902,3 @@ String transactionId = "";
 			for use as a reference in how the services perform. <br> For
 			download of tools and documentation, please go to <a
 				href="https://devconnect-api.att.com/" target="_blank">https://devconnect-api.att.com</a>
-			<br> For more information contact <a
-				href="mailto:developer.support@att.com">developer.support@att.com</a>
-	</div>
-	</div>

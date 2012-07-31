@@ -93,9 +93,11 @@ def read_recent_items
     while (line = f.gets)
       a = line.split
       t = Hash.new
-      t[:merchant_subscription_id] = a[0]
-      t[:subscription_id] = a[1] 
-      t[:consumer_id] = a[2]
+      t[:merchant_transaction_id] = a[0]
+      t[:subscription_auth_code] = a[1]
+      t[:subscription_id] = a[2]
+      t[:merchant_subscription_id] = a[3]
+      t[:consumer_id] = a[4]
       @subscriptions.push t
     end 
   end
@@ -107,7 +109,7 @@ end
 def write_recent_items
   File.open settings.subscriptions_file, 'w+' do |f|
     @subscriptions.each do |t|
-      f.puts t[:merchant_subscription_id] + ' ' + (t[:subscription_id] ? ' ' + t[:subscription_id] : '') + (t[:consumer_id] ? ' ' + t[:consumer_id] : '')
+    f.puts t[:merchant_transaction_id] + ' ' + t[:subscription_auth_code] + (t[:subscription_id] ? ' ' + t[:subscription_id] : '') + ' ' + (t[:merchant_subscription_id] ? ' ' + t[:merchant_subscription_id] : '') + ' ' + (t[:consumer_id] ? ' ' + t[:consumer_id] : '')
     end
   end
 end
@@ -146,7 +148,7 @@ def callback_subscription
 
   @new_subscription[:merchant_transaction_id] = session[:merchant_transaction_id]
   @new_subscription[:subscription_auth_code] = params['SubscriptionAuthCode']
-  session[:subscription_auth_code] = params['SubscriptionAuthCode']
+  params['SubscriptionAuthCode'] = session[:subscription_auth_code]
   @subscriptions.push @new_subscription
 
   @subscriptions.delete_at 0 if @subscriptions.length > settings.recent_subscriptions_stored
@@ -161,7 +163,7 @@ def get_subscription_status
   if params['getSubscriptionType'] == '1'
     u = settings.FQDN + "/rest/3/Commerce/Payment/Subscriptions/MerchantTransactionId/" + session[:merchant_transaction_id]
   elsif params['getSubscriptionType'] == '2'
-    u = settings.FQDN + "/rest/3/Commerce/Payment/Subscriptions/SubscriptionAuthCode/" + session[:subscription_auth_code]
+    u = settings.FQDN + "/rest/3/Commerce/Payment/Subscriptions/SubscriptionAuthCode/" + @subscriptions.last[:subscription_auth_code]
   elsif params['getSubscriptionType'] == '3'
     u = settings.FQDN + "/rest/3/Commerce/Payment/Subscriptions/SubscriptionId/" + @subscriptions.last[:subscription_id]
   end

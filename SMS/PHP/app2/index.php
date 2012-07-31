@@ -218,18 +218,18 @@ $totalVotes = $footBallTotalCount +  $baseBallTotalCount + $basketBallTotalCount
 </thead>
 <tbody>
 <tr>
-                        <td class="cell" align="left" bgcolor = "#fcc">
+                        <td class="cell" align="left" style="background: #fcc">
 	                  <?php echo $response["DateTime"];?>
 
 			     </td>
-                         <td class="cell" align="left" bgcolor = "#fcc">
+                         <td class="cell" align="left" style="background: #fcc">
                          <?php echo $response["SenderAddress"];?>
 </td>
 
                         </td>
-                        <td class="cell" align="left" bgcolor = "#fcc"><?php echo $response["Message"];?></td>
-                        <td class="cell" align="left" bgcolor = "#fcc"><?php echo $response["DestinationAddress"];?></td>
-                        <td class="cell" align="left" bgcolor = "#fcc"><?php echo $response["MessageId"];?></td>
+                        <td class="cell" align="left" style="background: #fcc"><?php echo $response["Message"];?></td>
+                        <td class="cell" align="left" style="background: #fcc"><?php echo $response["DestinationAddress"];?></td>
+                        <td class="cell" align="left" style="background: #fcc"><?php echo $response["MessageId"];?></td>
                       </tr>  
 
     </table>
@@ -276,7 +276,8 @@ foreach($responses as $response) {
                         <td class="cell" align="left"><?php echo $response["Message"];?></td>
                         <td class="cell" align="left"><?php echo $response["DestinationAddress"];?></td>
                         <td class="cell" align="left"><?php echo $response["MessageId"];?></td>
-                      </tr></table>  
+                      </tr>
+</table>  
 <?php 
 
  }

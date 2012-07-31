@@ -20,11 +20,6 @@ set :port, settings.port
 
 SCOPE = 'SMS'
 
-# setup filter fired before reaching our urls
-# this is to ensure we are o-authenticated before actual action (like getReceivedSms)
-
-# autonomous version
-
 ['/receiveSms'].each do |path|
   before path do
     obtain_tokens(settings.FQDN, settings.api_key, settings.secret_key, SCOPE, settings.tokens_file)

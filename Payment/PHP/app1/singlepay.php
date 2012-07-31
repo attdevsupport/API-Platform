@@ -387,7 +387,7 @@ if( $_REQUEST["signedPayload"]!=null && $_REQUEST["signature"]!=null){
     $consumerId = $jsonResponse["ConsumerId"];
     $_SESSION["pay1_consumerId"] = $consumerId;
 
-    If ( $trxId != null && $trxId != ""){
+    if ( $trxId != null && $trxId != ""){
 
     $transaction["trxId"] = $trxId;
     $transaction["merchantTrxId"] = $_SESSION["pay1_merchantTrxId"];
@@ -656,8 +656,8 @@ if(true) {
 
 
 <h2><br />Feature 4: Notifications</h2>
-<?php $responses = array();
-?>
+
+
 </div>
 </div>
 <form method="post" name="refreshNotifications" action="singlepay.php">
@@ -680,23 +680,23 @@ if(true) {
 <?php
 if(true) {
 
-       $responses = unserialize(file_get_contents($db10_filename)); 
-       $counters = count($responses);
-      for($i = 0;$i <= $counters; $i++){
+              $responses = unserialize(file_get_contents($db10_filename));
+      foreach($responses as $response){
+        
 
 ?>
                       <tr>
                         <td class="cell" align="left">
-	                  <?php echo $responses[$i]; $i = $i + 1;?>
+	                  <?php echo $response["NotificationID"];?>
 
 			     </td>
                          <td class="cell" align="left">
-                         <?php echo $responses[$i]; $i = $i + 1;?>
+                         <?php echo $response["NotificationType"]?>
 </td>
 
                         </td>
                         <td></td>
-                        <td class="cell" align="left"><?php echo $responses[$i];?></td>
+                        <td class="cell" align="left"><?php echo $response["OriginalTransactionId"]?></td>
                       </tr>  
 <?php 
       }
@@ -773,16 +773,17 @@ $details = array();
   if ( file_exists( $db3_filename) ){
             $notificationdetails = unserialize(file_get_contents($db3_filename));
             array_push($details, $response); 
-            $fp = fopen($db3_filename, 'a+') or die("I could not open $db3_filename.");
+            $fp = fopen($db3_filename, 'w+') or die("I could not open $db3_filename.");
             fwrite($fp, serialize($response));
             
    }
 
 if ( file_exists( $db10_filename) ){
             $responsetest = unserialize(file_get_contents($db10_filename));
-            array_push($responses, $notificationId, $notificationtype, $originaltrxId);
-            $fp = fopen($db10_filename, 'a+') or die("I could not open $db10_filename.");
-            fwrite($fp, serialize($responses));
+            $responsetest = array($responses);
+            //array_push($responsetest,$responses);
+            $fp = fopen($db10_filename, 'w+') or die("I could not open $db10_filename.");
+            fwrite($fp, serialize($responsetest));
            
             
             
@@ -873,7 +874,6 @@ For more information contact <a href="mailto:developer.support@att.com">develope
 </div>
 
 </body></html>
-
 
 
 

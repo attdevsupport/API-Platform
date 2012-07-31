@@ -95,9 +95,9 @@ For more information contact developer.support@att.com -->
 							<strong>Subscription Auth Code:</strong> <%= @new_subscription[:subscription_auth_code] %>
 						<br />
 					<br/>
-					<form name="getNotaryDetails" action="<%= settings.notary_app_view_payload_url %>">
-    						<input type="submit" name="submit" value="View Notary Details" />
-					</form>
+                    <form name="getNotaryDetails" action="<%= settings.notary_app_view_payload_url %>">
+        					<input type="submit" name="submit" value="View Notary Details" />
+				</form>
 			</div>
 		<br/>
 		<% end %>
@@ -119,8 +119,7 @@ For more information contact developer.support@att.com -->
         <div class="navigation" align="center">
             <table border="0" width="100%">
                 <tbody>
-                    <% if @subscriptions.last %>
-						<tr>
+                    	<tr>
 							<td class="cell">
 								<input type="radio" name="getSubscriptionType" value="1" checked="checked" />
 								Merchant Transaction ID: <%= session[:merchant_transaction_id] %></td>
@@ -128,15 +127,15 @@ For more information contact developer.support@att.com -->
 						<tr>
 							<td class="cell">
 								<input type="radio" name="getSubscriptionType" value="2" />
-								Auth Code: <%= session[:subscription_auth_code] %></td>
+								Auth Code: <% if @subscriptions.last %> <%= @subscriptions.last[:subscription_auth_code] %><% end %></td>
 						</tr>
 							<tr>
 								<td class="cell">
+                                    
 									<input type="radio" name="getSubscriptionType" value="3" /> Subscription ID:
-									<% if @subscriptions.last[:subscription_id] %> <%= @subscriptions.last[:subscription_id] %></td>
+									<% if @subscriptions.last %> <%= @subscriptions.last[:subscription_id] %></td>
 								</td>
 							</tr>
-						<% end %>
 					<% end %>
 					<tr>
 						<td></td>
@@ -369,16 +368,16 @@ For more information contact developer.support@att.com -->
 		<form method="post" name="refreshNotifications" action="/refreshNotifications">
             <br />
             <div align="center">
-                <table style="width: 650px" cellpadding="1" cellspacing="1" border="0">
+                <table style="width: 750px" cellpadding="1" cellspacing="1" border="0">
                     <thead>
                         <tr>
-                            <th style="width: 100px" class="cell">
+                            <th class="cell" align="left">
                                 <strong>Notification ID</strong>
                             </th>
-                            <th style="width: 100px" class="cell">
+                            <th class="cell" align="left">
                                 <strong>Notification Type</strong>
                             </th>
-                            <th style="width: 125px" class="cell">
+                            <th style="width: 100px" class="cell" align="left">
                                 <strong>Subscription ID</strong>
                             </th>
                             </tr>
@@ -386,12 +385,9 @@ For more information contact developer.support@att.com -->
                     <tbody>
                     <% @notifications.each do |n| %>                       
         			<tr>
-						<td style="width: 100px" td class="cell" align="left">
-								<%= n[:notificationId] %></td><td></td>
-						<td style="width: 100px" td class="cell" align="left"><%= n[:notificationtype]%></td><td></td>
-                        <td style="width: 100px" td class="cell" align="left">
-    							<%= n[:original_trxId] %></td>
-							<td></td>
+						<td class="cell" align="left"><%= n[:notificationId] %></td><td></td>
+						<td class="cell" align="left"><%= n[:notificationtype]%></td><td></td>
+                        <td class="cell" align="left"><%= n[:original_trxId] %></td><td></td>
 					</tr>
 				    <% end %>
                         <tr>
@@ -408,7 +404,7 @@ For more information contact developer.support@att.com -->
         </div>
         <div id="footer">
             <div style="float: right; width: 20%; font-size: 9px; text-align: right">
-                Powered by AT&amp;T Virtual Mobile</div>
+                Powered by AT&amp;T Cloud Architecture</div>
             <p>
                 &#169; 2012 AT&amp;T Intellectual Property. All rights reserved. <a href="http://developer.att.com/"
                     target="_blank">http://developer.att.com</a>
