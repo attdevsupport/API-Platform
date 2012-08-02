@@ -43,7 +43,7 @@ to use this sample application code.
 
   Having your application registered, you will get back an important pair of data:
   an API key and Secret key. They are necessary to get your applications working
-  with the AT&T HTML5 APIs. See 'Adjusting parameters' below to learn how to use 
+  with the AT&T APIPlatform APIs. See 'Adjusting parameters' below to learn how to use 
   these keys.
 
   Initially your newly registered application is restricted to the "Sandbox"
