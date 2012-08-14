@@ -5,7 +5,7 @@
 # For more information contact developer.support@att.com
 
 port:             4567
-api_key:            
+api_key:          
 secret_key:       
 tokens_file:      tokens 
 FQDN:             https://api.att.com

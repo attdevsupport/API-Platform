@@ -21,7 +21,15 @@ set :port, settings.port
 
 SCOPE = 'SPEECH'
 
+error do
+  @error = e.message
+end
+
 ['/SpeechToText'].each do |path|
+  if settings.api_key.nil? || settings.secret_key.nil?
+    raise RuntimeError, "The API and Secret keys must be set the config.yml file"
+  end
+  
   before path do
     obtain_tokens(settings.FQDN, settings.api_key, settings.secret_key, SCOPE, settings.tokens_file)
   end
