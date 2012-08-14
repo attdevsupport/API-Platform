@@ -32,32 +32,29 @@ get '/' do
 end
 
 post '/SpeechToText' do
-if params[:f1] != nil
-  speech_to_text
-else
-speech_default_file
-end
+  if params[:f1] != nil
+    speech_to_text
+  else
+    speech_default_file
+  end
 end 
 
 
 def speech_to_text
-
-
   @type = params[:f1][:type]
- temp_file = params[:f1][:tempfile]
+  temp_file = params[:f1][:tempfile]
 
- @file_contents = File.read(temp_file.path)
+  @file_contents = File.read(temp_file.path)
 
-   if @type == "application/octet-stream"
-   @type = "audio/amr"
-   end
+  if @type == "application/octet-stream"
+    @type = "audio/amr"
+  end
 
-   url = "#{settings.FQDN}/rest/1/SpeechToText"
+  url = "#{settings.FQDN}/rest/1/SpeechToText"
 
-   response = RestClient.post "#{settings.FQDN}/rest/1/SpeechToText", "#{@file_contents}", :Authorization => "Bearer #{@access_token}", :Content_Transfer_Encoding => 'chunked', :X_SpeechContext => 'Generic', :Content_Type => "#{@type}" , :Accept => 'application/json'
+  response = RestClient.post "#{settings.FQDN}/rest/1/SpeechToText", "#{@file_contents}", :Authorization => "Bearer #{@access_token}", :Content_Transfer_Encoding => 'chunked', :X_SpeechContext => 'Generic', :Content_Type => "#{@type}" , :Accept => 'application/json'
 
-   @result = JSON.parse response
-
+  @result = JSON.parse response
 rescue => e
   @error = e.message
 ensure
@@ -67,24 +64,21 @@ end
 
 
 def speech_default_file
-@filename = 'bostonSeltics.wav'
+  @filename = 'bostonSeltics.wav'
+  @type = ' audio/wav'
 
-@type = ' audio/wav'
 
-
-fullname = File.expand_path(File.dirname(File.dirname(__FILE__)))
-final = fullname + '/' + @filename
-@file_contents = File.read(final)
+  fullname = File.expand_path(File.dirname(File.dirname(__FILE__)))
+  final = fullname + '/' + @filename
+  @file_contents = File.read(final)
 
   url = "#{settings.FQDN}/rest/1/SpeechToText"
 
-   response = RestClient.post "#{settings.FQDN}/rest/1/SpeechToText", "#{@file_contents}", :Authorization => "Bearer #{@access_token}", :Content_Transfer_Encoding => 'chunked', :X_SpeechContext => 'Generic', :Content_Type => "#{@type}" , :Accept => 'application/json'
+  response = RestClient.post "#{settings.FQDN}/rest/1/SpeechToText", "#{@file_contents}", :Authorization => "Bearer #{@access_token}", :Content_Transfer_Encoding => 'chunked', :X_SpeechContext => 'Generic', :Content_Type => "#{@type}" , :Accept => 'application/json'
 
-   @result = JSON.parse response
-
+  @result = JSON.parse response
 rescue => e
   @error = e.message
 ensure
   return erb:speech
 end
-
