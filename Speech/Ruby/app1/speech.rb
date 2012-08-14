@@ -73,11 +73,11 @@ end
 
 def speech_default_file
   @filename = 'bostonSeltics.wav'
-  @type = ' audio/wav'
+  @type = 'audio/wav'
 
 
   fullname = File.expand_path(File.dirname(File.dirname(__FILE__)))
-  final = fullname + '/' + @filename
+  final = fullname + '/app1/' + @filename
   @file_contents = File.read(final)
 
   url = "#{settings.FQDN}/rest/1/SpeechToText"
