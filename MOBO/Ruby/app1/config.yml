@@ -1,0 +1,5 @@
+port:             4567
+api_key:          
+secret_key:       
+FQDN:             https://api.att.com
+redirect_url:     http://localhost.com:4567/auth/callback

@@ -1,0 +1,219 @@
+
+<!-- Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012 
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com 
+For more information contact developer.support@att.com -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+   <title>AT&T Sample Mobo Application 1 - Basic Mobo Service Application</title>
+   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+   <link rel="stylesheet" type="text/css" href="style/common.css"/>
+</head>
+   <body>
+        <div id="container">
+            <!-- open HEADER -->
+            <div id="header">
+                <div>
+                    <div id="hcRight">
+                        <%= Time.now.utc.strftime("%a, %B %d, %Y %H:%M:%S UTC") %>  
+                    </div>
+                    <div id="hcLeft">
+                        Server Time:</div>
+                </div>
+                <div>
+                    <div id="hcRight">
+                        <script language="JavaScript" type="text/javascript">
+                            var myDate = new Date();
+                            document.write(myDate);
+                        </script>
+                    </div>
+                    <div id="hcLeft">
+                        Client Time:</div>
+                </div>
+                <div>
+                    <div id="hcRight">
+                        <script language="JavaScript" type="text/javascript">
+                            document.write("" + navigator.userAgent);
+                        </script>
+                    </div>
+                    <div id="hcLeft">
+                        User Agent:</div>
+                </div>
+                <br clear="all" />
+            </div>
+            <!-- close HEADER -->
+
+<div>
+	<div id="content">
+
+		<h1>AT&T Sample Mobo Application 1 - Basic Mobo Service Application</h1>
+		<h2>Feature 1: Send Message</h2>
+
+	</div>
+</div>
+
+<br clear="all" />
+	<form method="post" action="/submit" enctype="multipart/form-data">
+    
+    <div class="aspNetHidden">
+        <input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwULLTE0Njg1MzU3NjYPZBYEAgEPDxYCHgRUZXh0BR5XZWQsIEFwciAxMSwgMjAxMiAwMjoyMjozNyBVVENkZAIDDxYCHgdlbmN0eXBlBRNtdWx0aXBhcnQvZm9ybS1kYXRhZGRKqwJESS23JTte7DyE68Cg2Npvy+OhbfvIuIvYPupl3w==" />
+    </div>
+
+    <div class="aspNetHidden">
+        <input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="/wEWBgLarpiPBgKE8IO1CQKqp5K5DgLBpcqdCwLS2tfyDgKd/YaEBF51lEQEv77ck+EeFQ2Pv31ApGDVJCMt+60O1qIFfQEJ" />
+    </div>
+    
+		<div id="navigation">
+			<table border="0" width="100%">
+				<tbody>
+					<tr>
+						<td width="20%" valign="top" class="label">Address:</td>
+						<td class="cell">
+							<input name="address" type="text" maxlength="100" id="phoneTextBox" value='<%= params[:address] %>'style="width:291px;" />     
+						</td>
+					</tr> 
+					<tr>
+						<td valign="top" class="label">Message:</td>
+						<td class="cell">
+							<textarea name="message" rows="2" cols="20" id="messageTextBox" style="height:99px;width:291px;"><%= params[:message]%></textarea>
+					</td>
+					</tr>
+					<tr>
+						<td valign="top" class="label">Subject:</td>
+						<td class="cell">
+							<textarea name="subject" rows="2" cols="20" id="subjectTextBox" style="height:99px;width:291px;"><%= params[:subject]%></textarea>
+						</td>
+					</tr>
+					<tr>
+						<td valign="top" class="label">Group:</td>
+						<td class="cell">
+							<input name="groupCheckBox" value="true" type="checkbox" id="groupCheckBox"/></td>
+                            <%= params[:groupCheckBox] %>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div id="extraleft">
+			<div class="warning" >
+				<strong>WARNING:</strong><br />
+				total size of all attachments cannot exceed 600 KB.
+			</div>
+		</div>
+
+		<div id="extra">
+			<table border="0" width="100%">
+				<tbody>
+					<tr>
+						<td valign="bottom" class="style1">Attachment 1:</td>
+							<td class="cell">
+								<input type="file" name="f1" />
+							</td>
+						</tr>
+						<tr>
+							<td valign="bottom" class="style1">Attachment 2:</td>
+								<td class="cell">
+                                    <input type="file" name="f2" />
+							</td>
+                        </tr>
+                        <tr>
+    						<td valign="bottom" class="style1">Attachment 3:</td>
+								<td class="cell">
+                                    <input type="file" name="f3" />
+							</td>
+                        </tr>
+                        <tr>
+    						<td valign="bottom" class="style1">Attachment 4:</td>
+								<td class="cell">
+                                    <input type="file" name="f4" />
+							</td>
+                        </tr>
+                        <tr>
+    						<td valign="bottom" class="style1">Attachment 5:</td>
+								<td class="cell">
+                                    <input type="file" name="f5" />
+							</td>
+                        </tr>
+				</tbody>
+			</table>
+		
+			<table>
+				<tbody>
+					<tr>
+						<td>
+							<input type="submit" name="sendMessages" value="Send Message" id="sendMessages" /></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		
+		<br clear="all" />
+			<div align="center">
+				<div id="sendMessagePanel" style="font-family:Calibri;font-size:XX-Small;">
+			</div>
+		</div>
+      
+		<% if @sms_send_error %>
+			<div class="errorWide">
+				<strong>ERROR:</strong><br/>
+				<%= @sms_send_error %>
+			</div>
+			<br/>
+		<% end %>
+        
+        <% if @mms_send_error %>
+    		<div class="errorWide">
+				<strong>ERROR:</strong><br/>
+				<%= @mms_send_error %>
+			</div>
+			<br/>
+		<% end %>
+        
+        <% if @error %>
+    		<div class="errorWide">
+			    <strong>ERROR:</strong>
+			<br />
+			<%= @error %>
+		</div>
+		<% end %>
+        
+        <% if @message_error %>
+        	<div class="errorWide">
+			    <strong>ERROR:</strong>
+			<br />
+			<%= @message_error %>
+		</div>
+		<% end %>
+
+		<% if @sms_id %>
+			<div class="successWide">
+				<strong>SUCCESS:</strong><br/>
+				Message ID: <%= @sms_id %>
+			</div>
+			<br/>
+		<% end %>
+        
+        <% if @mms_id %>
+			<div class="successWide">
+				<strong>SUCCESS:</strong><br/>
+				Message ID: <%= @mms_id %>
+			</div>
+			<br/>
+		<% end %>
+	
+		<br clear="all" />
+			<div id="footer">
+				<div style="float: right; width: 20%; font-size: 9px; text-align: right">Powered by AT&amp;T Cloud Architecture</div>
+				<p>© 2012 AT&amp;T Intellectual Property. All rights reserved.  <a href="http://developer.att.com/" target="_blank">http://developer.att.com</a>
+				<br>
+				The Application hosted on this site are working examples intended to be used for reference in creating products to consume AT&amp;T Services and  not meant to be used as part of your product.  The data in these pages is for test purposes only and intended only for use as a reference in how the services perform.
+				<br>
+				For download of tools and documentation, please go to <a href="https://devconnect-api.att.com/" target="_blank">https://devconnect-api.att.com</a>
+				<br>
+				For more information contact <a href="mailto:developer.support@att.com">developer.support@att.com</a>
+			</div>
+		</form>
+	</body>
+</html>

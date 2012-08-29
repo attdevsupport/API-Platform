@@ -146,6 +146,7 @@ post '/submit' do
   if session[:mms2_address].length > 0
     send_messages
   else
+    @error = 'Please enter in a valid phone number'
     return erb :mms2
   end
 end
