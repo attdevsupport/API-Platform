@@ -1,7 +1,7 @@
 
-<!-- Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012 
+<!-- Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
-Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com 
+Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 For more information contact developer.support@att.com -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -17,8 +17,7 @@ For more information contact developer.support@att.com -->
             <div id="header">
                 <div>
                     <div class="hcRight">
-                        <%= Time.now.utc.strftime("%a, %B %d, %Y %H:%M:%S UTC") %>  
-                        </script>
+                        <%= Time.now.utc.strftime("%a, %B %d, %Y %H:%M:%S UTC") %>
                     </div>
                     <div class="hcLeft">
                         Server Time:</div>
@@ -106,38 +105,38 @@ For more information contact developer.support@att.com -->
 							</tr>
 						</thead>
 						<tbody>
-							<%   
+							<%
 							nbest = @result['Recognition']['NBest'];
 							nbest.each do |key, val| %>
-							<tr> 
+							<tr>
 							    <td class="cell" align="center"><em>ResponseId</em></td>
 								<td class="cell" align="center"><em><%= @result['Recognition']['ResponseId'] %></em></td>
 							</tr>
-							<tr> 
+							<tr>
 							    <td class="cell" align="center"><em>Hypothesis</em></td>
 								<td class="cell" align="center"><em><%= key['Hypothesis'] %></em></td>
 							</tr>
-							<tr> 
+							<tr>
 							    <td class="cell" align="center"><em>LanguageId</em></td>
 								<td class="cell" align="center"><em><%= key['LanguageId'] %></em></td>
 							</tr>
-							<tr> 
+							<tr>
 							    <td class="cell" align="center"><em>Confidence</em></td>
 								<td class="cell" align="center"><em><%= key['Confidence'] %></em></td>
 							</tr>
-							<tr> 
+							<tr>
 							    <td class="cell" align="center"><em>Grade</em></td>
 								<td class="cell" align="center"><em><%= key['Grade'] %></em></td>
 							</tr>
-							<tr> 
+							<tr>
 							    <td class="cell" align="center"><em>ResultText</em></td>
 								<td class="cell" align="center"><em><%= key['ResultText'] %></em></td>
 							</tr>
-							<tr> 
+							<tr>
 							    <td class="cell" align="center"><em>Words</em></td>
 								<td class="cell" align="center"><em><%= key['Words'].join(", ") %></em></td>
 							</tr>
-							<tr> 
+							<tr>
 							    <td class="cell" align="center"><em>WordScores</em></td>
 								<td class="cell" align="center"><em><%= key['WordScores'].join(", ") %></em></td>
 							</tr>
@@ -150,7 +149,7 @@ For more information contact developer.support@att.com -->
 					<div class="errorWide">
 						<strong>ERROR:</strong>
 						<br />
-						Invalid file specified. Valid file formats are .wav and .amr
+						<%=@error %>
 					</div>
 				<% end %>
             <br clear="all" />
@@ -176,4 +175,3 @@ For more information contact developer.support@att.com -->
             &nbsp;</p>
     </body>
 </html>
-
