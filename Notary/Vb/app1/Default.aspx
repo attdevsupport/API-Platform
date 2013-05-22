@@ -48,8 +48,7 @@ For more information contact developer.support@att.com
             <!-- close HEADER -->
             <div class="wrapper">
                 <div class="content">
-                    <h1>
-                        A&amp;T Sample Notary Application - Sign Payload Application</h1>
+                    <h1>AT&amp;T Sample Notary Application - Sign Payload Application</h1>
                 </div>
             </div>
             <div class="wrapper">

@@ -84,4 +84,4 @@ application, type in
 'http://IIS_HOSTNAME:8080/Csharp-SampleApplication/speechtotext/app1/Default.aspx'
 (assuming you're using a HOSTNAME machine with IIS Server and have not 
 changed the default port number, otherwise adjust accordingly) on your 
-browser. 
+web browser. 

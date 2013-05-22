@@ -1,4 +1,4 @@
-﻿' <copyright file="Default.aspx.vb" company="AT&amp;T">
+' <copyright file="Default.aspx.vb" company="AT&amp;T">
 ' Licensed by AT&amp;T under 'Software Development Kit Tools Agreement.' 2012
 ' TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 ' Copyright 2012 AT&amp;T Intellectual Property. All rights reserved. http://developer.att.com
@@ -63,7 +63,7 @@ Partial Public Class SMS_App2
 #Region "Events"
 
     ''' <summary>
-    ''' This method called when the page is loaded into the browser. Reads the config values and sets the local variables
+    ''' This method called when the page is loaded into the web browser. Reads the config values and sets the local variables
     ''' </summary>
     ''' <param name="sender">object, which invoked this method</param>
     ''' <param name="e">EventArgs, which specifies arguments specific to this method</param>
@@ -170,7 +170,7 @@ Partial Public Class SMS_App2
     ''' This method reads from config file and assign the values to local variables.
     ''' Displays error message in case of ay mandatory value not specified
     ''' </summary>
-    ''' <returns>true/false; true - if able to read all the mandatory values from config file; else false</returns>
+    ''' <returns>true/false; true: if able to read all the mandatory values from config file; else false</returns>
     Private Function ReadConfigFile() As Boolean
         Me.footballFilePath = ConfigurationManager.AppSettings("FootBallFilePath")
 

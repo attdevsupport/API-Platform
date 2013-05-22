@@ -90,8 +90,8 @@ public partial class TL_App1 : System.Web.UI.Page
     #region Events
 
     /// <summary>
-    /// This function is called when the applicaiton page is loaded into the browser.
-    /// This function reads the web.config and gets the values of the attributes
+    /// This function is called when the application page is loaded into the web browser.
+    /// This function reads the web.config file and gets the values of the attributes
     /// </summary>
     /// <param name="sender">object that caused this event</param>
     /// <param name="e">Event that invoked this function</param>
@@ -215,11 +215,11 @@ public partial class TL_App1 : System.Web.UI.Page
                 this.DrawPanelForGetLocationResult("TimeStamp:", deserializedJsonObj.timestamp, false);
                 this.DrawPanelForGetLocationResult("Response Time:", tokenSpan.Seconds.ToString() + "seconds", false);
 
-                MapTerminalLocation.Visible = true;
+                MapLocation.Visible = true;
                 map_canvas.Visible = true;
                 StringBuilder googleString = new StringBuilder();
                 googleString.Append("http://maps.google.com/?q=" + deserializedJsonObj.latitude + "+" + deserializedJsonObj.longitude + "&output=embed");
-                MapTerminalLocation.Attributes["src"] = googleString.ToString();
+                MapLocation.Attributes["src"] = googleString.ToString();
 
                 responseStream.Close();
             }
@@ -317,7 +317,7 @@ public partial class TL_App1 : System.Web.UI.Page
     }
 
     /// <summary>
-    /// This function resets access token related  variable to null 
+    /// This function resets access token related variable to null 
     /// </summary>
     private void ResetTokenVariables()
     {
@@ -328,7 +328,7 @@ public partial class TL_App1 : System.Web.UI.Page
     }
 
     /// <summary>
-    /// This function validates access token related variables and returns VALID_ACCESS_TOKEN if its valid
+    /// This function validates access token related variables and returns VALID_ACCESS_TOKEN if it is valid
     /// otherwise, returns INVALID_ACCESS_TOKEN if refresh token expired or not able to read session variables
     /// return REFRESH_TOKEN, if access token in expired and refresh token is valid 
     /// </summary>
@@ -378,7 +378,7 @@ public partial class TL_App1 : System.Web.UI.Page
     /// Get access token based on the type parameter type values.
     /// </summary>
     /// <param name="type">If type value is Authorization_code, access token is fetch for authorization code flow
-    /// If type value is Refresh_Token, access token is fetch for authorization code floww based on the exisiting refresh token</param>
+    /// If type value is Refresh_Token, access token is fetch for authorization code flow based on the exisiting refresh token</param>
     /// <returns>true/false; true if success, else false</returns>
     private bool GetAccessToken(AccessTokenType type)
     {
@@ -633,27 +633,27 @@ public class AccessTokenResponse
 }
 
 /// <summary>
-/// Terminal Location Response object
+/// Location Response object
 /// </summary>
 public class TLResponse
 {
     /// <summary>
-    /// Gets or sets the value of accuracy - This is the target MSISDN that was used in the Device Location request
+    /// Gets or sets the value of accuracy. This is the target MSISDN that was used in the Device Location request
     /// </summary>
     public string accuracy { get; set; }
 
     /// <summary>
-    /// Gets or sets the value of latitude - The current latitude of the device's geo-position.
+    /// Gets or sets the value of latitude. The current latitude of the device's geo-position.
     /// </summary>
     public string latitude { get; set; }
 
     /// <summary>
-    /// Gets or sets the value of longitude - The current longitude of the device geo-position.
+    /// Gets or sets the value of longitude. The current longitude of the device geo-position.
     /// </summary>
     public string longitude { get; set; }
 
     /// <summary>
-    /// Gets or sets the value of timestamp - Timestamp of the location data.
+    /// Gets or sets the value of timestamp. Timestamp of the location data.
     /// </summary>
     public string timestamp { get; set; }
 }

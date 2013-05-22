@@ -1,4 +1,4 @@
-﻿// <copyright file="Default.aspx.cs" company="AT&amp;T">
+// <copyright file="Default.aspx.cs" company="AT&amp;T">
 // Licensed by AT&amp;T under 'Software Development Kit Tools Agreement.' 2012
 // TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 // Copyright 2012 AT&amp;T Intellectual Property. All rights reserved. http://developer.att.com
@@ -208,7 +208,7 @@ public partial class _Default : System.Web.UI.Page
                         readTransactionParametersFromConfigurationFile();
                         string payLoadString = "{'Amount':'" + amount.ToString() + "','Category':'" + category.ToString() +                                     "','Channel':'" + channel.ToString() + "','Description':'" + description.ToString() +                                                   "','MerchantTransactionId':'"
                         + merchantTransactionId.ToString() + "','MerchantProductId':'" + merchantProductId.ToString()
-                        + "','MerchantApplicaitonId':'" + merchantApplicationId.ToString() + "','MerchantPaymentRedirectUrl':'"
+                        + "','MerchantApplicationId':'" + merchantApplicationId.ToString() + "','MerchantPaymentRedirectUrl':'"
                         + merchantRedirectURI.ToString() + "'}";
                         requestText.Text = payLoadString.ToString();
                     }
@@ -216,7 +216,7 @@ public partial class _Default : System.Web.UI.Page
                     {
                         readTransactionParametersFromConfigurationFile();
                         readSubscriptionParametersFromConfigurationFile();
-                        //string payLoadString = "{'Amount':'" + amount.ToString() + "','Category':'" + category.ToString() + "','Channel':'" + channel.ToString() + "','Description':'" + description.ToString() + "','MerchantTransactionId':'" + merchantTransactionId.ToString() + "','MerchantProductId':'" + merchantProductId.ToString() + "','MerchantApplicaitonId':'" + merchantApplicationId.ToString() + "','MerchantPaymentRedirectUrl':'" + merchantRedirectURI.ToString() + "','MerchantSubscriptionIdList':'" + MerchantSubscriptionIdList.ToString() + "','IsPurchaseOnNoActiveSubscription':'" + IsPurchaseOnNoActiveSubscription.ToString() + "','SubscriptionRecurringNumber':'" + SubscriptionRecurringNumber.ToString() + "','SubscriptionRecurringPeriod':'" + SubscriptionRecurringPeriod.ToString() + "','SubscriptionRecurringPeriodAmount':'" + SubscriptionRecurringPeriodAmount.ToString() + "'}";
+                        //string payLoadString = "{'Amount':'" + amount.ToString() + "','Category':'" + category.ToString() + "','Channel':'" + channel.ToString() + "','Description':'" + description.ToString() + "','MerchantTransactionId':'" + merchantTransactionId.ToString() + "','MerchantProductId':'" + merchantProductId.ToString() + "','MerchantApplicationId':'" + merchantApplicationId.ToString() + "','MerchantPaymentRedirectUrl':'" + merchantRedirectURI.ToString() + "','MerchantSubscriptionIdList':'" + MerchantSubscriptionIdList.ToString() + "','IsPurchaseOnNoActiveSubscription':'" + IsPurchaseOnNoActiveSubscription.ToString() + "','SubscriptionRecurringNumber':'" + SubscriptionRecurringNumber.ToString() + "','SubscriptionRecurringPeriod':'" + SubscriptionRecurringPeriod.ToString() + "','SubscriptionRecurringPeriodAmount':'" + SubscriptionRecurringPeriodAmount.ToString() + "'}";
                         string payLoadString = "{'Amount':'" + amount.ToString() + "','Category':'" + category.ToString() + "','Channel':'" + channel.ToString() + "','Description':'" + description.ToString() + "','MerchantTransactionId':'" + merchantTransactionId.ToString() + "','MerchantProductId':'" + merchantProductId.ToString() + "','MerchantPaymentRedirectUrl':'" + merchantRedirectURI.ToString() + "','MerchantSubscriptionIdList':'" + MerchantSubscriptionIdList.ToString() + "','IsPurchaseOnNoActiveSubscription':'" + IsPurchaseOnNoActiveSubscription.ToString() + "','SubscriptionRecurrences':'" + SubscriptionRecurringNumber.ToString() + "','SubscriptionPeriod':'" + SubscriptionRecurringPeriod.ToString() + "','SubscriptionPeriodAmount':'" + SubscriptionRecurringPeriodAmount.ToString() + "'}";
                         //Response.Write(payLoadString);
                         requestText.Text = payLoadString.ToString();

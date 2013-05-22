@@ -52,7 +52,7 @@ PHP 5.2+
 Apache and php configured , on most Linux systems if installed using packages this will be done automatically 
 
 Installation:
-Copy the sample application  folder to apache web root folder, for example /var/www/html 
+Copy the sample application folder to apache web root folder, for example /var/www/html 
  
 
 3. Parameters

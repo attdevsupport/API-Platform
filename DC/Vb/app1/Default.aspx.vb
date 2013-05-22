@@ -1,4 +1,4 @@
-﻿'Licensed by AT&T under 'Software Development Kit Tools Agreement.' September 2011
+'Licensed by AT&T under 'Software Development Kit Tools Agreement.' September 2011
 'TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 'Copyright 2011 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 'For more information contact developer.support@att.com
@@ -65,7 +65,7 @@ Partial Public Class [Default]
         Session("vb_dc_session_lastTokenTakenTime") = Nothing
         Session("vb_dc_session_refreshTokenExpiryTime") = Nothing
     End Sub
-    ' This function resets access token related  variable to null 
+    ' This function resets access token related variable to null 
 
     Public Sub resetTokenVariables()
         access_token = Nothing
@@ -75,7 +75,7 @@ Partial Public Class [Default]
         refreshTokenExpiryTime = Nothing
     End Sub
 
-    ' This function validates access token related variables and returns VALID_ACCESS_TOKEN if its valid
+    ' This function validates access token related variables and returns VALID_ACCESS_TOKEN if it is valid
     '     * otherwise, returns INVALID_ACCESS_TOKEN if refresh token expired or not able to read session variables
     '     * return REFRESH_TOKEN, if access token in expired and refresh token is valid
     '     
@@ -121,7 +121,7 @@ Partial Public Class [Default]
 
     ' This function get the access token based on the type parameter type values.
     '    * If type value is 0, access token is fetch for authorization code flow
-    '    * If type value is 2, access token is fetch for authorization code floww based on the exisiting refresh token
+    '    * If type value is 2, access token is fetch for authorization code flow based on the exisiting refresh token
     '    
 
     Public Function getAccessToken(ByVal type As Integer) As Boolean
@@ -214,7 +214,7 @@ Partial Public Class [Default]
         Return False
     End Function
 
-    ' This funciton draws table for error response 
+    ' This function draws table for error response 
 
     Private Sub drawPanelForFailure(ByVal panelParam As Panel, ByVal message As String)
         Dim table As New Table()
@@ -241,8 +241,8 @@ Partial Public Class [Default]
         panelParam.Controls.Add(table)
     End Sub
     '
-    '     * This function is called when the applicaiton page is loaded into the browser.
-    '     * This fucntion reads the web.config and gets the values of the attributes
+    '     * This function is called when the application page is loaded into the web browser.
+    '     * This function reads the web.config file and gets the values of the attributes
     '     * 
     '     
 
@@ -303,7 +303,7 @@ Partial Public Class [Default]
         End Try
 
     End Sub
-    'This funciton checks the validity of string as msisdn 
+    'This function checks the validity of string as msisdn 
 
 
     Private Function isValidMISDN(ByVal number As String) As [Boolean]

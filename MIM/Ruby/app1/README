@@ -61,7 +61,7 @@ create and run one's own full-fledged sample applications.
 
      - also make sure you have rest-client and json gems installed
 
-   To install these gems open up a terminal window and invoke:
+   To install these gems open up a command-line interface window and invoke:
 
        gem install sinatra sinatra-contrib rest-client json
 
@@ -101,7 +101,7 @@ create and run one's own full-fledged sample applications.
 
 4. Running the application
 
-  To run the application, open up a terminal window and type:
+  To run the application, open up a command-line interface window and type:
 
     ruby ./mim.rb
 

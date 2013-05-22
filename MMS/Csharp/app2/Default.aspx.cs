@@ -1,4 +1,4 @@
-﻿// <copyright file="Default.aspx.cs" company="AT&amp;T">
+// <copyright file="Default.aspx.cs" company="AT&amp;T">
 // Licensed by AT&amp;T under 'Software Development Kit Tools Agreement.' 2012
 // TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 // Copyright 2012 AT&amp;T Intellectual Property. All rights reserved. http://developer.att.com
@@ -117,7 +117,7 @@ public partial class MMS_App2 : System.Web.UI.Page
     #region Events
 
     /// <summary>
-    /// Event, that triggers when the applicaiton page is loaded into the browser, reads the web.config and gets the values of the attributes
+    /// Event, that triggers when the application page is loaded into the web browser, reads the web.config file and gets the values of the attributes
     /// </summary>
     /// <param name="sender">object, that caused this event</param>
     /// <param name="e">Event that invoked this function</param>
@@ -175,7 +175,7 @@ public partial class MMS_App2 : System.Web.UI.Page
     }
 
     /// <summary>
-    /// This method will be called when user clicks on  get status button
+    /// This method will be called when user clicks on get status button
     /// </summary>
     /// <param name="sender">object, that caused this event</param>
     /// <param name="e">Event that invoked this function</param>
@@ -326,7 +326,7 @@ public partial class MMS_App2 : System.Web.UI.Page
     /// <summary>
     /// Validates he expiry of the access token and refresh token
     /// </summary>
-    /// <returns>string, returns VALID_ACCESS_TOKEN if its valid
+    /// <returns>string, returns VALID_ACCESS_TOKEN if it is valid
     /// otherwise, returns INVALID_ACCESS_TOKEN if refresh token expired or not able to read session variables
     /// return REFRESH_TOKEN, if access token in expired and refresh token is valid</returns>
     private string IsTokenValid()

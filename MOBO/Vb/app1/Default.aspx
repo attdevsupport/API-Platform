@@ -1,4 +1,4 @@
-﻿<!-- 
+<!-- 
 Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
@@ -51,10 +51,8 @@ For more information contact developer.support@att.com
         <!-- close HEADER -->
         <div>
             <div class="content">
-                <h1>
-                    AT&amp;T Sample Mobo Application 1 - Basic Mobo Service Application</h1>
-                <h2>
-                    Feature 1: Send Message</h2>
+                <h1>AT&amp;T Sample Mobo Application 1 - Basic IMMN Service Application</h1>
+                <h2>Feature 1: Send Message</h2>
             </div>
         </div>
         <br />

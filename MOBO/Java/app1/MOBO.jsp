@@ -8,7 +8,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-<title>AT&T Sample Mobo Application 1 - Basic Mobo Service
+<title>AT&T Sample IMMN Application 1 - Basic IMMN Service
 	Application</title>
 <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type" />
 <link rel="stylesheet" type="text/css" href="style/common.css" />

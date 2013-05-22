@@ -4,11 +4,11 @@
 * For more information contact developer.support@att.com<mailto:developer.support@att.com>
 ******************************************************************************************
 
-  AT&T API Platform Samples - MOBO app 1
+  AT&T API Platform Samples - IMMN app 1
  --------------------------------
 
 This application allows the user to send SMS and MMS on behalf of subscriber, 
-with subscriber’s consent, using the MOBO API.
+with subscriber’s consent, using the IMMN API.
 
 This file describes how to set up, configure and run the PHP Applications of the 
 AT&T API Platform Restful sample applications. 

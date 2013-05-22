@@ -33,7 +33,7 @@ public partial class MMS_App3 : System.Web.UI.Page
     private int numOfFilesToDisplay;
    
     /// <summary>
-    /// Event, that triggers when the applicaiton page is loaded into the browser, reads the web.config and gets the values of the attributes
+    /// Event, that triggers when the application page is loaded into the web browser, reads the web.config file and gets the values of the attributes
     /// </summary>
     /// <param name="sender">object, that caused this event</param>
     /// <param name="e">Event that invoked this function</param>

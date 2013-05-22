@@ -1,4 +1,4 @@
-﻿' <copyright file="Listener.aspx.vb" company="AT&amp;T">
+' <copyright file="Listener.aspx.vb" company="AT&amp;T">
 ' Licensed by AT&amp;T under 'Software Development Kit Tools Agreement.' 2012
 ' TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 ' Copyright 2012 AT&amp;T Intellectual Property. All rights reserved. http://developer.att.com
@@ -20,7 +20,7 @@ Partial Public Class Listener
     Inherits System.Web.UI.Page
 #Region "Events"
     ''' <summary>
-    ''' This method called when the page is loaded into the browser. This method requests input stream and parses it to get message counts.
+    ''' This method called when the page is loaded into the web browser. This method requests input stream and parses it to get message counts.
     ''' </summary>
     ''' <param name="sender">object, which invoked this method</param>
     ''' <param name="e">EventArgs, which specifies arguments specific to this method</param>

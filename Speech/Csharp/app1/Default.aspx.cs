@@ -71,8 +71,8 @@ public partial class Speech_App1 : System.Web.UI.Page
     #region Events
 
     /// <summary>
-    /// This function is called when the applicaiton page is loaded into the browser.
-    /// This function reads the web.config and gets the values of the attributes
+    /// This function is called when the application page is loaded into the web browser.
+    /// This function reads the web.config file and gets the values of the attributes
     /// </summary>
     /// <param name="sender">Button that caused this event</param>
     /// <param name="e">Event that invoked this function</param>
@@ -109,7 +109,7 @@ public partial class Speech_App1 : System.Web.UI.Page
                     this.fileToConvert = Request.MapPath(ConfigurationManager.AppSettings["DefaultFile"]);
                 else
                 {
-                    this.DrawPanelForFailure(statusPanel, "No file selected, and default file is not defined in web.config");
+                    this.DrawPanelForFailure(statusPanel, "No file selected, and default file is not defined in the web.config file");
                     return;
                 }
             }
@@ -209,7 +209,7 @@ public partial class Speech_App1 : System.Web.UI.Page
     /// refresh token, last access token time and refresh token expiry time
     /// </summary>
     /// <returns>
-    /// This funciton returns true, if access token file and all others attributes read successfully otherwise returns false
+    /// This function returns true, if access token file and all others attributes read successfully otherwise returns false
     /// </returns>
     private bool ReadAccessTokenFile()
     {
@@ -287,8 +287,8 @@ public partial class Speech_App1 : System.Web.UI.Page
     /// <summary>
     /// Get the access token based on Access Type
     /// </summary>
-    /// <param name="type">Access Type - either client Credential or Refresh Token</param>
-    /// <returns>true/false; true - if success on getting access token, else false</returns>
+    /// <param name="type">Access Type: either client Credential or Refresh Token</param>
+    /// <returns>true/false; true: if success on getting access token, else false</returns>
     private bool GetAccessToken(AccessType type)
     {
         FileStream fileStream = null;
@@ -784,9 +784,9 @@ public class NBest
     /// <summary>
     /// Gets or sets a machine-readable string indicating an assessment of utterance/result quality and the recommended treatment of the Hypothesis. 
     /// The assessment reflects a confidence region based on prior experience with similar results. 
-    /// accept - the hypothesis value has acceptable confidence
-    /// confirm - the hypothesis should be independently confirmed due to lower confidence
-    /// reject - the hypothesis should be rejected due to low confidence
+    /// accept: the hypothesis value has acceptable confidence
+    /// confirm: the hypothesis should be independently confirmed due to lower confidence
+    /// reject: the hypothesis should be rejected due to low confidence
     /// </summary>
     public string Grade { get; set; }
 

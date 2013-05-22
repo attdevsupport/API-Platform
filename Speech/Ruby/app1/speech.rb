@@ -35,7 +35,7 @@ post '/SpeechToText' do
   if params[:f1] != nil
     @type = (params[:f1][:filename]).to_s.split(".")[1]
     #Basic file extension check to ensure proper file types are uploaded
-    #Some times browser's may recognize mime types are application/octet-stream if the system does not know about the files mime type
+    #Some times web browsers may recognize mime types are application/octet-stream if the system does not know about the files mime type
     if @type.to_s.eql?"wav"
       @type = "audio/wav"
       speech_to_text

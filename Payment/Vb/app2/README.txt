@@ -81,7 +81,7 @@ to use this sample application code.
    
 Each sample application contains a web.config file. It holds configurable parameters
 described in an easy to read format. Please populate the following parameters in
-web.config as specified below:
+web.config file as specified below:
 
 1) api_key				: This is mandatory parameter, Set the value as
 					  per your registered appliaction 'API key'
@@ -129,7 +129,7 @@ web.config as specified below:
 					  in New subscription API.
 					  Example : https://IIS_HOSTNAME:8080/notary/app1/Default.aspx.
 
-14) notificationDetailsFile		: ~\\notificationDetailsFile.txt - (This is
+14) notificationDetailsFile		: ~\\notificationDetailsFile.txt: (This is
 					  optional parameter, which points to the file
 					  path, where the notification details will be
 					  saved by listener. If the parameter is not
@@ -137,14 +137,14 @@ web.config as specified below:
 					  ~\\notificationDetailsFile.txt. Give read/write
 					  access to this file.)
 
-15) subsRefundFile	                : ~\\subsRefundFile.txt - (This is optional
+15) subsRefundFile	                : ~\\subsRefundFile.txt: (This is optional
 					  parameter, which points to the file path, where
 					  latest subscription IDs will be stored. If the
 					  parameter is not configured, it will take the
 					  default value as ~\\subsRefundFile.txt. Give
 					  read/write access to this file.)
 
-16) subsDetailsFile			: ~\\subsDetailsFile.txt - (This is optional
+16) subsDetailsFile			: ~\\subsDetailsFile.txt: (This is optional
 					  parameter, which points to the file path,
 					  where subscription details will be stored by
 					  the application. If the parameter is not
@@ -167,4 +167,4 @@ environment to 'Production' environment.
 Suppose you copied the sample app files in your IIS server webroot/payment/app2/ folder.
 In order to run the sample application, type in'http://IIS_HOSTNAME:8080/payment/app2/Default.aspx'
 (assuming you're using a HOSTNAME machine with IIS Server and have not changed the 
-default port number, otherwise adjust accordingly) on your browser.
+default port number, otherwise adjust accordingly) on your web browser.

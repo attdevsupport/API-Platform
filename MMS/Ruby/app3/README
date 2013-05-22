@@ -60,7 +60,7 @@ create and run one's own full-fledged sample applications.
 
      - also make sure you have rest-client and json gems installed
 
-   To install these gems open up a terminal window and invoke:
+   To install these gems open up a command-line interface window and invoke:
 
        gem install sinatra sinatra-contrib rest-client json
 
@@ -99,7 +99,7 @@ create and run one's own full-fledged sample applications.
 
    8) momms_data_dir    : directory for MMS description files
 
-   9) momms_image_dir   : directory for MMS image files (needs to be available from browser)
+   9) momms_image_dir   : directory for MMS image files (needs to be available from web browser)
 
    Note: If your application is promoted from Sandbox environment to Production environment and you decide to use
    production application settings, you must update parameters 1-2 as per production application details.
@@ -107,7 +107,7 @@ create and run one's own full-fledged sample applications.
 
 4. Running the application
 
-  To run the application, open up a terminal window and type:
+  To run the application, open up a command-line interface window and type:
 
     ruby ./mms3.rb
 

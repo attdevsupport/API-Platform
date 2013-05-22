@@ -8,8 +8,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-<title>AT&amp;T Sample MMS Application 1 - Basic SMS Service
-	Application</title>
+<title>AT&amp;T Sample MMS Application 1 - Basic SMS Service Application</title>
 <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
 <link rel="stylesheet" type="text/css" href="style/common.css"/ >
 <script type="text/javascript" src="js/helper.js">
@@ -123,8 +122,7 @@ try{
 		<div id="wrapper">
 			<div id="content">
 
-				<h1>AT&amp;T Sample MMS Application 1 - Basic MMS Service
-					Application</h1>
+				<h1>AT&amp;T Sample MMS Application 1 - Basic MMS Service Application</h1>
 				<h2>Feature 1: Send MMS Message</h2>
 
 			</div>

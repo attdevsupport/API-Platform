@@ -1,4 +1,4 @@
-﻿' <copyright file="Default.aspx.vb" company="AT&amp;T">
+' <copyright file="Default.aspx.vb" company="AT&amp;T">
 ' Licensed by AT&amp;T under 'Software Development Kit Tools Agreement.' 2012
 ' TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 ' Copyright 2012 AT&amp;T Intellectual Property. All rights reserved. http://developer.att.com
@@ -88,7 +88,7 @@ Partial Public Class WapPush_App1
 #End Region
 
     ''' <summary>
-    ''' Event, that triggers when the applicaiton page is loaded into the browser, reads the web.config and gets the values of the attributes
+    ''' Event, that triggers when the application page is loaded into the web browser, reads the web.config file and gets the values of the attributes
     ''' </summary>
     ''' <param name="sender">object, that caused this event</param>
     ''' <param name="e">Event that invoked this function</param>
@@ -106,7 +106,7 @@ Partial Public Class WapPush_App1
     End Sub
 
     ''' <summary>
-    ''' This function is called when user clicks on send wap message button. This funciton calls send wap message API to send the wap message
+    ''' This function is called when user clicks on send wap message button. This function calls send wap message API to send the wap message
     ''' </summary>
     ''' <param name="sender">object, that caused this event</param>
     ''' <param name="e">Event that invoked this function</param>
@@ -242,7 +242,7 @@ Partial Public Class WapPush_App1
     ''' <summary>
     ''' Validates he expiry of the access token and refresh token
     ''' </summary>
-    ''' <returns>string, returns VALID_ACCESS_TOKEN if its valid
+    ''' <returns>string, returns VALID_ACCESS_TOKEN if it is valid
     ''' otherwise, returns INVALID_ACCESS_TOKEN if refresh token expired or not able to read session variables
     ''' return REFRESH_TOKEN, if access token in expired and refresh token is valid</returns>
     Private Function IsTokenValid() As String

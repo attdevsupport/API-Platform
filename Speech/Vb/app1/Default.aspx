@@ -1,4 +1,4 @@
-﻿<!-- 
+<!-- 
 Licensed by AT&T under 'Software Development Kit Tools Agreement.' 2012
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
@@ -51,7 +51,7 @@ For more information contact developer.support@att.com
         <div>
             <div class="content">
                 <h1>
-                    AT&amp;T Sample Speech Application  - Speech to Text(Generic) Application</h1>
+                    AT&amp;T Sample Speech Application - Speech to Text(Generic) Application</h1>
                 <h2>
                     Feature 1: Speech to Text(Generic)</h2>
             </div>

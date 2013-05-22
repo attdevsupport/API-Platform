@@ -46,7 +46,7 @@ o Use terabyte (TB), petabyte (PB) and exabyte (EB) in FileUtils.byteCountToDisp
 o FileUtils.listFiles() doesn't return directories  Issue: IO-173. Thanks to Marcos Vinícius da Silva. 
 o CharSequenceInputStream to efficiently stream content of a CharSequence  Issue: IO-297. Thanks to Oleg Kalnichevski. 
 o The second constructor of Tailer class does not pass 'delay' to the third one  Issue: IO-304. Thanks to liangly. 
-o TeeOutputStream does not call branch.close() when main.close() throws an exception  Issue: IO-303. Thanks to fabian.barney. 
+o TeeOutputStream does not call branch.close() when main.close() throws an exception Issue: IO-303. Thanks to fabian.barney. 
 o ArrayIndexOutOfBoundsException in BOMInputStream when reading a file without BOM multiple times  Issue: IO-302. Thanks to jsteuerwald, detinho. 
 o Add IOUtils.closeQuietly(Selector) necessary  Issue: IO-301. Thanks to kaykay.unique. 
 o IOUtils.closeQuietly() should take a ServerSocket as a parameter  Issue: IO-292. Thanks to sebb. 
@@ -67,7 +67,7 @@ o BoundedInputStream.read() treats max differently from BoundedInputStream.read(
 o Various methods of class 'org.apache.commons.io.FileUtils' incorrectly suppress 'java.io.IOException'  Issue: IO-298. Thanks to Christian Schulte. 
 
 Changes:
-o ReaderInputStream optimization: more efficient reading of small chunks of data  Issue: IO-296. Thanks to Oleg Kalnichevski. 
+o ReaderInputStream optimization: more efficient reading of small chunks of data Issue: IO-296. Thanks to Oleg Kalnichevski. 
 
 
 Compatibility with 2.1 and 1.4:

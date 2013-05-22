@@ -5,7 +5,7 @@
 //For more information contact developer.support@att.com
 %>
 
-  AT&T API Platform Samples - MOBO app 1
+  AT&T API Platform Samples - IMMN app 1
  ------------------------------
 
 This file describes how to set-up, configure and run the Java Applications using AT&T API Platform services. 

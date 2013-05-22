@@ -4,7 +4,7 @@
 * Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 * For more information contact developer.support@att.com<mailto:developer.support@att.com>
 ******************************************************************************************
-  AT&T API Platform Samples - Terminal Location
+  AT&T API Platform Samples - Location
  ----------------------------------------
 
 This file describes how to set-up, configure and run the PHP Applications using AT&T API Platform services. 
@@ -29,7 +29,7 @@ create and run one's own full-fledged sample applications.
   Be careful while filling in the "OAuth Redirect URL" field. It should contain the URL that the oAuth provider will redirect
   users to when he/she successfully authenticates and authorizes your application.
 
-  NOTE: You MUST select Terminal Location in the list of services under field 'Services' in order to use this sample application code.
+  NOTE: You MUST select Location in the list of services under field 'Services' in order to use this sample application code.
 
   Having your application registered, you will get back an important pair of data: an API key and Secret key. They are 
   necessary to get your applications working with the AT&T API Platform. See 'Adjusting parameters' below to learn how to use 
@@ -52,7 +52,7 @@ PHP 5.2+
 Apache and php configured , on most Linux systems if installed using packages this will be done automatically 
 
 Installation:
-Copy the sample application  folder to apache web root folder, for example /var/www/html 
+Copy the sample application folder to apache web root folder, for example /var/www/html 
  
 
 3. Parameters

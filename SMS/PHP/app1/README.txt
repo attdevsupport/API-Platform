@@ -4,7 +4,7 @@
 * Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
 * For more information contact developer.support@att.com<mailto:developer.support@att.com>
 ******************************************************************************************
-  AT&T API Platform Samples - SMS app1
+  AT&T API Platform Samples - SMS app 1
  -----------------------------
 
 This file describes how to set-up, configure and run the PHP Applications using AT&T API Platform services.

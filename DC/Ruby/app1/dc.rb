@@ -73,7 +73,7 @@ post '/submit' do
   else
     session[:dc_address] = a
     session[:dc_entered_address] = params[:address]
-    authorize # after a successful authorization browser will be redirected to /auth/callback and then /get-device-capabilities
+    authorize # after a successful authorization the web browser will be redirected to /auth/callback and then /get-device-capabilities
   end
 
 end

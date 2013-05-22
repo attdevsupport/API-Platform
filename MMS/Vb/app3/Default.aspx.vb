@@ -1,4 +1,4 @@
-﻿' <copyright file="Default.aspx.vb" company="AT&amp;T">
+' <copyright file="Default.aspx.vb" company="AT&amp;T">
 ' Licensed by AT&amp;T under 'Software Development Kit Tools Agreement.' 2012
 ' TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 ' Copyright 2012 AT&amp;T Intellectual Property. All rights reserved. http://developer.att.com
@@ -32,7 +32,7 @@ Partial Public Class MMS_App3
     Private numOfFilesToDisplay As Integer
 
     ''' <summary>
-    ''' Event, that triggers when the applicaiton page is loaded into the browser, reads the web.config and gets the values of the attributes
+    ''' Event, that triggers when the application page is loaded into the web browser, reads the web.config file and gets the values of the attributes
     ''' </summary>
     ''' <param name="sender">object, that caused this event</param>
     ''' <param name="e">Event that invoked this function</param>

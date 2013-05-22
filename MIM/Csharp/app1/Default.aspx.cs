@@ -1,4 +1,4 @@
-﻿// <copyright file="Default.aspx.cs" company="AT&amp;T">
+// <copyright file="Default.aspx.cs" company="AT&amp;T">
 // Licensed by AT&amp;T under 'Software Development Kit Tools Agreement.' 2012
 // TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 // Copyright 2012 AT&amp;T Intellectual Property. All rights reserved. http://developer.att.com
@@ -67,7 +67,7 @@ public partial class MIM_App1 : System.Web.UI.Page
     #region Application Events
 
     /// <summary>
-    /// This function is called when the application page is loaded into the browser.
+    /// This function is called when the application page is loaded into the web browser.
         /// </summary>
     /// <param name="sender">object, that caused this event</param>
     /// <param name="e">Event that invoked this function</param>
@@ -486,7 +486,7 @@ public partial class MIM_App1 : System.Web.UI.Page
     }
 
     /// <summary>
-    /// This function resets access token related  variable to null 
+    /// This function resets access token related variable to null 
     /// </summary>
     private void ResetTokenVariables()
     {
@@ -605,7 +605,7 @@ public partial class MIM_App1 : System.Web.UI.Page
     /// <summary>
     /// Validates access token related variables
     /// </summary>
-    /// <returns>string, returns VALID_ACCESS_TOKEN if its valid
+    /// <returns>string, returns VALID_ACCESS_TOKEN if it is valid
     /// otherwise, returns INVALID_ACCESS_TOKEN if refresh token expired or not able to read session variables
     /// return REFRESH_TOKEN, if access token in expired and refresh token is valid</returns>
     private string IsTokenValid()
@@ -656,7 +656,7 @@ public partial class MIM_App1 : System.Web.UI.Page
     /// Get access token based on the type parameter type values.
     /// </summary>
     /// <param name="type">If type value is Authorization_code, access token is fetch for authorization code flow
-    /// If type value isRefresh_Token, access token is fetch for authorization code floww based on the exisiting refresh token</param>
+    /// If type value isRefresh_Token, access token is fetch for authorization code flow based on the exisiting refresh token</param>
     /// <returns>true/false; true if success, else false</returns>
     private bool GetAccessToken(AccessTokenType type)
     {

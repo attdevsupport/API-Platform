@@ -1,5 +1,5 @@
 
-<!-- 
+<!--
 Licensed by AT&T under 'Software Development Kit Tools Agreement.' June 2012
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
@@ -117,21 +117,21 @@ function RefreshToken($FQDN,$api_key,$secret_key,$scope,$fullToken){
           $expiresIn = 24*60*60;
           }
 
-	      
+
     $refreshTime=$currentTime+(int)($expiresIn); // Time for token refresh
-    $updateTime=$currentTime + ( 24*60*60); // Time to get for a new token update, current time + 24h 
-	      
+    $updateTime=$currentTime + ( 24*60*60); // Time to get for a new token update, current time + 24h
+
     $fullToken["accessToken"]=$accessToken;
     $fullToken["refreshToken"]=$refreshToken;
     $fullToken["refreshTime"]=$refreshTime;
     $fullToken["updateTime"]=$updateTime;
-                        
+
   }
   else{
     $fullToken["accessToken"]=null;
     $fullToken["errorMessage"]=curl_error($accessTok).$accessTok_response;
 
-			
+
   }
   curl_close ($accessTok);
   return $fullToken;
@@ -141,7 +141,7 @@ function RefreshToken($FQDN,$api_key,$secret_key,$scope,$fullToken){
 function GetAccessToken($FQDN,$api_key,$secret_key,$scope){
 
   $accessTok_Url = $FQDN."/oauth/token";
-	    
+
   //http header values
   $accessTok_headers = array(
 			     'Content-Type: application/x-www-form-urlencoded'
@@ -161,7 +161,7 @@ function GetAccessToken($FQDN,$api_key,$secret_key,$scope){
   curl_setopt($accessTok, CURLOPT_POST, 1);
   curl_setopt($accessTok, CURLOPT_POSTFIELDS,$post_data);
   $accessTok_response = curl_exec($accessTok);
-  
+
   $responseCode=curl_getinfo($accessTok,CURLINFO_HTTP_CODE);
   $currentTime=time();
   /*
@@ -187,9 +187,9 @@ function GetAccessToken($FQDN,$api_key,$secret_key,$scope){
       $fullToken["refreshToken"]=$refreshToken;
       $fullToken["refreshTime"]=$refreshTime;
       $fullToken["updateTime"]=$updateTime;
-      
+
     }else{
- 
+
     $fullToken["accessToken"]=null;
     $fullToken["errorMessage"]=curl_error($accessTok).$accessTok_response;
 
@@ -205,7 +205,7 @@ function SaveToken( $fullToken,$oauth_file ){
   $refreshToken=$fullToken["refreshToken"];
   $refreshTime=$fullToken["refreshTime"];
   $updateTime=$fullToken["updateTime"];
-      
+
 
   $tokenfile = $oauth_file;
   $fh = fopen($tokenfile, 'w');
@@ -236,9 +236,9 @@ function check_token( $FQDN,$api_key,$secret_key,$scope, $fullToken,$oauth_file)
       SaveToken( $fullToken,$oauth_file );
     }
   }
-  
+
   return $fullToken;
-  
+
 }
 
 ?>
@@ -316,7 +316,7 @@ document.write("" + navigator.userAgent);
 <div align="center"></div>
 </form>
 
-<?php if($newSubscription!=null) { 
+<?php if($newSubscription!=null) {
   $merchantTrxId = "user".rand(1,10000000)."subscription".rand(1,10000000);
   $merchantSubscriptionIdList = "SL".rand(10, 10000);
 
@@ -344,7 +344,7 @@ $forNotary = "notary.php?signPayload=true&return=subscription.jsp&payload=".
 header("location:".$forNotary);
 } ?>
 
-<?php if($_REQUEST["SubscriptionAuthCode"] !=null) { 
+<?php if($_REQUEST["SubscriptionAuthCode"] !=null) {
 $_SESSION["pay2_authCode"] = $authCode;
 ?>
 <div class="successWide">
@@ -363,7 +363,7 @@ if($_REQUEST["signedPayload"]!=null && $_REQUEST["signature"]!=null){
 }
 ?>
 
-<?php if($getSubscriptionStatus!=null) { 
+<?php if($getSubscriptionStatus!=null) {
   //This application uses the Autonomous Client OAuth consumption model
   //Check if there is a valid access token that has not expired
   $fullToken["accessToken"]=$accessToken;
@@ -376,7 +376,7 @@ if($_REQUEST["signedPayload"]!=null && $_REQUEST["signature"]!=null){
   $getTransactionType = $_REQUEST["getTransactionType"];
   $url = "";
 if($getTransactionType==1)
-    $url = $FQDN."/rest/3/Commerce/Payment/Subscriptions/MerchantTransactionId/".$_SESSION["pay2_merchantTrxId"];   
+    $url = $FQDN."/rest/3/Commerce/Payment/Subscriptions/MerchantTransactionId/".$_SESSION["pay2_merchantTrxId"];
 if($getTransactionType==2)
     $url = $FQDN."/rest/3/Commerce/Payment/Subscriptions/SubscriptionAuthCode/".$_SESSION["pay2_authCode"];
 if($getTransactionType==3)
@@ -386,8 +386,8 @@ if($getTransactionType==3)
   $accept = "Accept: application/json";
   $authorization = "Authorization: Bearer ".$accessToken;
   $content = "Content-Type: application/json";
-  
-  
+
+
   $request = curl_init();
   curl_setopt($request, CURLOPT_URL, $url);
   curl_setopt($request, CURLOPT_HTTPGET, 1);
@@ -398,7 +398,7 @@ if($getTransactionType==3)
   curl_setopt($request, CURLOPT_SSL_VERIFYPEER, false);
 
   $response = curl_exec($request);
-  
+
   $responseCode=curl_getinfo($request,CURLINFO_HTTP_CODE);
 
   if($responseCode==200) {
@@ -491,7 +491,7 @@ Feature 2: Get Subscription Status</h2>
     <td></td>
     <td></td>
     <td></td>
-    <td class="cell"><button  type="submit" name="getSubscriptionStatus" value="getSubscriptionStatus">Get Subscription Status</button>
+    <td class="cell"><button type="submit" name="getSubscriptionStatus" value="getSubscriptionStatus">Get Subscription Status</button>
     </td>
   </tr>
   </tbody></table>
@@ -501,7 +501,7 @@ Feature 2: Get Subscription Status</h2>
 </div>
 <br clear="all" />
 
-<?php if($getSubscriptionStatus!=null) { 
+<?php if($getSubscriptionStatus!=null) {
     if($responseCode==200) {
 
     ?>
@@ -540,7 +540,7 @@ Feature 2: Get Subscription Status</h2>
 
 <h2><br />Feature 3: Get Subscription Details</h2>
 
-<?php if($getSubscriptionDetails!=null) { 
+<?php if($getSubscriptionDetails!=null) {
       //This application uses the Autonomous Client OAuth consumption model
       //Check if there is a valid access token that has not expired
       $fullToken["accessToken"]=$accessToken;
@@ -548,18 +548,18 @@ Feature 2: Get Subscription Status</h2>
       $fullToken["refreshTime"]=$refreshTime;
       $fullToken["updateTime"]=$updateTime;
       $trxIdGetDetails = $_REQUEST["trxIdGetDetails"];
-      
+
       $fullToken=check_token($FQDN,$api_key,$secret_key,$scope,$fullToken,$oauth_file);
       $accessToken=$fullToken["accessToken"];
-      
+
       $url = $FQDN."/rest/3/Commerce/Payment/Subscriptions/".$_SESSION["pay2_mersubscriptionIdList"]."/Detail/".$trxIdGetDetails;
-      
-      
+
+
     $accept = "Accept: application/json";
   $authorization = "Authorization: Bearer ".$accessToken;
   $content = "Content-Type: application/json";
-  
-  
+
+
       $request = curl_init();
       curl_setopt($request, CURLOPT_URL, $url);
       curl_setopt($request, CURLOPT_HTTPGET, 1);
@@ -572,7 +572,7 @@ Feature 2: Get Subscription Status</h2>
       $response = curl_exec($request);
       $info = curl_getinfo($request);
       echo $info['request headers'];
-  
+
       $responseCode=curl_getinfo($request,CURLINFO_HTTP_CODE);
 
       if($responseCode==200) {
@@ -604,7 +604,7 @@ You must use Get Subscription Status to get the Consumer ID before you can get d
   <tbody>
 <?php
 if(true) {
-	    $transactions = unserialize(file_get_contents($db_filename)); 
+	    $transactions = unserialize(file_get_contents($db_filename));
 	    foreach ( $transactions as $transaction ){
 ?>
                       <tr>
@@ -620,7 +620,7 @@ if(true) {
                         </td>
                         <td></td>
                         <td class="cell" align="left"><?php echo $transaction["merchantSubscriptionId"] ?></td>
-                      </tr>  
+                      </tr>
 			    <?php }
 
             }
@@ -630,7 +630,7 @@ if(true) {
     <td></td>
     <td></td>
     <td></td>
-    <td class="cell"><button  type="submit" name="getSubscriptionDetails" value="getSubscriptionDetails">Get Subscription Details</button>
+    <td class="cell"><button type="submit" name="getSubscriptionDetails" value="getSubscriptionDetails">Get Subscription Details</button>
     </td>
   </tr>
   </tbody></table>
@@ -641,7 +641,7 @@ if(true) {
 <br clear="all" />
 
 
-<?php if($getSubscriptionDetails!=null) { 
+<?php if($getSubscriptionDetails!=null) {
       if($responseCode==200) {
       ?>
         <div class="successWide">
@@ -656,14 +656,14 @@ if(true) {
             </tr>
         </thead>
         <tbody>
-	    <?php 
+	    <?php
 	       foreach ( $jsonResponse as $parameter => $value ){ ?>
             	<tr>
 		     <td align="right" class="cell"><?php echo $parameter; ?></td>
                     <td align="center" class="cell"></td>
                     <td align="left" class="cell"><?php echo $value; ?></td>
                 </tr>
-<?php } 
+<?php }
  ?>
         </tbody>
         </table>
@@ -692,7 +692,7 @@ if(true) {
         $trxIdGetRefund =$_REQUEST["trxIdGetRefund"];
 
         $url = $FQDN."/rest/3/Commerce/Payment/Transactions/".$trxIdGetRefund;
-       
+
 
 
         $payload = "{\"TransactionOperationStatus\":Refunded,\n \"RefundReasonCode\":1,\n \"RefundReasonText\":\"".$refundReasonText."\"}";
@@ -760,7 +760,7 @@ You must use Get Subscription Status to get the Consumer ID before you can get d
   <tbody>
 <?php
 if(true) {
-	    $transactions = unserialize(file_get_contents($db_filename)); 
+	    $transactions = unserialize(file_get_contents($db_filename));
 	    foreach ( $transactions as $transaction ){
 ?>
                       <tr>
@@ -776,7 +776,7 @@ if(true) {
                         </td>
                         <td></td>
                         <td class="cell" align="left"><?php echo $transaction["merchantSubscriptionId"] ?></td>
-                      </tr>  
+                      </tr>
 			    <?php }
 
             }
@@ -786,7 +786,7 @@ if(true) {
     <td></td>
     <td></td>
     <td></td>
-    <td class="cell"><button  type="submit" name="refundSubscription" value="refundSubscription">Refund Subscription</button>
+    <td class="cell"><button type="submit" name="refundSubscription" value="refundSubscription">Refund Subscription</button>
     </td>
   </tr>
   </tbody></table>
@@ -797,7 +797,7 @@ if(true) {
 <br clear="all" />
 
 
-<?php if($refundSubscription!=null) { 
+<?php if($refundSubscription!=null) {
       if($responseCode==200) {
       ?>
         <div class="successWide">
@@ -812,14 +812,14 @@ if(true) {
             </tr>
         </thead>
         <tbody>
-	    <?php 
+	    <?php
 	       foreach ( $jsonResponse as $parameter => $value ){ ?>
             	<tr>
 		     <td align="right" class="cell"><?php echo $parameter; ?></td>
                     <td align="center" class="cell"></td>
                     <td align="left" class="cell"><?php echo $value; ?></td>
                 </tr>
-<?php } 
+<?php }
  ?>
         </tbody>
         </table>
@@ -848,7 +848,7 @@ if(true) {
 <thead>
     <tr>
 <th class="cell" align="left"><strong>Notification ID</strong></th>
-        
+
 <th class="cell" align="left"><strong>Notification Type</strong></th>
 <th style="width: 100px" class="cell"></th>
 <th class="cell" align="left"><strong>Transaction ID</strong></th>
@@ -863,7 +863,7 @@ if(true) {
 
               $responses = unserialize(file_get_contents($db10_filename));
       foreach($responses as $response){
-        
+
 
 ?>
                       <tr>
@@ -878,8 +878,8 @@ if(true) {
                         </td>
                         <td></td>
                         <td class="cell" align="left"><?php echo $response["OriginalTransactionId"]?></td>
-                      </tr>  
-<?php 
+                      </tr>
+<?php
       }
 
 }?>
@@ -909,17 +909,17 @@ $notifications = file_get_contents($db9_filename);
    $notificationId = $val;
    array_push($notificationlist, $notificationId);
 
-    
+
 $fullToken=check_token($FQDN,$api_key,$secret_key,$scope,$fullToken,$oauth_file);
   $accessToken=$fullToken["accessToken"];
 
 
-  
 
-  
+
+
     $url = $FQDN."/rest/3/Commerce/Payment/Notifications/".$notificationId;
 
-  
+
   $accept = "Accept: application/json";
   $authorization = "Authorization: Bearer ".$accessToken;
   $content = "Content-Type: application/json";
@@ -931,7 +931,7 @@ $fullToken=check_token($FQDN,$api_key,$secret_key,$scope,$fullToken,$oauth_file)
   curl_setopt($request, CURLOPT_HTTPHEADER, array($authorization, $content, $accept));
   curl_setopt($request, CURLOPT_SSL_VERIFYPEER, false);
   curl_setopt($request, CURLOPT_RETURNTRANSFER, 1);
- 
+
 
   $response = curl_exec($request);
 
@@ -953,10 +953,10 @@ if($responseCode==200) {
 $details = array();
   if ( file_exists( $db3_filename) ){
             $notificationdetails = unserialize(file_get_contents($db3_filename));
-            array_push($details, $response); 
+            array_push($details, $response);
             $fp = fopen($db3_filename, 'w+') or die("I could not open $db3_filename.");
             fwrite($fp, serialize($response));
-            
+
    }
 
 if ( file_exists( $db10_filename) ){
@@ -965,10 +965,10 @@ if ( file_exists( $db10_filename) ){
             //array_push($responsetest,$responses);
             $fp = fopen($db10_filename, 'w+') or die("I could not open $db10_filename.");
             fwrite($fp, serialize($responsetest));
-           
-            
-            
-           
+
+
+
+
    }
 
 
@@ -977,7 +977,7 @@ if($refreshNotifications != null) {
 
    $url = $FQDN."/rest/3/Commerce/Payment/Notifications/".$notificationId;
 
-  
+
 
        $payload = "";
 	$putData = tmpfile();
@@ -987,7 +987,7 @@ if($refreshNotifications != null) {
 $accept = "Accept: application/json";
   $authorization = "Authorization: Bearer ".$accessToken;
   $content = "Content-Type: application/json";
-	
+
 	$request = curl_init();
 	curl_setopt($request, CURLOPT_URL, $url);
 	curl_setopt($request, CURLOPT_HTTPGET, 1);
@@ -1002,7 +1002,7 @@ $accept = "Accept: application/json";
 	$response = curl_exec($request);
 	fclose($putData);
 
-  
+
 
   $responseCode=curl_getinfo($request,CURLINFO_HTTP_CODE);
 
@@ -1011,23 +1011,23 @@ $accept = "Accept: application/json";
     $acknowledgements = array();
     if ( file_exists( $db4_filename) ){
             $acknowledgements = unserialize(file_get_contents($db4_filename));
-            
+
             $fp = fopen($db4_filename, 'a+') or die("I could not open $db4_filename.");
-            array_push($acknowledgements, $response); 
+            array_push($acknowledgements, $response);
             fwrite($fp, $response);
-           
+
    }
 }
 
-    
 
-} 
 
-} } 
+}
+
+} }
 
  if ( file_exists( $db5_filename) ){
             $nootificationlist = unserialize(file_get_contents($db5_filename));
-            
+
             $fp = fopen($db5_filename, 'w+') or die("I could not open $db5_filename.");
             fwrite($fp, serialize($notificationlist));
 fclose($fp);}}

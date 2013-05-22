@@ -7,7 +7,7 @@
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
-    <title>AT&amp;T Sample SMS Application - SMS app 2 - Voting</title>
+    <title>AT&amp;T Sample SMS Application - SMS app 2 Voting</title>
     <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
     <link rel="stylesheet" type="text/css" href="style/common.css"/ >
     <script type="text/javascript" src="js/helper.js">
@@ -52,7 +52,7 @@ document.write("" + navigator.userAgent);
 <div id="wrapper">
 <div id="content">
 
-<h1>AT&amp;T Sample SMS Application - SMS app 2 - Voting</h1>
+<h1>AT&amp;T Sample SMS Application - SMS app 2 Voting</h1>
 <h2>Feature 1: Calculate Votes sent via SMS to <%=shortCode1%> with text "Football", "Basketball", or "Baseball"</h2>
 
 </div>

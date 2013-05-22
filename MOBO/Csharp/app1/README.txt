@@ -4,11 +4,11 @@
 * For more information contact developer.support@att.com<mailto:developer.support@att.com>
 ******************************************************************************************
 
-  AT&T API Samples - MOBO app 1
+  AT&T API Samples - IMMN app 1
  --------------------------------
 
 This application allows the user to send SMS and MMS on behalf of subscriber, 
-with subscriber’s consent, using the MOBO API.
+with subscriber’s consent, using the IMMN API.
 
 This file describes how to set up, configure and run the C# Applications of the 
 AT&T API Platform Restful sample applications. 
@@ -69,7 +69,7 @@ order to use this sample application code.
 
 Each sample application contains a web.config file. It holds configurable parameters 
 described in an easy to read format. Please populate the following parameters in 
-web.config as specified below:
+web.config file as specified below:
 
 1) api_key               : This is mandatory parameter, set the value as per your 
                            registered application 'API key' field value.
@@ -103,4 +103,4 @@ environment to 'Production' environment.
 Suppose you copied the sample app files in your IIS server webroot/mobo/app1/ folder.
 In order to run the sample application, type in'http://IIS_HOSTNAME:8080/mobo/app1/Default.aspx'
 (assuming you're using a HOSTNAME machine with IIS Server and have not changed the 
-default port number, otherwise adjust accordingly) on your browser.
+default port number, otherwise adjust accordingly) on your web browser.

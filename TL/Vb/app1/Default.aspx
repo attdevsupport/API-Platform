@@ -120,7 +120,7 @@ For more information contact developer.support@att.com
         <div align="center">
             <div id="map_canvas" align="center" visible="false" runat="server">
                 <br />
-                <iframe runat="server" id="MapTerminalLocation" width="600" height="400" frameborder="0"
+                <iframe runat="server" id="MapLocation" width="600" height="400" frameborder="0"
                     scrolling="no" marginheight="0" marginwidth="0"></iframe>
             </div>
             <div id="footer">

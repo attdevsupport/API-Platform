@@ -33,7 +33,7 @@ create and run one's own full-fledged sample applications.
   the oauth.jsp file inside this application folder. For example, if running on a local machine in a default Tomcat installation, 
   your OAuth Redirect URL might be http://localhost:8080/SampleApp/oauth.jsp
 
-NOTE: You MUST select Terminal Location in the list of services under field 'Services' in order to use this sample application code. 
+NOTE: You MUST select Location in the list of services under field 'Services' in order to use this sample application code. 
 
   Having your application registered, you will get back an important pair of data: an API key and Secret key. They are 
   necessary to get your applications working with the AT&T APIs. See 'Adjusting parameters' below to learn how to use 

@@ -16,7 +16,7 @@ pre {
 	word-wrap: break-word;      /* IE 5+ */
 	}
 </style>
-<?php header("Content-Type: text/html; charset=ISO-8859-1"); 
+<?php header("Content-Type: text/html; charset=ISO-8859-1");
 session_start();
 include ("config.php");
 ?>
@@ -93,7 +93,7 @@ document.write("" + navigator.userAgent);
 
 <?php
     //If Sign Payload button was clicked, do this.
-if($signPayload == "back"){ // go back to original page 
+if($signPayload == "back"){ // go back to original page
   header("location:singlepay.php");
  }
 
@@ -117,9 +117,9 @@ if($signPayload!=null) {
   curl_setopt($request, CURLOPT_POSTFIELDS, $payload);
 
   $response = curl_exec($request);
-  
+
   $responseCode=curl_getinfo($request,CURLINFO_HTTP_CODE);
-  
+
   if($responseCode==200) {
     $jsonResponse = json_decode($response);
     $signedPayload = $jsonResponse->{"SignedDocument"};
@@ -149,7 +149,7 @@ Feature 1: Sign Payload</h2>
 <table border="0" width="950px">
   <tbody>
   <tr>
-<?php 
+<?php
 $split = str_split($signedPayload,5);
 $formattedSignedPayload ="";
 foreach ( $split as $line ){
@@ -166,7 +166,7 @@ foreach ( $split as $line ){
     <td class="cell" ><textarea rows="20" cols="60" name="payload" ><?php echo str_replace(",\n",",",$payload) ?></textarea>
     </td>
     <td width="50px"></td>
-    <td  valign="top" class="label">Signed Payload:</td>
+    <td valign="top" class="label">Signed Payload:</td>
     <td class="cell" width="400px" ><?php  echo  $formattedSignedPayload; ?></td>
   </tr>
 <tr>

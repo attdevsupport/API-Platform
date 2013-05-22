@@ -57,11 +57,11 @@ create and run one's own full-fledged sample applications.
 
      - Also make sure you have rest-client and json gems installed. 
 
-   	To install these gems open up a terminal window and invoke:
+   	To install these gems open up a command-line interface window and invoke:
 
      - gem install sinatra eventmachine sinatra-contrib rest-client json
 
-	If you are experiencing any additional difficulties installing gems, particularly sinatra-contrib, it may prove useful to install the ruby gem thin. This can be installed in the terminal by invoking:
+	If you are experiencing any additional difficulties installing gems, particularly sinatra-contrib, it may prove useful to install the ruby gem thin. This can be installed in the command-line interface window by invoking:
 
 	 - gem install thin
 
@@ -98,7 +98,7 @@ create and run one's own full-fledged sample applications.
 
 4. Running the application
 
-  To run the application, open up a terminal window and type:
+  To run the application, open up a command-line interface window and type:
 
     ruby ./speech.rb
 

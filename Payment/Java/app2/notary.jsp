@@ -144,7 +144,7 @@ Feature 1: Sign Payload</h2>
     <td class="cell" ><textarea rows="20" cols="60" name="payload" ><%=payload.replaceAll(",", ",\n")%></textarea>
     </td>
     <td width="50px"></td>
-    <td  valign="top" class="label">Signed Payload:</td>
+    <td valign="top" class="label">Signed Payload:</td>
     <td class="cell" width="400px"><%=signedPayload.replaceAll("(.{5})", "$1 ")%></td>
   </tr>
 <tr>

@@ -39,7 +39,7 @@ create and run one's own full-fledged sample applications.
   URL that the oAuth provider will redirect users to when he/she successfully
   authenticates and authorizes your application.
 
-NOTE: You MUST select Terminal Location in the list of services under field 'Services'
+NOTE: You MUST select Location in the list of services under field 'Services'
 in order to use this sample application code. 
 
   Having your application registered, you will get back an important pair of data:
@@ -74,7 +74,7 @@ in order to use this sample application code.
    
 Each sample application contains a web.config file. It holds configurable parameters
 described in an easy to read format. Please populate the following parameters in
-web.config as specified below:
+web.config file as specified below:
 
 1) api_key                	: This is mandatory parameter, set the value as per 
 				  your registered appliaction 'API key' field value.

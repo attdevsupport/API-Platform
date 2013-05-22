@@ -1,7 +1,7 @@
-//Licensed by AT&T under 'Software Development Kit Tools Agreement.' September 2011
-//TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
-//Copyright 2011 AT&T Intellectual Property. All rights reserved. http://developer.att.com
-//For more information contact developer.support@att.com
+// Licensed by AT&T under 'Software Development Kit Tools Agreement.' September 2011
+// TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+// Copyright 2011 AT&T Intellectual Property. All rights reserved. http://developer.att.com
+// For more information contact developer.support@att.com
 
 using System;
 using System.Collections.Generic;
@@ -59,7 +59,7 @@ public partial class Default : System.Web.UI.Page
         Session["dc_session_lastTokenTakenTime"] = null;
         Session["dc_session_refreshTokenExpiryTime"] = null;
     }
-    /* This function resets access token related  variable to null */
+    /* This function resets access token related variable to null */
     public void resetTokenVariables()
     {
         access_token = null;
@@ -69,9 +69,9 @@ public partial class Default : System.Web.UI.Page
         refreshTokenExpiryTime = null;
     }
 
-    /* This function validates access token related variables and returns VALID_ACCESS_TOKEN if its valid
+    /* This function validates access token related variables and returns VALID_ACCESS_TOKEN if it is valid
      * otherwise, returns INVALID_ACCESS_TOKEN if refresh token expired or not able to read session variables
-     * return REFRESH_TOKEN, if access token in expired and refresh token is valid
+     * return REFRESH_TOKEN, if access token is expired and refresh token is valid
      */
     public string isTokenValid()
     {
@@ -128,7 +128,7 @@ public partial class Default : System.Web.UI.Page
 
     /* This function get the access token based on the type parameter type values.
     * If type value is 0, access token is fetch for authorization code flow
-    * If type value is 2, access token is fetch for authorization code floww based on the exisiting refresh token
+    * If type value is 2, access token is fetch for authorization code flow based on the exisiting refresh token
     */
     public bool getAccessToken(int type)
     {
@@ -141,7 +141,7 @@ public partial class Default : System.Web.UI.Page
                 accessTokenRequest.Method = "POST";
                 string oauthParameters = "client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString() + "&code=" + auth_code.ToString() + "&grant_type=authorization_code";
                 accessTokenRequest.ContentType = "application/x-www-form-urlencoded";
-                //sendSmsRequestObject.Accept = "application/json";
+                // sendSmsRequestObject.Accept = "application/json";
                 UTF8Encoding encoding = new UTF8Encoding();
                 byte[] postBytes = encoding.GetBytes(oauthParameters);
                 accessTokenRequest.ContentLength = postBytes.Length;
@@ -194,7 +194,7 @@ public partial class Default : System.Web.UI.Page
                 accessTokenRequest.Method = "POST";
                 string oauthParameters = "grant_type=refresh_token&client_id=" + api_key.ToString() + "&client_secret=" + secret_key.ToString() + "&refresh_token=" + refresh_token.ToString();
                 accessTokenRequest.ContentType = "application/x-www-form-urlencoded";
-                //sendSmsRequestObject.Accept = "application/json";
+                // sendSmsRequestObject.Accept = "application/json";
 
                 UTF8Encoding encoding = new UTF8Encoding();
                 byte[] postBytes = encoding.GetBytes(oauthParameters);
@@ -241,7 +241,7 @@ public partial class Default : System.Web.UI.Page
         return false;
     }
 
-    /* This funciton draws table for error response */
+    /* This function draws table for error response */
     private void drawPanelForFailure(Panel panelParam, string message)
     {
         Table table = new Table();
@@ -254,11 +254,11 @@ public partial class Default : System.Web.UI.Page
         rowOneCellOne.Font.Bold = true;
         rowOneCellOne.Text = "ERROR:";
         rowOne.Controls.Add(rowOneCellOne);
-        //rowOneCellOne.BorderWidth = 1;
+        // rowOneCellOne.BorderWidth = 1;
         table.Controls.Add(rowOne);
         TableRow rowTwo = new TableRow();
         TableCell rowTwoCellOne = new TableCell();
-        //rowTwoCellOne.BorderWidth = 1;
+        // rowTwoCellOne.BorderWidth = 1;
         rowTwoCellOne.Text = message.ToString();
         rowTwo.Controls.Add(rowTwoCellOne);
         table.Controls.Add(rowTwo);
@@ -268,8 +268,8 @@ public partial class Default : System.Web.UI.Page
         panelParam.Controls.Add(table);
     }
     /*
-     * This function is called when the applicaiton page is loaded into the browser.
-     * This fucntion reads the web.config and gets the values of the attributes
+     * This function is called when the application page is loaded into the web browser.
+     * This function reads the web.config file and gets the values of the attributes.
      * 
      */
     protected void Page_Load(object sender, EventArgs e)
@@ -346,7 +346,7 @@ public partial class Default : System.Web.UI.Page
         }
 
     }
-    /*This funciton checks the validity of string as msisdn */
+    /*This function checks the validity of string as msisdn */
 
     private Boolean isValidMISDN(string number)
     {
@@ -421,23 +421,23 @@ public partial class Default : System.Web.UI.Page
             getStatusTable.Font.Size = 9;
             getStatusTable.Font.Name = "Sans-serif";
             getStatusTable.Font.Italic = true;
-            //getStatusTable.HorizontalAlign = HorizontalAlign.Center;
+            // getStatusTable.HorizontalAlign = HorizontalAlign.Center;
             TableRow rowOne = new TableRow();
             TableCell rowOneCellOne = new TableCell();
             rowOneCellOne.Font.Bold = true;
-            //rowOneCellOne.BorderWidth = 1;
+            // rowOneCellOne.BorderWidth = 1;
             rowOneCellOne.Text = "Parameter";
             rowOneCellOne.HorizontalAlign = HorizontalAlign.Center;
             rowOne.Controls.Add(rowOneCellOne);
             TableCell rowOneCellTwo = new TableCell();
             rowOneCellTwo.Font.Bold = true;
-            //rowOneCellTwo.BorderWidth = 1;
+            // rowOneCellTwo.BorderWidth = 1;
             rowOneCellTwo.Text = "Value";
             rowOneCellTwo.HorizontalAlign = HorizontalAlign.Center;
             rowOne.Controls.Add(rowOneCellTwo);
-            //getStatusTable.BorderWidth = 2;
-            //getStatusTable.BorderColor = Color.DarkGreen;
-            //getStatusTable.BackColor = System.Drawing.ColorTranslator.FromHtml("#cfc");
+            // getStatusTable.BorderWidth = 2;
+            // getStatusTable.BorderColor = Color.DarkGreen;
+            // getStatusTable.BackColor = System.Drawing.ColorTranslator.FromHtml("#cfc");
             getStatusTable.Controls.Add(rowOne);
             dcPanel.Controls.Add(getStatusTable);
         }
@@ -447,11 +447,11 @@ public partial class Default : System.Web.UI.Page
             TableCell cell1 = new TableCell();
             TableCell cell2 = new TableCell();
             cell1.Text = attribute.ToString();
-            //cell1.BorderWidth = 1;
+            // cell1.BorderWidth = 1;
             cell1.HorizontalAlign = HorizontalAlign.Center;
             row.Controls.Add(cell1);
             cell2.Text = value.ToString();
-            //cell2.BorderWidth = 1;
+            // cell2.BorderWidth = 1;
             cell2.HorizontalAlign = HorizontalAlign.Center;
             row.Controls.Add(cell2);
             getStatusTable.Controls.Add(row);
@@ -516,8 +516,8 @@ public partial class Default : System.Web.UI.Page
                     Session["dc_session_GdeviceID"] = deviceId.ToString();
                     getAuthCode();
                 }
-                //readCheckVerifyAccessToken();
-                // Form Http Web Request
+                // readCheckVerifyAccessToken();
+                //  Form Http Web Request
                 HttpWebRequest deviceInfoRequestObject = (HttpWebRequest)System.Net.WebRequest.Create("" + FQDN + "/1/devices/tel:" + deviceId.ToString() + "/info?access_token=" + access_token.ToString());
                 deviceInfoRequestObject.Method = "GET";
                 
@@ -536,7 +536,7 @@ public partial class Default : System.Web.UI.Page
                     drawPanelForGetStatusResult("acwav", deserializedJsonObj.capabilities.acwav.ToString(), false);
                     drawPanelForGetStatusResult("acwcf", deserializedJsonObj.capabilities.acwcf.ToString(), false);
                     drawPanelForGetStatusResult("acwtermtype", deserializedJsonObj.capabilities.acwtermtype.ToString(), false);
-                    //Session["DeviceIdForWhichTokenAcquired"] = deviceId.ToString();
+                    // Session["DeviceIdForWhichTokenAcquired"] = deviceId.ToString();
                     deviceInfoResponseStream.Close();
                 }
             }

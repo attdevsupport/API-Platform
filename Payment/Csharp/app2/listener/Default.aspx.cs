@@ -1,4 +1,4 @@
-﻿// <copyright file="Default.aspx.cs" company="AT&amp;T">
+// <copyright file="Default.aspx.cs" company="AT&amp;T">
 // Licensed by AT&amp;T under 'Software Development Kit Tools Agreement.' 2012
 // TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 // Copyright 2012 AT&amp;T Intellectual Property. All rights reserved. http://developer.att.com
@@ -207,7 +207,7 @@ public partial class PaymentApp2_Listener : System.Web.UI.Page
     /// <summary>
     /// This function reads the Access Token File and stores the values of access token, expiry seconds
     /// refresh token, last access token time and refresh token expiry time
-    /// This funciton returns true, if access token file and all others attributes read successfully otherwise returns false
+    /// This function returns true, if access token file and all others attributes read successfully otherwise returns false
     /// </summary>
     /// <returns>Returns Boolean</returns>
     private bool ReadAccessTokenFile()
@@ -254,7 +254,7 @@ public partial class PaymentApp2_Listener : System.Web.UI.Page
     /// <summary>
     /// This function validates the expiry of the access token and refresh token, function compares the current time with the refresh token taken time, if current time is greater then returns INVALID_REFRESH_TOKEN
     /// function compares the difference of last access token taken time and the current time with the expiry seconds, if its more,
-    /// funciton returns INVALID_ACCESS_TOKEN
+    /// function returns INVALID_ACCESS_TOKEN
     /// otherwise returns VALID_ACCESS_TOKEN
     /// </summary>
     /// <returns>Returns String</returns>

@@ -66,8 +66,8 @@ public partial class SMS_App1 : System.Web.UI.Page
 
     #region SMS Application Events
     /// <summary>
-    /// This function is called when the applicaiton page is loaded into the browser.
-    /// This fucntion reads the web.config and gets the values of the attributes
+    /// This function is called when the application page is loaded into the web browser.
+    /// This function reads the web.config file and gets the values of the attributes
     /// </summary>
     /// <param name="sender">Sender Details</param>
     /// <param name="e">List of Arguments</param>
@@ -262,7 +262,7 @@ public partial class SMS_App1 : System.Web.UI.Page
     /// <summary>
     /// This function reads the Access Token File and stores the values of access token, expiry seconds
     /// refresh token, last access token time and refresh token expiry time
-    /// This funciton returns true, if access token file and all others attributes read successfully otherwise returns false
+    /// This function returns true, if access token file and all others attributes read successfully otherwise returns false
     /// </summary>
     /// <param name="panelParam">Panel Details</param>
     /// <returns>Returns boolean</returns>    
@@ -310,7 +310,7 @@ public partial class SMS_App1 : System.Web.UI.Page
     /// function compares the current time with the refresh token taken time, if current time is greater then 
     /// returns INVALID_REFRESH_TOKEN
     /// function compares the difference of last access token taken time and the current time with the expiry seconds, if its more,
-    /// funciton returns INVALID_ACCESS_TOKEN
+    /// function returns INVALID_ACCESS_TOKEN
     /// otherwise returns VALID_ACCESS_TOKEN
     /// </summary>
     /// <returns>Return String</returns>
@@ -697,7 +697,7 @@ public partial class SMS_App1 : System.Web.UI.Page
     
     /// <summary>
     /// This function is called when user clicks on get delivery status button.
-    /// this funciton calls get sms delivery status API to fetch the status.
+    /// this function calls get sms delivery status API to fetch the status.
     /// </summary>
     private void GetSmsDeliveryStatus()
     {

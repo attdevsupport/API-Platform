@@ -1,4 +1,4 @@
-﻿' <copyright file="Default.aspx.vb" company="AT&amp;T">
+' <copyright file="Default.aspx.vb" company="AT&amp;T">
 ' Licensed by AT&amp;T under 'Software Development Kit Tools Agreement.' 2012
 ' TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 ' Copyright 2012 AT&amp;T Intellectual Property. All rights reserved. http://developer.att.com
@@ -91,8 +91,8 @@ Partial Public Class TL_App1
 #Region "Events"
 
     ''' <summary>
-    ''' This function is called when the applicaiton page is loaded into the browser.
-    ''' This function reads the web.config and gets the values of the attributes
+    ''' This function is called when the application page is loaded into the web browser.
+    ''' This function reads the web.config file and gets the values of the attributes
     ''' </summary>
     ''' <param name="sender">object that caused this event</param>
     ''' <param name="e">Event that invoked this function</param>
@@ -196,11 +196,11 @@ Partial Public Class TL_App1
                 Me.DrawPanelForGetLocationResult("TimeStamp:", deserializedJsonObj.timestamp, False)
                 Me.DrawPanelForGetLocationResult("Response Time:", tokenSpan.Seconds.ToString() & "seconds", False)
 
-                MapTerminalLocation.Visible = True
+                MapLocation.Visible = True
                 map_canvas.Visible = True
                 Dim googleString As New StringBuilder()
                 googleString.Append("http://maps.google.com/?q=" & deserializedJsonObj.latitude & "+" & deserializedJsonObj.longitude & "&output=embed")
-                MapTerminalLocation.Attributes("src") = googleString.ToString()
+                MapLocation.Attributes("src") = googleString.ToString()
 
                 responseStream.Close()
             End Using
@@ -281,7 +281,7 @@ Partial Public Class TL_App1
     End Sub
 
     ''' <summary>
-    ''' This function resets access token related  variable to null 
+    ''' This function resets access token related variable to null 
     ''' </summary>
     Private Sub ResetTokenVariables()
         Me.accessToken = Nothing
@@ -291,7 +291,7 @@ Partial Public Class TL_App1
     End Sub
 
     ''' <summary>
-    ''' This function validates access token related variables and returns VALID_ACCESS_TOKEN if its valid
+    ''' This function validates access token related variables and returns VALID_ACCESS_TOKEN if it is valid
     ''' otherwise, returns INVALID_ACCESS_TOKEN if refresh token expired or not able to read session variables
     ''' return REFRESH_TOKEN, if access token in expired and refresh token is valid 
     ''' </summary>
@@ -329,7 +329,7 @@ Partial Public Class TL_App1
     ''' Get access token based on the type parameter type values.
     ''' </summary>
     ''' <param name="type">If type value is Authorization_code, access token is fetch for authorization code flow
-    ''' If type value is Refresh_Token, access token is fetch for authorization code floww based on the exisiting refresh token</param>
+    ''' If type value is Refresh_Token, access token is fetch for authorization code flow based on the exisiting refresh token</param>
     ''' <returns>true/false; true if success, else false</returns>
     Private Function GetAccessToken(ByVal type As AccessTokenType) As Boolean
         Dim postStream As Stream = Nothing
@@ -563,11 +563,11 @@ Public Class AccessTokenResponse
 End Class
 
 ''' <summary>
-''' Terminal Location Response object
+''' Location Response object
 ''' </summary>
 Public Class TLResponse
     ''' <summary>
-    ''' Gets or sets the value of accuracy - This is the target MSISDN that was used in the Device Location request
+    ''' Gets or sets the value of accuracy. This is the target MSISDN that was used in the Device Location request
     ''' </summary>
     Public Property accuracy() As String
         Get
@@ -580,7 +580,7 @@ Public Class TLResponse
     Private m_accuracy As String
 
     ''' <summary>
-    ''' Gets or sets the value of latitude - The current latitude of the device's geo-position.
+    ''' Gets or sets the value of latitude. The current latitude of the device's geo-position.
     ''' </summary>
     Public Property latitude() As String
         Get
@@ -593,7 +593,7 @@ Public Class TLResponse
     Private m_latitude As String
 
     ''' <summary>
-    ''' Gets or sets the value of longitude - The current longitude of the device geo-position.
+    ''' Gets or sets the value of longitude. The current longitude of the device geo-position.
     ''' </summary>
     Public Property longitude() As String
         Get
@@ -606,7 +606,7 @@ Public Class TLResponse
     Private m_longitude As String
 
     ''' <summary>
-    ''' Gets or sets the value of timestamp - Timestamp of the location data.
+    ''' Gets or sets the value of timestamp. Timestamp of the location data.
     ''' </summary>
     Public Property timestamp() As String
         Get

@@ -5,7 +5,7 @@
 * For more information contact developer.support@att.com<mailto:developer.support@att.com>
 ******************************************************************************************
 
-  AT&T API Platform Samples - Terminal Location
+  AT&T API Platform Samples - Location
  --------------------------------------
 
 This file describes how to set up, configure and run the Ruby applications using AT&T API Platform services. 
@@ -31,7 +31,7 @@ create and run one's own full-fledged sample applications.
   Be careful while filling in the "OAuth Redirect URL" field. It should contain the URL that the oAuth provider will redirect
   users to when he/she successfully authenticates and authorizes your application.
 
-  NOTE: You MUST select Terminal Location in the list of services under field 'Services' in order to use this sample
+  NOTE: You MUST select Location in the list of services under field 'Services' in order to use this sample
   application code. 
 
   Having your application registered, you will get back an important pair of data: an API key and Secret key. They are 
@@ -61,7 +61,7 @@ create and run one's own full-fledged sample applications.
 
      - also make sure you have rest-client and json gems installed
 
-   To install these gems open up a terminal window and invoke:
+   To install these gems open up a command-line interface window and invoke:
 
        gem install sinatra sinatra-contrib rest-client json
 
@@ -103,7 +103,7 @@ create and run one's own full-fledged sample applications.
 
 4. Running the application
 
-  To run the application, open up a terminal window and type:
+  To run the application, open up a command-line interface window and type:
 
     ruby ./tl.rb
 

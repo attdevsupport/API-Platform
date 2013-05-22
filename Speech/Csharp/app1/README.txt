@@ -70,7 +70,7 @@ order to use this sample application code.
 
 Each sample application contains a web.config file. It holds configurable parameters 
 described in an easy to read format. Please populate the following parameters in 
-web.config as specified below:
+web.config file as specified below:
 
 1) api_key              : This is mandatory parameter, set the value as per your 
                           registered appliaction 'API key' field value.
@@ -106,4 +106,4 @@ environment to 'Production' environment.
 Suppose you copied the sample app files in your IIS server webroot/speech/app1/ folder.
 In order to run the sample application, type in'http://IIS_HOSTNAME:8080/speech/app1/Default.aspx'
 (assuming you're using a HOSTNAME machine with IIS Server and have not changed the 
-default port number, otherwise adjust accordingly) on your browser.
+default port number, otherwise adjust accordingly) on your web browser.

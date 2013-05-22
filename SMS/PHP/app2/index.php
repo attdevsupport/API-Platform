@@ -1,4 +1,4 @@
-<!-- 
+<!--
 Licensed by AT&T under 'Software Development Kit Tools Agreement.'2012
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
 Copyright 2012 AT&T Intellectual Property. All rights reserved. http://developer.att.com
@@ -11,10 +11,10 @@ include ("config.php");
 include ($oauth_file);
 
 session_start();
-$getReceivedSms = $_REQUEST["getReceivedSms"];   
+$getReceivedSms = $_REQUEST["getReceivedSms"];
 ?>
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
-<title>AT&T Sample SMS Application - SMS app 2 - Voting</title>
+<title>AT&T Sample SMS Application - SMS app 2 Voting</title>
 	<meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
     <link rel="stylesheet" type="text/css" href="common.css"/ >
 
@@ -47,7 +47,7 @@ document.write("" + navigator.userAgent);
 <div id="wrapper">
 <div id="content">
 
-  <h1>AT&T Sample SMS Application - SMS app 2 - Voting</h1>
+  <h1>AT&T Sample SMS Application - SMS app 2 Voting</h1>
 <h2>Feature 1: Calculate Votes sent via SMS to <?php echo $short_code ?> with text "Football", "Basketball", or "Baseball"</h2>
 
 </div>
@@ -58,12 +58,12 @@ document.write("" + navigator.userAgent);
 	<form name="getReceivedSms" method="post">
 
 <?php
-      
+
 	$path_is = __FILE__;
         $folder = dirname ($path_is);
         $folder = $folder . "/" . "tally";
         $db4_filename = $folder . "/". "smslistner.db";
-        $db3_filename = $folder . "/". "smslistner2.db";     
+        $db3_filename = $folder . "/". "smslistner2.db";
         if (!is_dir($folder))
         {
            echo "$folder tally folder is missing";
@@ -101,10 +101,10 @@ document.write("" + navigator.userAgent);
 
 	       //        	print "Receive SMS Messages : <br/>";
                 $invalidMsg=false;
-		
+
 		   $responses = unserialize(file_get_contents($db3_filename));
 			foreach($responses as $response) {
- 
+
                       if(strtolower($response["Message"])=="football")
                         {
                             $footBallTotalCount += 1;
@@ -136,21 +136,21 @@ document.write("" + navigator.userAgent);
                     fclose($footBallFileHandle);
                     fclose($baseBallBallFileHandle);
                     fclose($basketBallFileHandle);
-                 
+
              }
 $totalVotes = $footBallTotalCount +  $baseBallTotalCount + $basketBallTotalCount;
- 
-	
-      }  
+
+
+      }
 ?>
 
 		     <div class="success">
 		     <strong>SUCCESS:</strong><br />
 			<strong>Total votes:</strong> <?php echo $totalVotes ; ?>
 		     </div>
-		     
 
-		     
+
+
 
 <table style="width: 300px" cellpadding="1" cellspacing="1" border="0">
 <thead>
@@ -205,10 +205,10 @@ $totalVotes = $footBallTotalCount +  $baseBallTotalCount + $basketBallTotalCount
 <thead>
     <tr>
 <th class="cell" align="left"><strong>DateTime</strong></th>
-        
+
 <th class="cell" align="left"><strong>SenderAddress</strong></th>
 <th class="cell" align="left"><strong>Message</strong></th>
-<th class="cell" align="left"><strong>DestinationAddress</strong></th>      
+<th class="cell" align="left"><strong>DestinationAddress</strong></th>
 <th class="cell" align="left"><strong>MessageId</strong></th>
 
 
@@ -230,11 +230,11 @@ $totalVotes = $footBallTotalCount +  $baseBallTotalCount + $basketBallTotalCount
                         <td class="cell" align="left" style="background: #fcc"><?php echo $response["Message"];?></td>
                         <td class="cell" align="left" style="background: #fcc"><?php echo $response["DestinationAddress"];?></td>
                         <td class="cell" align="left" style="background: #fcc"><?php echo $response["MessageId"];?></td>
-                      </tr>  
+                      </tr>
 
     </table>
     <?php
-} 
+}
 }
 }
 
@@ -242,15 +242,15 @@ if($validmsg) {
 foreach($responses as $response) {
             if((strtolower($response["Message"])=="football") || (strtolower($response["Message"])=="baseball") || (strtolower($response["Message"])=="basketball")){
                 ?>
-               
+
 <table style="width: 750px" cellpadding="1" cellspacing="1" border="0">
 <thead>
     <tr>
 <th class="cell" align="left"><strong>DateTime</strong></th>
-        
+
 <th class="cell" align="left"><strong>SenderAddress</strong></th>
 <th class="cell" align="left"><strong>Message</strong></th>
-<th class="cell" align="left"><strong>DestinationAddress</strong></th>      
+<th class="cell" align="left"><strong>DestinationAddress</strong></th>
 <th class="cell" align="left"><strong>MessageId</strong></th>
 
 
@@ -277,8 +277,8 @@ foreach($responses as $response) {
                         <td class="cell" align="left"><?php echo $response["DestinationAddress"];?></td>
                         <td class="cell" align="left"><?php echo $response["MessageId"];?></td>
                       </tr>
-</table>  
-<?php 
+</table>
+<?php
 
  }
  } }

@@ -51,7 +51,7 @@ For more information contact developer.support@att.com
         <div class="wrapper">
             <div class="content">
                 <h1>
-                    AT&T Sample SMS Application - SMS app 2 - Voting</h1>
+                    AT&T Sample SMS Application - SMS app 2 Voting</h1>
                 <h2>
                     Feature 1: Calculate Votes sent via SMS to
                     <asp:Label ID="shortCodeLabel" runat="server"></asp:Label>

@@ -80,7 +80,7 @@ order to use this sample application code.
 
 Each sample application contains a web.config file. It holds configurable parameters
 described in an easy to read format. Please populate the following parameters in
-web.config as specified below:
+web.config file as specified below:
 
 1) api_key                	: This is mandatory parameter, Set the value as per
 				  your registered appliaction 'API key' field value.
@@ -116,14 +116,14 @@ web.config as specified below:
 				  New Transaction.
 				  Example: https://IIS_HOSTNAME:8080/notary/app1/Default.aspx
 
-10) notificationDetailsFile     : ~\\notificationDetailsFile.txt - (This is optional
+10) notificationDetailsFile     : ~\\notificationDetailsFile.txt: (This is optional
 				  parameter, which points to the file path, where the
 				  notification details will be saved by listener. If
 				  the parameter is not configured, it will take the
 				  default value as ~\\notificationDetailsFile.txt.
 				  Give read/write access to this file.)
 
-11) refundFile	                : ~\\refundFile.txt - (This is optional parameter,
+11) refundFile	                : ~\\refundFile.txt: (This is optional parameter,
 				  which points to the file path, where latest
 				  transaction IDs will be stored. If the parameter is
 				  not configured, it will take the default value as 
@@ -145,4 +145,4 @@ Suppose you copied the sample app files in your IIS server webroot/payment/app1/
 In order to run the sample application, type in
 'http://IIS_HOSTNAME:8080/payment/app1/Default.aspx'(assuming you're using a HOSTNAME
 machine with IIS Server and have not changed the default port number, otherwise adjust
-accordingly) on your browser.
+accordingly) on your web browser.

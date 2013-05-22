@@ -73,7 +73,7 @@ to use this sample application code.
 
 Each sample application contains a web.config file. It holds configurable parameters
 described in an easy to read format. Please populate the following parameters in
-web.config as specified below:
+web.config file as specified below:
 
 1) api_key              : This is mandatory parameter, set the value as per your
 			  registered appliaction 'API key' field value.

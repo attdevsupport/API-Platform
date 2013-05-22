@@ -11,7 +11,7 @@
 <head>
 <meta name="generator" content="HTML Tidy, see www.w3.org" />
 
-<title>AT&amp;T Sample Mim Application 1 - Basic Mim Service
+<title>AT&amp;T Sample MIM Application 1 - Basic MIM Service
     Application</title>
 <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type" />
 <link rel="stylesheet" type="text/css" href="style/common.css" />
@@ -128,7 +128,7 @@ session.setAttribute("PartNumber",PartNumber);
 
         <div id="wrapper">
             <div id="content">
-                <h1>AT&amp;T Sample Mim Application 1 - Basic Mim Service
+                <h1>AT&amp;T Sample MIM Application 1 - Basic MIM Service
                     Application</h1>
 
                 <h2>Feature 1: Get Message Header</h2>

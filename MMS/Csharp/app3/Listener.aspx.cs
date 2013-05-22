@@ -22,7 +22,7 @@ using System.Text.RegularExpressions;
 public partial class MMSApp3_Listener : System.Web.UI.Page
 {
     /// <summary>
-    /// Event, that triggers when the applicaiton page is loaded into the browser
+    /// Event, that triggers when the application page is loaded into the web browser
     /// Listens to server and stores the mms messages in server
     /// </summary>
     /// <param name="sender">object, that caused this event</param>
