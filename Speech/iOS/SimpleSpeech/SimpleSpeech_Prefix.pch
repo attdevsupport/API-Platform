@@ -1,0 +1,11 @@
+// Prefix header for all source files of the 'SimpleSpeech' target in the 'SimpleSpeech' project
+//
+// Licensed by AT&T under 'Software Development Kit Tools Agreement' 2012.
+// TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION: http://developer.att.com/sdk_agreement/
+// Copyright 2012 AT&T Intellectual Property. All rights reserved.
+// For more information contact developer.support@att.com http://developer.att.com
+
+#ifdef __OBJC__
+    #import <Foundation/Foundation.h>
+    #import <UIKit/UIKit.h>
+#endif

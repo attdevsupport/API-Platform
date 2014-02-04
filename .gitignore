@@ -1,0 +1,26 @@
+# Don't save SpeechKit in repo -- have developer add it from distribution
+ATTSpeechKit/
+
+.svn
+
+# Mac ignores
+.DS_Store
+
+# Rails ignores
+*.log
+tmp/
+
+# Xcode ignores
+build/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.swp
+*~.nib
+*.pbxuser
+*.perspective
+*.perspectivev3
+
+# Xcode 4.0 ignores
+xcuserdata/
+*.xcuserstate
